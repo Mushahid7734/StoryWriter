@@ -460,7 +460,11 @@
     <button type="button" class="sw-btn" id="sw-shortcuts-btn" title="Keyboard shortcuts">Keys</button>
     <div class="sw-top-sep"></div>
     <button type="button" class="sw-btn sw-btn-icon" id="sw-fullscreen" title="Fullscreen">⛶</button>
+    <button type="button" class="sw-btn" id="sw-projects-btn" title="Projects">Projects</button>
+    <button type="button" class="sw-btn" id="sw-disk-save" title="Save to disk">Save disk</button>
+    <button type="button" class="sw-btn" id="sw-disk-open" title="Open from disk">Open disk</button>
     <button type="button" class="sw-btn" id="sw-install-btn" title="Install as app" style="display:none">Install app</button>
+    <span id="sw-project-label" style="font-size:0.75rem;color:var(--sw-muted);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
     <div class="sw-top-sep"></div>
     <div class="sw-dropdown" id="sw-export-dd">
       <button type="button" class="sw-btn sw-btn-primary" id="sw-export-btn">Export ▾</button>
@@ -603,8 +607,87 @@
   if (!ROOT) return;
   const STORAGE_KEY = 'storywriter-v2';
   const LEGACY_KEY = 'storywriter-v1';
+  const META_KEY = 'storywriter-meta-v1';
+  const IDB_NAME = 'storywriter-db';
+  const IDB_STORE = 'projects';
 
   function uid() { return 'id_' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36); }
+
+  let currentProjectId = null;
+  let currentProjectName = 'Untitled';
+  let idbSaveTimer = null;
+  let fileHandle = null; // File System Access handle when available
+
+  function openIdb() {
+    return new Promise(function (resolve, reject) {
+      const req = indexedDB.open(IDB_NAME, 1);
+      req.onupgradeneeded = function () {
+        const db = req.result;
+        if (!db.objectStoreNames.contains(IDB_STORE)) {
+          db.createObjectStore(IDB_STORE, { keyPath: 'id' });
+        }
+      };
+      req.onsuccess = function () { resolve(req.result); };
+      req.onerror = function () { reject(req.error); };
+    });
+  }
+
+  function idbPut(record) {
+    return openIdb().then(function (db) {
+      return new Promise(function (resolve, reject) {
+        const tx = db.transaction(IDB_STORE, 'readwrite');
+        tx.objectStore(IDB_STORE).put(record);
+        tx.oncomplete = function () { resolve(); };
+        tx.onerror = function () { reject(tx.error); };
+      });
+    });
+  }
+
+  function idbGet(id) {
+    return openIdb().then(function (db) {
+      return new Promise(function (resolve, reject) {
+        const tx = db.transaction(IDB_STORE, 'readonly');
+        const req = tx.objectStore(IDB_STORE).get(id);
+        req.onsuccess = function () { resolve(req.result || null); };
+        req.onerror = function () { reject(req.error); };
+      });
+    });
+  }
+
+  function idbDelete(id) {
+    return openIdb().then(function (db) {
+      return new Promise(function (resolve, reject) {
+        const tx = db.transaction(IDB_STORE, 'readwrite');
+        tx.objectStore(IDB_STORE).delete(id);
+        tx.oncomplete = function () { resolve(); };
+        tx.onerror = function () { reject(tx.error); };
+      });
+    });
+  }
+
+  function idbAll() {
+    return openIdb().then(function (db) {
+      return new Promise(function (resolve, reject) {
+        const tx = db.transaction(IDB_STORE, 'readonly');
+        const req = tx.objectStore(IDB_STORE).getAll();
+        req.onsuccess = function () { resolve(req.result || []); };
+        req.onerror = function () { reject(req.error); };
+      });
+    });
+  }
+
+  function readMeta() {
+    try {
+      return JSON.parse(localStorage.getItem(META_KEY) || '{}') || {};
+    } catch (e) { return {}; }
+  }
+  function writeMeta(meta) {
+    try { localStorage.setItem(META_KEY, JSON.stringify(meta)); } catch (e) {}
+  }
+  function updateProjectLabel() {
+    const el = document.getElementById('sw-project-label');
+    if (el) el.textContent = currentProjectName || 'Untitled';
+  }
 
   function emptyScene(title) {
     return { id: uid(), title: title || 'Scene 1', synopsis: '', status: 'draft', content: '', comments: [], snapshots: [] };
@@ -696,7 +779,38 @@
   }
 
   function save() {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) { toast('Could not save'); }
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      const meta = readMeta();
+      meta.currentId = currentProjectId;
+      writeMeta(meta);
+    } catch (e) { toast('Could not save'); }
+    if (idbSaveTimer) clearTimeout(idbSaveTimer);
+    idbSaveTimer = setTimeout(function () { persistToIdb(); }, 400);
+  }
+
+  function persistToIdb() {
+    if (!currentProjectId) {
+      currentProjectId = uid();
+      currentProjectName = currentProjectName || 'Untitled';
+    }
+    const record = {
+      id: currentProjectId,
+      name: currentProjectName || 'Untitled',
+      updatedAt: new Date().toISOString(),
+      state: state
+    };
+    idbPut(record).then(function () {
+      const meta = readMeta();
+      const list = meta.list || [];
+      const i = list.findIndex(function (x) { return x.id === currentProjectId; });
+      const entry = { id: currentProjectId, name: record.name, updatedAt: record.updatedAt };
+      if (i >= 0) list[i] = entry; else list.unshift(entry);
+      meta.list = list;
+      meta.currentId = currentProjectId;
+      writeMeta(meta);
+      updateProjectLabel();
+    }).catch(function () {});
   }
 
   function migrateV1(d) {
@@ -774,6 +888,292 @@
         state.activeSceneId = ch.scenes[0].id;
       }
     } catch (e) {}
+  }
+
+  function normalizeState(d) {
+    if (!d) return;
+    if (!d.version || d.version < 2) {
+      state = migrateV1(d);
+    } else {
+      state = Object.assign(state, d);
+    }
+    if (!state.chapters || !state.chapters.length) state.chapters = [emptyChapter('Chapter 1', 1)];
+    state.chapters.forEach(function (ch) {
+      if (!ch.scenes || !ch.scenes.length) {
+        ch.scenes = [emptyScene('Scene 1')];
+        if (ch.content) { ch.scenes[0].content = ch.content; delete ch.content; }
+      }
+      ch.scenes.forEach(function (sc) {
+        if (!sc.comments) sc.comments = [];
+        if (!sc.snapshots) sc.snapshots = [];
+        if (!sc.status) sc.status = 'draft';
+      });
+      if (!ch.status) ch.status = 'draft';
+    });
+    if (!state.goals) state.goals = { sessionTarget: 500, sessionBase: 0, draftTarget: 80000 };
+    if (!state.openThreads) state.openThreads = [];
+    if (!state.chapters.find(function (c) { return c.id === state.activeChapterId; })) {
+      state.activeChapterId = state.chapters[0].id;
+    }
+    var ch = getActiveChapter();
+    if (!ch.scenes.find(function (s) { return s.id === state.activeSceneId; })) {
+      state.activeSceneId = ch.scenes[0].id;
+    }
+  }
+
+  async function migrateLocalToIdb() {
+    var meta = readMeta();
+    if (meta.migrated) return;
+    var raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) {
+      var leg = localStorage.getItem(LEGACY_KEY);
+      if (leg) {
+        normalizeState(migrateV1(JSON.parse(leg)));
+      }
+    } else {
+      try { normalizeState(JSON.parse(raw)); } catch (e) {}
+    }
+    if (!currentProjectId) currentProjectId = uid();
+    if (!currentProjectName) currentProjectName = 'My project';
+    await persistToIdbPromise();
+    meta = readMeta();
+    meta.migrated = true;
+    meta.currentId = currentProjectId;
+    writeMeta(meta);
+  }
+
+  function persistToIdbPromise() {
+    if (!currentProjectId) currentProjectId = uid();
+    var record = {
+      id: currentProjectId,
+      name: currentProjectName || 'Untitled',
+      updatedAt: new Date().toISOString(),
+      state: state
+    };
+    return idbPut(record).then(function () {
+      var meta = readMeta();
+      var list = meta.list || [];
+      var i = list.findIndex(function (x) { return x.id === currentProjectId; });
+      var entry = { id: currentProjectId, name: record.name, updatedAt: record.updatedAt };
+      if (i >= 0) list[i] = entry; else list.unshift(entry);
+      meta.list = list;
+      meta.currentId = currentProjectId;
+      writeMeta(meta);
+      updateProjectLabel();
+    });
+  }
+
+  async function loadProjectById(id) {
+    var rec = await idbGet(id);
+    if (!rec) return false;
+    currentProjectId = rec.id;
+    currentProjectName = rec.name || 'Untitled';
+    normalizeState(rec.state || {});
+    var meta = readMeta();
+    meta.currentId = id;
+    writeMeta(meta);
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+    updateProjectLabel();
+    return true;
+  }
+
+  async function createNewProject(name) {
+    saveCurrent();
+    await persistToIdbPromise();
+    currentProjectId = uid();
+    currentProjectName = name || 'Untitled';
+    state = {
+      version: 2,
+      theme: state.theme || 'parchment',
+      fontSize: state.fontSize || 16,
+      chapters: [emptyChapter('Chapter 1', 1)],
+      activeChapterId: null,
+      activeSceneId: null,
+      locations: [],
+      characters: [],
+      religions: [],
+      planets: [],
+      brainstorm: '',
+      goals: { sessionTarget: 500, sessionBase: 0, draftTarget: 80000 },
+      viewMode: 'write',
+      openThreads: [],
+      pinnedRef: null,
+      typewriter: false
+    };
+    state.activeChapterId = state.chapters[0].id;
+    state.activeSceneId = state.chapters[0].scenes[0].id;
+    await persistToIdbPromise();
+    refreshUI();
+    toast('New project');
+  }
+
+  function refreshUI() {
+    applyTheme();
+    applyFontSize();
+    ROOT.classList.toggle('sw-typewriter', !!state.typewriter);
+    if (state.pinnedRef) ROOT.classList.add('sw-ref-open');
+    else ROOT.classList.remove('sw-ref-open');
+    renderChapters();
+    loadIntoEditor();
+    setViewMode();
+    renderThreads();
+    renderPinnedRef();
+    updateWordcount();
+    updateProjectLabel();
+  }
+
+  async function openProjectsModal() {
+    var list = [];
+    try {
+      var all = await idbAll();
+      list = all.sort(function (a, b) {
+        return (b.updatedAt || '').localeCompare(a.updatedAt || '');
+      });
+    } catch (e) {
+      list = (readMeta().list || []).map(function (x) { return { id: x.id, name: x.name, updatedAt: x.updatedAt }; });
+    }
+    var htmlBody = '<h3>Projects</h3>';
+    if (!list.length) htmlBody += '<p style="color:var(--sw-muted);font-size:0.88rem">No saved projects in this browser yet.</p>';
+    list.forEach(function (p) {
+      var active = p.id === currentProjectId ? ' (current)' : '';
+      htmlBody += '<div style="display:flex;gap:6px;align-items:center;margin-bottom:8px;padding:8px;border:1px solid var(--sw-border);border-radius:8px">' +
+        '<div style="flex:1;min-width:0"><strong>' + escapeHtml(p.name || 'Untitled') + '</strong>' + active +
+        '<div style="font-size:0.72rem;color:var(--sw-muted)">' + escapeHtml((p.updatedAt || '').slice(0, 19).replace('T', ' ')) + '</div></div>' +
+        '<button type="button" class="sw-btn sw-open-proj" data-id="' + p.id + '">Open</button>' +
+        '<button type="button" class="sw-btn sw-ren-proj" data-id="' + p.id + '">Rename</button>' +
+        '<button type="button" class="sw-btn sw-del-proj" data-id="' + p.id + '">Delete</button></div>';
+    });
+    htmlBody += '<div class="sw-modal-actions" style="justify-content:stretch;flex-direction:column">' +
+      '<button type="button" class="sw-btn sw-btn-primary" id="m-new-proj">New project</button>' +
+      '<button type="button" class="sw-btn" id="m-cancel">Close</button></div>';
+    openModal(htmlBody);
+    $('#m-cancel').onclick = closeModal;
+    $('#m-new-proj').onclick = async function () {
+      var name = await swPrompt('Project name', 'Untitled');
+      if (name === null) return;
+      closeModal();
+      await createNewProject(name.trim() || 'Untitled');
+    };
+    ROOT.querySelectorAll('.sw-open-proj').forEach(function (btn) {
+      btn.onclick = async function () {
+        saveCurrent();
+        await persistToIdbPromise();
+        var ok = await loadProjectById(btn.dataset.id);
+        closeModal();
+        if (ok) { refreshUI(); toast('Opened project'); }
+        else toast('Could not open');
+      };
+    });
+    ROOT.querySelectorAll('.sw-ren-proj').forEach(function (btn) {
+      btn.onclick = async function () {
+        var name = await swPrompt('Rename project', currentProjectName);
+        if (!name) return;
+        if (btn.dataset.id === currentProjectId) currentProjectName = name.trim();
+        var rec = await idbGet(btn.dataset.id);
+        if (rec) {
+          rec.name = name.trim();
+          rec.updatedAt = new Date().toISOString();
+          await idbPut(rec);
+        }
+        var meta = readMeta();
+        (meta.list || []).forEach(function (x) {
+          if (x.id === btn.dataset.id) x.name = name.trim();
+        });
+        writeMeta(meta);
+        updateProjectLabel();
+        openProjectsModal();
+      };
+    });
+    ROOT.querySelectorAll('.sw-del-proj').forEach(function (btn) {
+      btn.onclick = async function () {
+        if (!(await swConfirm('Delete this project permanently from this browser?'))) return;
+        await idbDelete(btn.dataset.id);
+        var meta = readMeta();
+        meta.list = (meta.list || []).filter(function (x) { return x.id !== btn.dataset.id; });
+        if (meta.currentId === btn.dataset.id) meta.currentId = null;
+        writeMeta(meta);
+        if (btn.dataset.id === currentProjectId) {
+          await createNewProject('Untitled');
+        }
+        openProjectsModal();
+      };
+    });
+  }
+
+  async function saveToDisk() {
+    saveCurrent();
+    await persistToIdbPromise();
+    var payload = JSON.stringify({
+      storywriterProject: 1,
+      id: currentProjectId,
+      name: currentProjectName,
+      updatedAt: new Date().toISOString(),
+      state: state
+    }, null, 2);
+    var blob = new Blob([payload], { type: 'application/json' });
+    if (window.showSaveFilePicker) {
+      try {
+        fileHandle = await window.showSaveFilePicker({
+          suggestedName: (currentProjectName || 'storywriter').replace(/[^a-z0-9-_]+/gi, '_') + '.json',
+          types: [{ description: 'StoryWriter project', accept: { 'application/json': ['.json'] } }]
+        });
+        var w = await fileHandle.createWritable();
+        await w.write(blob);
+        await w.close();
+        toast('Saved to disk');
+        return;
+      } catch (e) {
+        if (e && e.name === 'AbortError') return;
+      }
+    }
+    saveAs(blob, (currentProjectName || 'storywriter') + '.json');
+    toast('Downloaded project JSON');
+  }
+
+  async function openFromDisk() {
+    if (window.showOpenFilePicker) {
+      try {
+        var handles = await window.showOpenFilePicker({
+          types: [{ description: 'StoryWriter JSON', accept: { 'application/json': ['.json'] } }],
+          multiple: false
+        });
+        var file = await handles[0].getFile();
+        var text = await file.text();
+        await importProjectJson(text, file.name);
+        return;
+      } catch (e) {
+        if (e && e.name === 'AbortError') return;
+      }
+    }
+    var input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json,application/json';
+    input.onchange = async function () {
+      var f = input.files[0];
+      if (!f) return;
+      var text = await f.text();
+      await importProjectJson(text, f.name);
+    };
+    input.click();
+  }
+
+  async function importProjectJson(text, filename) {
+    try {
+      var data = JSON.parse(text);
+      var st = data.state || data;
+      if (!st.chapters && data.chapters) st = data;
+      if (!(await swConfirm('Replace the current project with this file?'))) return;
+      saveCurrent();
+      await persistToIdbPromise();
+      currentProjectId = uid();
+      currentProjectName = data.name || (filename || 'Imported').replace(/\.json$/i, '');
+      normalizeState(st);
+      await persistToIdbPromise();
+      refreshUI();
+      toast('Project imported');
+    } catch (e) {
+      toast('Invalid project file');
+    }
   }
 
   function applyTheme() {
@@ -2186,25 +2586,106 @@
     if (mod && e.key === 'b' && document.activeElement === editor) { /* let browser bold work via exec in some browsers */ }
   });
 
-  // Init
-  load();
-  if (!state.goals.sessionBase && state.goals.sessionBase !== 0) state.goals.sessionBase = totalWords();
-  if (!state.openThreads) state.openThreads = [];
-  applyTheme();
-  applyFontSize();
-  ROOT.classList.toggle('sw-typewriter', !!state.typewriter);
-  if (state.pinnedRef) ROOT.classList.add('sw-ref-open');
-  renderChapters();
-  loadIntoEditor();
-  setViewMode();
-  renderThreads();
-  renderPinnedRef();
-  window.addEventListener('beforeunload', () => { saveCurrent(); save(); });
+  // Wire project / disk buttons
+  var projBtn = document.getElementById('sw-projects-btn');
+  if (projBtn) projBtn.onclick = function () { openProjectsModal(); };
+  var diskSave = document.getElementById('sw-disk-save');
+  if (diskSave) diskSave.onclick = function () { saveToDisk(); };
+  var diskOpen = document.getElementById('sw-disk-open');
+  if (diskOpen) diskOpen.onclick = function () { openFromDisk(); };
 
-  // PWA: service worker + install prompt
+  // Drag-and-drop JSON restore
+  ;['dragenter', 'dragover'].forEach(function (ev) {
+    window.addEventListener(ev, function (e) {
+      if (!e.dataTransfer || !e.dataTransfer.types) return;
+      if ([].indexOf.call(e.dataTransfer.types, 'Files') === -1) return;
+      e.preventDefault();
+    });
+  });
+  window.addEventListener('drop', async function (e) {
+    if (!e.dataTransfer || !e.dataTransfer.files || !e.dataTransfer.files.length) return;
+    var f = e.dataTransfer.files[0];
+    if (!f || !/\.json$/i.test(f.name) && f.type !== 'application/json') return;
+    e.preventDefault();
+    var text = await f.text();
+    await importProjectJson(text, f.name);
+  });
+
+  // Init (async)
+  (async function boot() {
+    try {
+      await migrateLocalToIdb();
+      var meta = readMeta();
+      if (meta.currentId) {
+        var ok = await loadProjectById(meta.currentId);
+        if (!ok) load();
+      } else {
+        load();
+        if (!currentProjectId) {
+          currentProjectId = uid();
+          currentProjectName = 'My project';
+          await persistToIdbPromise();
+        }
+      }
+    } catch (e) {
+      load();
+    }
+    if (!state.goals.sessionBase && state.goals.sessionBase !== 0) state.goals.sessionBase = totalWords();
+    if (!state.openThreads) state.openThreads = [];
+    refreshUI();
+
+    // PWA shortcuts: ?action=new-scene | new-project
+    try {
+      var params = new URLSearchParams(window.location.search);
+      var action = params.get('action');
+      if (action === 'new-scene') {
+        addScene();
+      } else if (action === 'new-project') {
+        await createNewProject('Untitled');
+      }
+      if (action && window.history && window.history.replaceState) {
+        window.history.replaceState({}, '', window.location.pathname);
+      }
+    } catch (e) {}
+
+    window.addEventListener('beforeunload', function () { saveCurrent(); save(); });
+  })();
+
+  // PWA: service worker + update toast + install
   if ('serviceWorker' in navigator) {
     var swUrl = new URL('story-writer-sw.js', window.location.href);
-    navigator.serviceWorker.register(swUrl.href, { scope: new URL('./', window.location.href).href }).catch(function () {});
+    navigator.serviceWorker.register(swUrl.href, { scope: new URL('./', window.location.href).href }).then(function (reg) {
+      function promptUpdate() {
+        if (!reg.waiting) return;
+        openModal(
+          '<h3>Update available</h3>' +
+          '<p style="margin:0 0 12px;line-height:1.5">A new version of StoryWriter is ready. Reload to use it. Your projects stay in this browser.</p>' +
+          '<div class="sw-modal-actions">' +
+          '<button type="button" class="sw-btn" id="m-no">Later</button>' +
+          '<button type="button" class="sw-btn sw-btn-primary" id="m-yes">Reload</button></div>'
+        );
+        $('#m-no').onclick = closeModal;
+        $('#m-yes').onclick = function () {
+          if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+          closeModal();
+        };
+      }
+      if (reg.waiting) promptUpdate();
+      reg.addEventListener('updatefound', function () {
+        var nw = reg.installing;
+        if (!nw) return;
+        nw.addEventListener('statechange', function () {
+          if (nw.state === 'installed' && navigator.serviceWorker.controller) promptUpdate();
+        });
+      });
+      setInterval(function () { reg.update().catch(function () {}); }, 60 * 60 * 1000);
+    }).catch(function () {});
+    var refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', function () {
+      if (refreshing) return;
+      refreshing = true;
+      window.location.reload();
+    });
   }
   var deferredInstall = null;
   window.addEventListener('beforeinstallprompt', function (e) {
