@@ -1,0 +1,43 @@
+{
+  "name": "StoryWriter",
+  "short_name": "StoryWriter",
+  "description": "A calm writing studio for indie authors. Draft chapters, build your world, export DOCX.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f4f0e8",
+  "theme_color": "#5c4a32",
+  "lang": "en",
+  "categories": [
+    "productivity",
+    "lifestyle",
+    "books"
+  ],
+  "icons": [
+    {
+      "src": "./story-writer-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./story-writer-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./story-writer-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "./story-writer-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
