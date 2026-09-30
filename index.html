@@ -1,0 +1,2325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#5c4a32">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="StoryWriter">
+  <link rel="manifest" href="story-writer-manifest.webmanifest">
+  <link rel="apple-touch-icon" href="story-writer-icon-192.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="story-writer-icon-192.png">
+  <title>StoryWriter</title>
+  <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Source+Sans+3:wght@400;500;600&display=swap');
+
+    #sw-root {
+      --sw-bg: #f4f0e8;
+      --sw-paper: #faf7f0;
+      --sw-ink: #2c2416;
+      --sw-muted: #6b5e4a;
+      --sw-accent: #5c4a32;
+      --sw-accent-soft: #8b7355;
+      --sw-border: #ddd4c4;
+      --sw-panel: #ebe4d6;
+      --sw-hover: #e0d6c4;
+      --sw-tag: #2a5a7a;
+      --sw-tag-bg: #e8f0f6;
+      --sw-danger: #8b3a2a;
+      --sw-ok: #3d6b4f;
+      --sw-sidebar-w: 240px;
+      --sw-font-size: 16px;
+      --sw-radius: 8px;
+      font-family: "Source Sans 3", system-ui, sans-serif;
+      color: var(--sw-ink);
+      background: var(--sw-bg);
+      line-height: 1.5;
+      box-sizing: border-box;
+      max-width: 1280px;
+      margin: 0 auto;
+      border-radius: 12px;
+      border: 1px solid var(--sw-border);
+      overflow: visible;
+      display: flex;
+      flex-direction: column;
+      min-height: 640px;
+      height: 88vh;
+      position: relative;
+      z-index: 1;
+      isolation: isolate;
+    }
+    #sw-root[data-theme="sepia"] {
+      --sw-bg: #f0e6d2;
+      --sw-paper: #f7efdc;
+      --sw-ink: #3d2f1a;
+      --sw-muted: #7a6548;
+      --sw-accent: #6b4e2e;
+      --sw-accent-soft: #9a7b52;
+      --sw-border: #d4c4a8;
+      --sw-panel: #e8dcc4;
+      --sw-hover: #ddd0b4;
+      --sw-tag: #5a4a28;
+      --sw-tag-bg: #efe6d0;
+    }
+    #sw-root[data-theme="dark"] {
+      --sw-bg: #1a1c1e;
+      --sw-paper: #232628;
+      --sw-ink: #e4e0d8;
+      --sw-muted: #9a958c;
+      --sw-accent: #c4a574;
+      --sw-accent-soft: #a88b5c;
+      --sw-border: #3a3e42;
+      --sw-panel: #2a2e32;
+      --sw-hover: #34383c;
+      --sw-tag: #7eb0d4;
+      --sw-tag-bg: #2a3a48;
+      --sw-danger: #d08070;
+      --sw-ok: #7cbc94;
+    }
+    #sw-root *, #sw-root *::before, #sw-root *::after { box-sizing: border-box; }
+
+    #sw-root .sw-topbar {
+      display: flex; align-items: center; gap: 5px; padding: 7px 10px;
+      background: var(--sw-panel); border-bottom: 1px solid var(--sw-border);
+      flex-shrink: 0; flex-wrap: wrap; position: relative; z-index: 20;
+    }
+    #sw-root .sw-logo {
+      font-family: "EB Garamond", Georgia, serif; font-weight: 600;
+      font-size: 1.1rem; color: var(--sw-accent); margin-right: 6px;
+    }
+    #sw-root .sw-btn {
+      font: inherit; font-size: 0.78rem; font-weight: 500;
+      border: 1px solid var(--sw-border); background: var(--sw-paper);
+      color: var(--sw-ink); border-radius: 6px; padding: 4px 9px;
+      cursor: pointer; display: inline-flex; align-items: center; gap: 3px;
+    }
+    #sw-root .sw-btn:hover { background: var(--sw-hover); }
+    #sw-root .sw-btn-icon { padding: 4px 7px; min-width: 28px; justify-content: center; }
+    #sw-root .sw-btn-primary { background: var(--sw-accent); color: var(--sw-paper); border-color: var(--sw-accent); }
+    #sw-root .sw-btn-primary:hover { filter: brightness(1.08); }
+    #sw-root .sw-top-sep { width: 1px; height: 20px; background: var(--sw-border); margin: 0 3px; }
+    #sw-root .sw-wordcount { font-size: 0.75rem; color: var(--sw-muted); margin-left: auto; }
+    #sw-root .sw-goal-wrap {
+      display: flex; align-items: center; gap: 6px; font-size: 0.72rem; color: var(--sw-muted);
+    }
+    #sw-root .sw-goal-bar {
+      width: 72px; height: 6px; background: var(--sw-border); border-radius: 3px; overflow: hidden;
+    }
+    #sw-root .sw-goal-fill {
+      height: 100%; background: var(--sw-ok); width: 0%; transition: width 0.2s;
+    }
+
+    #sw-root .sw-body {
+      display: flex; flex: 1; min-height: 0; overflow: hidden; position: relative; z-index: 1;
+    }
+    #sw-root .sw-sidebar {
+      width: var(--sw-sidebar-w); background: var(--sw-panel);
+      border-right: 1px solid var(--sw-border); display: flex; flex-direction: column;
+      flex-shrink: 0; overflow: hidden; position: relative; z-index: 15;
+    }
+    #sw-root.sw-sidebar-collapsed .sw-sidebar { width: 0; border: none; }
+    #sw-root .sw-sidebar-inner {
+      width: var(--sw-sidebar-w); padding: 8px; display: flex; flex-direction: column;
+      height: 100%; overflow: hidden;
+    }
+    #sw-root .sw-sidebar h3 {
+      font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em;
+      color: var(--sw-muted); margin: 0 0 6px; font-weight: 600;
+    }
+    #sw-root .sw-side-tabs {
+      display: flex; gap: 2px; margin-bottom: 8px;
+    }
+    #sw-root .sw-side-tabs button {
+      flex: 1; font-size: 0.72rem; padding: 4px; border: 1px solid var(--sw-border);
+      background: transparent; color: var(--sw-muted); border-radius: 4px; cursor: pointer;
+    }
+    #sw-root .sw-side-tabs button.active {
+      background: var(--sw-paper); color: var(--sw-ink); font-weight: 600;
+    }
+    #sw-root .sw-chapter-list, #sw-root .sw-outline-list {
+      flex: 1; overflow-y: auto;
+    }
+    #sw-root .sw-ch-block { margin-bottom: 6px; }
+    #sw-root .sw-chapter-item, #sw-root .sw-scene-item, #sw-root .sw-outline-item {
+      display: flex; align-items: center; gap: 4px; padding: 5px 6px;
+      border-radius: 5px; cursor: pointer; font-size: 0.82rem; border: 1px solid transparent;
+    }
+    #sw-root .sw-chapter-item:hover, #sw-root .sw-scene-item:hover, #sw-root .sw-outline-item:hover {
+      background: var(--sw-hover);
+    }
+    #sw-root .sw-chapter-item.active, #sw-root .sw-scene-item.active {
+      background: var(--sw-paper); border-color: var(--sw-border); font-weight: 600;
+    }
+    #sw-root .sw-scene-item { padding-left: 14px; font-size: 0.78rem; color: var(--sw-muted); }
+    #sw-root .sw-scene-item.active { color: var(--sw-ink); }
+    #sw-root .sw-status-dot {
+      width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+    }
+    #sw-root .sw-status-draft { background: #a09070; }
+    #sw-root .sw-status-revise { background: #c09040; }
+    #sw-root .sw-status-done { background: var(--sw-ok); }
+    #sw-root .sw-ch-del, #sw-root .sw-sc-del {
+      opacity: 0; background: none; border: none; color: var(--sw-danger);
+      cursor: pointer; font-size: 0.85rem; padding: 0 2px; margin-left: auto;
+    }
+    #sw-root .sw-chapter-item:hover .sw-ch-del,
+    #sw-root .sw-scene-item:hover .sw-sc-del { opacity: 1; }
+    #sw-root .sw-drag-handle { cursor: grab; color: var(--sw-muted); font-size: 0.7rem; }
+    #sw-root .sw-outline-item .sw-out-syn {
+      display: block; font-size: 0.72rem; color: var(--sw-muted); font-weight: 400;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+
+    #sw-root .sw-main { flex: 1; display: flex; flex-direction: column; min-width: 0; background: var(--sw-paper); }
+    #sw-root .sw-tabs {
+      display: flex; border-bottom: 1px solid var(--sw-border); background: var(--sw-panel);
+      flex-shrink: 0; overflow-x: auto; position: relative; z-index: 12;
+    }
+    #sw-root .sw-tab {
+      font: inherit; font-size: 0.8rem; font-weight: 500; padding: 8px 12px;
+      border: none; background: transparent; color: var(--sw-muted); cursor: pointer;
+      border-bottom: 2px solid transparent; white-space: nowrap;
+    }
+    #sw-root .sw-tab:hover { color: var(--sw-ink); }
+    #sw-root .sw-tab.active { color: var(--sw-accent); border-bottom-color: var(--sw-accent); font-weight: 600; }
+
+    #sw-root .sw-panel { display: none; flex: 1; flex-direction: column; min-height: 0; overflow: hidden; }
+    #sw-root .sw-panel.active { display: flex; }
+
+    #sw-root .sw-story-toolbar {
+      display: flex; flex-wrap: wrap; gap: 6px; padding: 6px 12px;
+      border-bottom: 1px solid var(--sw-border); background: var(--sw-bg); align-items: center;
+    }
+    #sw-root .sw-editor-wrap {
+      flex: 1; overflow-y: auto; padding: 20px 8%; background: var(--sw-paper);
+    }
+    #sw-root .sw-meta-row {
+      display: grid; grid-template-columns: 1fr 140px; gap: 10px; max-width: 42em; margin: 0 auto 10px;
+    }
+    #sw-root .sw-chapter-title-input, #sw-root .sw-scene-title-input {
+      width: 100%; border: none; background: transparent;
+      font-family: "EB Garamond", Georgia, serif; font-size: 1.45rem; font-weight: 600;
+      color: var(--sw-ink); padding: 0 0 6px; border-bottom: 1px solid var(--sw-border); outline: none;
+    }
+    #sw-root .sw-scene-title-input { font-size: 1.15rem; font-weight: 500; }
+    #sw-root .sw-synopsis-input {
+      width: 100%; border: 1px solid var(--sw-border); border-radius: 6px;
+      background: var(--sw-bg); color: var(--sw-ink); font: inherit; font-size: 0.85rem;
+      padding: 6px 8px; margin: 0 auto 12px; max-width: 42em; display: block;
+    }
+    #sw-root .sw-editor {
+      min-height: 280px; outline: none; font-family: "EB Garamond", Georgia, serif;
+      font-size: var(--sw-font-size); line-height: 1.75; color: var(--sw-ink);
+      max-width: 42em; margin: 0 auto;
+    }
+    #sw-root .sw-editor:empty:before {
+      content: attr(data-placeholder); color: var(--sw-muted); opacity: 0.55;
+      font-style: italic; pointer-events: none;
+    }
+    #sw-root .sw-editor .sw-mention {
+      color: var(--sw-tag); text-decoration: underline;
+      text-decoration-color: color-mix(in srgb, var(--sw-tag) 40%, transparent);
+      background: var(--sw-tag-bg); border-radius: 3px; padding: 0 2px; cursor: help;
+    }
+
+    /* Corkboard */
+    #sw-root .sw-corkboard {
+      flex: 1; overflow-y: auto; padding: 16px; display: none;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px;
+      align-content: start; background: var(--sw-bg);
+    }
+    #sw-root .sw-corkboard.active { display: grid; }
+    #sw-root .sw-cork-card {
+      background: var(--sw-paper); border: 1px solid var(--sw-border); border-radius: 8px;
+      padding: 12px; cursor: pointer; min-height: 110px;
+    }
+    #sw-root .sw-cork-card:hover { border-color: var(--sw-accent-soft); }
+    #sw-root .sw-cork-card h4 { margin: 0 0 6px; font-size: 0.95rem; font-family: "EB Garamond", Georgia, serif; }
+    #sw-root .sw-cork-card p { margin: 0; font-size: 0.8rem; color: var(--sw-muted); }
+    #sw-root .sw-cork-card .sw-cork-status {
+      display: inline-block; margin-top: 8px; font-size: 0.68rem; text-transform: uppercase;
+      letter-spacing: 0.04em; color: var(--sw-muted);
+    }
+
+    /* Comments panel */
+    #sw-root .sw-comments-panel {
+      width: 220px; border-left: 1px solid var(--sw-border); background: var(--sw-panel);
+      display: none; flex-direction: column; flex-shrink: 0; overflow: hidden;
+    }
+    #sw-root.sw-comments-open .sw-comments-panel { display: flex; }
+    #sw-root .sw-comments-panel h3 { padding: 8px 10px; margin: 0; font-size: 0.75rem; }
+    #sw-root .sw-comments-list { flex: 1; overflow-y: auto; padding: 0 10px 10px; }
+    #sw-root .sw-comment-item {
+      background: var(--sw-paper); border: 1px solid var(--sw-border); border-radius: 6px;
+      padding: 8px; margin-bottom: 6px; font-size: 0.82rem;
+    }
+    #sw-root .sw-comment-item button {
+      background: none; border: none; color: var(--sw-danger); cursor: pointer; font-size: 0.75rem;
+    }
+
+    #sw-root .sw-wb-toolbar {
+      display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 12px;
+      border-bottom: 1px solid var(--sw-border); background: var(--sw-bg); align-items: center;
+    }
+    #sw-root .sw-wb-list { flex: 1; overflow-y: auto; padding: 10px 12px; }
+    #sw-root .sw-card {
+      background: var(--sw-paper); border: 1px solid var(--sw-border); border-radius: var(--sw-radius);
+      padding: 10px 12px; margin-bottom: 8px; cursor: pointer;
+    }
+    #sw-root .sw-card:hover { border-color: var(--sw-accent-soft); }
+    #sw-root .sw-card h4 { margin: 0 0 4px; font-size: 0.95rem; font-family: "EB Garamond", Georgia, serif; }
+    #sw-root .sw-card p { margin: 0 0 3px; font-size: 0.82rem; color: var(--sw-muted); }
+    #sw-root .sw-card-actions { display: flex; gap: 5px; margin-top: 6px; }
+    #sw-root .sw-card img.sw-thumb {
+      width: 48px; height: 48px; object-fit: cover; border-radius: 6px; float: right; margin-left: 8px;
+    }
+
+    #sw-root label.sw-lbl {
+      display: block; font-size: 0.7rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.04em; color: var(--sw-muted); margin-bottom: 2px;
+    }
+    #sw-root input.sw-inp, #sw-root textarea.sw-ta, #sw-root select.sw-sel {
+      width: 100%; padding: 6px 8px; border: 1px solid var(--sw-border); border-radius: 6px;
+      font: inherit; font-size: 0.88rem; background: var(--sw-paper); color: var(--sw-ink);
+    }
+    #sw-root textarea.sw-ta { min-height: 56px; resize: vertical; }
+    #sw-root .sw-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+    #sw-root .sw-chip {
+      font-size: 0.72rem; padding: 2px 7px; border-radius: 10px; border: 1px dashed var(--sw-border);
+      background: var(--sw-paper); color: var(--sw-muted); cursor: pointer;
+    }
+    #sw-root .sw-chip:hover { border-color: var(--sw-accent); color: var(--sw-accent); }
+
+    #sw-root .sw-modal-bg {
+      display: none; position: absolute; inset: 0; background: rgba(0,0,0,0.4);
+      z-index: 10000; align-items: center; justify-content: center; padding: 14px;
+    }
+    #sw-root .sw-modal-bg.open { display: flex; }
+    #sw-root .sw-modal {
+      background: var(--sw-paper); border-radius: 10px; border: 1px solid var(--sw-border);
+      max-width: 520px; width: 100%; max-height: 88%; overflow-y: auto; padding: 16px 18px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.2); color: var(--sw-ink);
+    }
+    #sw-root .sw-modal h3 { margin: 0 0 10px; font-family: "EB Garamond", Georgia, serif; font-size: 1.2rem; }
+    #sw-root .sw-modal-actions { display: flex; gap: 6px; justify-content: flex-end; margin-top: 12px; flex-wrap: wrap; }
+    #sw-root .sw-detail-grid { display: grid; gap: 8px; margin: 6px 0; }
+    #sw-root .sw-detail-row strong {
+      display: block; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.04em;
+      color: var(--sw-muted); margin-bottom: 2px;
+    }
+    #sw-root .sw-detail-row p { margin: 0; font-size: 0.9rem; white-space: pre-wrap; }
+
+    #sw-root .sw-ac {
+      display: none; position: absolute; z-index: 10040; background: var(--sw-paper);
+      border: 1px solid var(--sw-border); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+      max-height: 200px; overflow-y: auto; min-width: 200px;
+    }
+    #sw-root .sw-ac.open { display: block; }
+    #sw-root .sw-ac-item {
+      padding: 7px 10px; cursor: pointer; font-size: 0.84rem; display: flex; gap: 6px;
+    }
+    #sw-root .sw-ac-item:hover, #sw-root .sw-ac-item.active { background: var(--sw-tag-bg); }
+    #sw-root .sw-ac-type { font-size: 0.65rem; text-transform: uppercase; color: var(--sw-muted); min-width: 48px; }
+
+    #sw-root .sw-hover-panel {
+      display: none; position: absolute; z-index: 10050; background: var(--sw-paper);
+      border: 1px solid var(--sw-border); border-radius: 10px; box-shadow: 0 10px 28px rgba(0,0,0,0.15);
+      padding: 12px 14px; max-width: 300px; font-size: 0.84rem;
+    }
+    #sw-root .sw-hover-panel.open { display: block; }
+    #sw-root .sw-hover-panel h4 {
+      margin: 0 0 4px; font-family: "EB Garamond", Georgia, serif; font-size: 1.05rem; color: var(--sw-accent);
+    }
+    #sw-root .sw-hp-type { font-size: 0.65rem; text-transform: uppercase; color: var(--sw-muted); margin-bottom: 6px; }
+
+    #sw-root .sw-dict {
+      display: none; position: absolute; z-index: 10060; background: var(--sw-paper);
+      border: 1px solid var(--sw-border); border-radius: 10px; box-shadow: 0 10px 28px rgba(0,0,0,0.15);
+      padding: 10px 12px; max-width: 280px; min-width: 180px; font-size: 0.82rem;
+    }
+    #sw-root .sw-dict.open { display: block; }
+    #sw-root .sw-dict h5 {
+      margin: 0 0 4px; font-size: 0.68rem; text-transform: uppercase; color: var(--sw-muted);
+    }
+    #sw-root .sw-dict-words { display: flex; flex-wrap: wrap; gap: 3px; margin-bottom: 6px; }
+    #sw-root .sw-dict-words button {
+      font-size: 0.75rem; padding: 2px 6px; border-radius: 4px; border: 1px solid var(--sw-border);
+      background: var(--sw-bg); cursor: pointer; color: var(--sw-ink);
+    }
+
+    #sw-root .sw-toast {
+      position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%) translateY(50px);
+      background: var(--sw-accent); color: var(--sw-paper); padding: 7px 14px; border-radius: 6px;
+      font-size: 0.82rem; opacity: 0; transition: all 0.25s; z-index: 10070; pointer-events: none;
+    }
+    #sw-root .sw-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    #sw-root .sw-brainstorm { flex: 1; padding: 12px 16px; overflow-y: auto; }
+    #sw-root .sw-brainstorm textarea {
+      width: 100%; min-height: 260px; border: 1px solid var(--sw-border); border-radius: 8px;
+      padding: 12px; font-family: "EB Garamond", Georgia, serif; font-size: 1.02rem;
+      line-height: 1.65; background: var(--sw-paper); color: var(--sw-ink); resize: vertical;
+    }
+
+    #sw-root .sw-dropdown {
+      position: relative; display: inline-block;
+    }
+    #sw-root .sw-dropdown-menu {
+      display: none; position: absolute; top: 100%; right: 0; margin-top: 4px;
+      background: var(--sw-paper); border: 1px solid var(--sw-border); border-radius: 8px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.12); min-width: 180px; z-index: 100;
+    }
+    #sw-root .sw-dropdown.open .sw-dropdown-menu { display: block; }
+    #sw-root .sw-dropdown-menu button {
+      display: block; width: 100%; text-align: left; border: none; background: none;
+      padding: 8px 12px; font: inherit; font-size: 0.82rem; color: var(--sw-ink); cursor: pointer;
+    }
+    #sw-root .sw-dropdown-menu button:hover { background: var(--sw-hover); }
+
+    #sw-root.sw-focus-mode {
+      position: fixed !important; inset: 0 !important; max-width: none !important;
+      width: 100vw !important; height: 100vh !important; border-radius: 0 !important;
+      z-index: 2147483000 !important; margin: 0 !important; overflow: hidden !important;
+      display: flex !important; flex-direction: column !important;
+    }
+    #sw-root.sw-focus-mode .sw-topbar,
+    #sw-root.sw-focus-mode .sw-tabs,
+    #sw-root.sw-focus-mode .sw-sidebar { display: flex !important; flex-shrink: 0 !important; }
+    #sw-root.sw-focus-mode .sw-body {
+      display: flex !important; flex: 1 1 auto !important; min-height: 0 !important; overflow: hidden !important;
+    }
+    #sw-root .sw-focus-exit {
+      display: none; position: absolute; top: 8px; right: 10px; z-index: 2147483010;
+      background: var(--sw-accent); color: var(--sw-paper); border-color: var(--sw-accent);
+    }
+    #sw-root.sw-focus-mode .sw-focus-exit { display: inline-flex; }
+    #sw-root:fullscreen, #sw-root:-webkit-full-screen {
+      max-width: none !important; width: 100% !important; height: 100% !important;
+      border-radius: 0 !important; overflow: hidden !important;
+      display: flex !important; flex-direction: column !important;
+    }
+    #sw-root:fullscreen .sw-topbar, #sw-root:-webkit-full-screen .sw-topbar,
+    #sw-root:fullscreen .sw-tabs, #sw-root:-webkit-full-screen .sw-tabs {
+      display: flex !important; flex-shrink: 0 !important;
+    }
+    #sw-root:fullscreen .sw-body, #sw-root:-webkit-full-screen .sw-body {
+      display: flex !important; flex: 1 1 auto !important; min-height: 0 !important; overflow: hidden !important;
+    }
+
+
+    #sw-root.sw-typewriter .sw-editor-wrap {
+      padding-top: 28vh;
+      padding-bottom: 45vh;
+      scroll-behavior: auto;
+    }
+    #sw-root.sw-typewriter .sw-editor {
+      min-height: 50vh;
+    }
+    #sw-root .sw-ref-panel {
+      width: 0; overflow: hidden; border-left: none; background: var(--sw-panel);
+      flex-shrink: 0; transition: width 0.15s; display: flex; flex-direction: column;
+    }
+    #sw-root.sw-ref-open .sw-ref-panel {
+      width: 260px; border-left: 1px solid var(--sw-border); overflow: hidden;
+    }
+    #sw-root .sw-ref-panel h3 {
+      margin: 0; padding: 8px 10px; font-size: 0.75rem; border-bottom: 1px solid var(--sw-border);
+    }
+    #sw-root .sw-ref-body {
+      flex: 1; overflow-y: auto; padding: 10px; font-size: 0.84rem;
+    }
+    #sw-root .sw-threads-bar {
+      display: none; flex-wrap: wrap; gap: 6px; padding: 6px 12px;
+      border-bottom: 1px solid var(--sw-border); background: var(--sw-bg); align-items: center;
+    }
+    #sw-root.sw-threads-open .sw-threads-bar { display: flex; }
+    #sw-root .sw-thread-chip {
+      font-size: 0.72rem; padding: 3px 8px; border-radius: 12px;
+      background: var(--sw-paper); border: 1px solid var(--sw-border); color: var(--sw-ink);
+    }
+    #sw-root .sw-thread-chip button {
+      border: none; background: none; color: var(--sw-danger); cursor: pointer; margin-left: 4px;
+    }
+
+    #sw-page {
+      max-width: 1280px; margin: 0 auto; padding: 24px 14px 40px;
+      font-family: "Source Sans 3", system-ui, sans-serif; color: #2c2416;
+    }
+    #sw-page .sw-intro { text-align: center; max-width: 640px; margin: 0 auto 22px; }
+    #sw-page .sw-intro h2 {
+      font-family: "EB Garamond", Georgia, serif; font-weight: 600; font-size: 1.9rem;
+      color: #5c4a32; margin: 0 0 10px;
+    }
+    #sw-page .sw-intro p { margin: 0; font-size: 1.02rem; line-height: 1.6; color: #5a5348; }
+    #sw-page .sw-changelog {
+      max-width: 720px; margin: 28px auto 0; padding: 18px 20px;
+      background: #faf7f0; border: 1px solid #ddd4c4; border-radius: 12px;
+    }
+    #sw-page .sw-changelog h3 {
+      font-family: "EB Garamond", Georgia, serif; font-size: 1.3rem; color: #5c4a32; margin: 0 0 4px;
+    }
+    #sw-page .sw-changelog .sw-ver { font-size: 0.78rem; color: #6b5e4a; margin-bottom: 12px; }
+    #sw-page .sw-changelog h4 {
+      font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; color: #6b5e4a; margin: 14px 0 6px;
+    }
+    #sw-page .sw-changelog ul { margin: 0; padding-left: 1.15em; line-height: 1.5; font-size: 0.9rem; }
+    #sw-page .sw-changelog li { margin-bottom: 5px; }
+    #sw-page .sw-changelog .sw-advice {
+      margin-top: 14px; padding: 10px 12px; background: #ebe4d6; border-radius: 8px;
+      font-size: 0.88rem; line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+<div id="sw-page">
+  <header class="sw-intro">
+    <h2>StoryWriter</h2>
+    <p>A calm studio for indie authors: draft chapters and scenes, keep characters and places beside the page, and export clean files when a chapter is done. Installable as an app. Opens in focus mode; browser fullscreen stays optional. Your work autosaves in this browser.</p>
+  </header>
+
+<div id="sw-root" data-theme="parchment" class="sw-focus-mode">
+  <div class="sw-topbar">
+    <span class="sw-logo">StoryWriter</span>
+    <button type="button" class="sw-btn sw-btn-icon" id="sw-toggle-sidebar" title="Toggle sidebar (Ctrl+B)">☰</button>
+    <div class="sw-top-sep"></div>
+    <button type="button" class="sw-btn sw-btn-icon" id="sw-bold" title="Bold (Ctrl+B)"><b>B</b></button>
+    <button type="button" class="sw-btn sw-btn-icon" id="sw-italic" title="Italic (Ctrl+I)"><i>I</i></button>
+    <button type="button" class="sw-btn sw-btn-icon" id="sw-heading" title="Heading">H</button>
+    <div class="sw-top-sep"></div>
+    <button type="button" class="sw-btn sw-btn-icon" id="sw-font-down" title="Smaller">A−</button>
+    <button type="button" class="sw-btn sw-btn-icon" id="sw-font-up" title="Larger">A+</button>
+    <div class="sw-top-sep"></div>
+    <button type="button" class="sw-btn" id="sw-theme-btn" title="Theme">Theme</button>
+    <button type="button" class="sw-btn" id="sw-search-btn" title="Search (Ctrl+K)">Search</button>
+    <button type="button" class="sw-btn" id="sw-shortcuts-btn" title="Keyboard shortcuts">Keys</button>
+    <div class="sw-top-sep"></div>
+    <button type="button" class="sw-btn sw-btn-icon" id="sw-focus" title="Toggle focus mode (fills the browser)">⛶</button>
+    <button type="button" class="sw-btn sw-btn-icon" id="sw-fullscreen" title="True browser fullscreen (beyond page)">⛶⛶</button>
+    <button type="button" class="sw-btn" id="sw-install-btn" title="Install as app" style="display:none">Install app</button>
+    <div class="sw-top-sep"></div>
+    <div class="sw-dropdown" id="sw-export-dd">
+      <button type="button" class="sw-btn sw-btn-primary" id="sw-export-btn">Export ▾</button>
+      <div class="sw-dropdown-menu">
+        <button type="button" data-export="docx">Manuscript DOCX</button>
+        <button type="button" data-export="txt">Plain text</button>
+        <button type="button" data-export="html">HTML (ebook-ish)</button>
+        <button type="button" data-export="json">Full project JSON</button>
+      </div>
+    </div>
+    <button type="button" class="sw-btn" id="sw-restore-btn">Restore</button>
+    <button type="button" class="sw-btn" id="sw-template-btn">Template</button>
+    <button type="button" class="sw-btn" id="sw-clear-data">Clear</button>
+    <input type="file" id="sw-restore-file" accept=".json,application/json" style="display:none">
+    <div class="sw-goal-wrap" title="Session goal">
+      <span id="sw-goal-label">0/500</span>
+      <div class="sw-goal-bar"><div class="sw-goal-fill" id="sw-goal-fill"></div></div>
+    </div>
+    <span class="sw-wordcount" id="sw-wordcount">0 words</span>
+  </div>
+  <button type="button" class="sw-btn sw-focus-exit" id="sw-focus-exit">✕ Exit focus</button>
+
+  <div class="sw-body">
+    <aside class="sw-sidebar" id="sw-sidebar">
+      <div class="sw-sidebar-inner">
+        <div class="sw-side-tabs">
+          <button type="button" class="active" data-side="chapters">Chapters</button>
+          <button type="button" data-side="outline">Outline</button>
+        </div>
+        <div id="sw-side-chapters">
+          <button type="button" class="sw-btn sw-btn-primary" id="sw-add-chapter" style="width:100%;margin-bottom:6px;">+ Chapter</button>
+          <button type="button" class="sw-btn" id="sw-add-scene" style="width:100%;margin-bottom:8px;">+ Scene</button>
+          <div class="sw-chapter-list" id="sw-chapter-list"></div>
+        </div>
+        <div id="sw-side-outline" style="display:none;">
+          <div class="sw-outline-list" id="sw-outline-list"></div>
+        </div>
+      </div>
+    </aside>
+
+    <div class="sw-main">
+      <div class="sw-tabs" id="sw-tabs">
+        <button type="button" class="sw-tab active" data-tab="story">Story</button>
+        <button type="button" class="sw-tab" data-tab="locations">Locations</button>
+        <button type="button" class="sw-tab" data-tab="characters">Characters</button>
+        <button type="button" class="sw-tab" data-tab="religions">Religions</button>
+        <button type="button" class="sw-tab" data-tab="planets">Planets</button>
+        <button type="button" class="sw-tab" data-tab="brainstorm">Brainstorm</button>
+      </div>
+
+      <div class="sw-panel active" id="sw-panel-story">
+        <div class="sw-story-toolbar">
+          <button type="button" class="sw-btn" id="sw-view-write">Write</button>
+          <button type="button" class="sw-btn" id="sw-view-cork">Corkboard</button>
+          <button type="button" class="sw-btn" id="sw-toggle-comments">Notes</button>
+          <button type="button" class="sw-btn" id="sw-add-comment">+ Note</button>
+          <button type="button" class="sw-btn" id="sw-snapshot-btn">Snapshot</button>
+          <button type="button" class="sw-btn" id="sw-snapshots-list-btn">Snapshots</button>
+          <label class="sw-lbl" style="margin:0 0 0 8px;">Status</label>
+          <select class="sw-sel" id="sw-status-sel" style="width:auto;min-width:90px;">
+            <option value="draft">Draft</option>
+            <option value="revise">Revise</option>
+            <option value="done">Done</option>
+          </select>
+          <button type="button" class="sw-btn" id="sw-goals-btn">Goals</button>
+          <button type="button" class="sw-btn" id="sw-typewriter-btn" title="Typewriter scroll">Typewriter</button>
+          <button type="button" class="sw-btn" id="sw-read-btn" title="Read scene aloud">Read</button>
+          <button type="button" class="sw-btn" id="sw-threads-btn" title="Open threads">Threads</button>
+          <button type="button" class="sw-btn" id="sw-ref-btn" title="Pin reference">Pin ref</button>
+        </div>
+        <div class="sw-threads-bar" id="sw-threads-bar">
+          <button type="button" class="sw-btn" id="sw-thread-add">+ Thread</button>
+          <div id="sw-threads-list" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+        </div>
+        <div style="display:flex;flex:1;min-height:0;">
+          <div style="flex:1;display:flex;flex-direction:column;min-width:0;min-height:0;">
+            <div class="sw-editor-wrap" id="sw-write-view">
+              <input type="text" class="sw-chapter-title-input" id="sw-chapter-title" placeholder="Chapter title…">
+              <input type="text" class="sw-scene-title-input" id="sw-scene-title" placeholder="Scene title…">
+              <input type="text" class="sw-synopsis-input" id="sw-synopsis" placeholder="One-line synopsis (outline & corkboard)…">
+              <div class="sw-editor" id="sw-editor" contenteditable="true" data-placeholder="Begin writing… Type @ to insert a name. Double-click a word for synonyms." spellcheck="true"></div>
+            </div>
+            <div class="sw-corkboard" id="sw-corkboard"></div>
+          </div>
+          <aside class="sw-comments-panel" id="sw-comments-panel">
+            <h3>Scene notes</h3>
+            <div class="sw-comments-list" id="sw-comments-list"></div>
+          </aside>
+          <aside class="sw-ref-panel" id="sw-ref-panel">
+            <h3>Pinned reference</h3>
+            <div class="sw-ref-body" id="sw-ref-body"><p style="color:var(--sw-muted);font-size:0.82rem">Hover an @ tag and click Pin, or use Pin ref.</p></div>
+          </aside>
+        </div>
+      </div>
+
+      <div class="sw-panel" id="sw-panel-locations">
+        <div class="sw-wb-toolbar">
+          <button type="button" class="sw-btn sw-btn-primary" id="sw-loc-add">+ Location</button>
+          <button type="button" class="sw-btn" id="sw-loc-docx">DOCX</button>
+        </div>
+        <div class="sw-wb-list" id="sw-loc-list"></div>
+      </div>
+      <div class="sw-panel" id="sw-panel-characters">
+        <div class="sw-wb-toolbar">
+          <button type="button" class="sw-btn sw-btn-primary" id="sw-char-add">+ Character</button>
+          <button type="button" class="sw-btn" id="sw-char-docx">DOCX</button>
+        </div>
+        <div class="sw-wb-list" id="sw-char-list"></div>
+      </div>
+      <div class="sw-panel" id="sw-panel-religions">
+        <div class="sw-wb-toolbar">
+          <button type="button" class="sw-btn sw-btn-primary" id="sw-rel-add">+ Religion</button>
+          <button type="button" class="sw-btn" id="sw-rel-docx">DOCX</button>
+        </div>
+        <div class="sw-wb-list" id="sw-rel-list"></div>
+      </div>
+      <div class="sw-panel" id="sw-panel-planets">
+        <div class="sw-wb-toolbar">
+          <button type="button" class="sw-btn sw-btn-primary" id="sw-pl-add">+ Planet</button>
+          <button type="button" class="sw-btn" id="sw-pl-docx">DOCX</button>
+        </div>
+        <div class="sw-wb-list" id="sw-pl-list"></div>
+      </div>
+      <div class="sw-panel" id="sw-panel-brainstorm">
+        <div class="sw-wb-toolbar">
+          <button type="button" class="sw-btn" id="sw-brain-docx">DOCX</button>
+        </div>
+        <div class="sw-brainstorm"><textarea id="sw-brainstorm" placeholder="Ideas, threads, questions…"></textarea></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sw-ac" id="sw-ac"></div>
+  <div class="sw-hover-panel" id="sw-hover"></div>
+  <div class="sw-dict" id="sw-dict"></div>
+  <div class="sw-modal-bg" id="sw-modal-bg"><div class="sw-modal" id="sw-modal"></div></div>
+  <div class="sw-toast" id="sw-toast"></div>
+</div>
+
+  <section class="sw-changelog" aria-label="Guide and features">
+    <h3>Quick start</h3>
+    <p class="sw-ver">Version 1.3 · StoryWriter for indie authors</p>
+    <h4>Tips</h4>
+    <ul>
+      <li>Add chapters and scenes from the left sidebar. Drag the handle to reorder scenes.</li>
+      <li>Write a one-line synopsis under the scene title so Outline and Corkboard stay useful.</li>
+      <li>Type <code>@</code> to insert a character, place, planet, or religion. Hover the blue tag for its profile.</li>
+      <li>Use <strong>Notes</strong> for scene reminders that never enter the manuscript.</li>
+      <li>Take a <strong>Snapshot</strong> before a big cut so you can restore later.</li>
+      <li>Set a session goal under <strong>Goals</strong>. The top bar tracks progress.</li>
+      <li>Export often: DOCX for sharing, JSON for a full backup you can Restore later.</li>
+      <li>Cycle <strong>Theme</strong> for parchment, sepia, or dark during long sessions.</li>
+      <li>Opens in <strong>focus mode</strong> (fills the browser). Use ⛶ to toggle. Use ⛶⛶ for true OS fullscreen.</li>
+      <li>On supported browsers, <strong>Install app</strong> adds StoryWriter as a PWA on your device.</li>
+      <li>Hosted on GitHub Pages (HTTPS): open the site as a full page to install. Embeds on other sites will not show the install prompt.</li>
+      <li>Double-click a word for synonyms, antonyms, and rhymes (needs internet).</li>
+      <li>Press <strong>Ctrl/Cmd+K</strong> to search the whole project.</li>
+    </ul>
+    <h4>All features</h4>
+    <ul>
+      <li>Chapters and scenes with drag reorder and status (Draft, Revise, Done)</li>
+      <li>Corkboard view (title, synopsis, status, word count)</li>
+      <li>Outline sidebar (titles + synopsis)</li>
+      <li>Session and draft word goals with progress bar</li>
+      <li>Named snapshots per scene</li>
+      <li>Scene notes (comments outside the prose)</li>
+      <li>@ mentions with hover profiles and last-seen chapter/scene</li>
+      <li>Split reference pane (pin a character or location while writing)</li>
+      <li>Typewriter scrolling and read-aloud</li>
+      <li>Open threads tracker</li>
+      <li>Project-wide search</li>
+      <li>Parchment, sepia, and dark themes</li>
+      <li>Keyboard shortcuts panel</li>
+      <li>Templates: novel, short story, trilogy bible, poetry collection, novella, screenplay-ish scenes</li>
+      <li>Image attach for characters and locations (local)</li>
+      <li>Export: manuscript DOCX, plain text, HTML, full project JSON</li>
+      <li>Restore project from JSON</li>
+      <li>World tabs: locations, characters, religions, planets, brainstorm</li>
+      <li>Focus mode by default (fills the browser) and optional true browser fullscreen</li>
+      <li>Installable PWA (Add to Home Screen / Install app)</li>
+      <li>Autosave in this browser (export JSON for real backups)</li>
+    </ul>
+    <div class="sw-advice">
+      <strong>Backup:</strong> Browser storage has no expiry date, but clearing site data or switching devices can wipe it. After each solid session, use Export → Full project JSON (or DOCX) and keep that file somewhere safe.
+    </div>
+  </section>
+</div>
+
+<script>
+(function () {
+  const ROOT = document.getElementById('sw-root');
+  if (!ROOT) return;
+  const STORAGE_KEY = 'storywriter-v2';
+  const LEGACY_KEY = 'storywriter-v1';
+
+  function uid() { return 'id_' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36); }
+
+  function emptyScene(title) {
+    return { id: uid(), title: title || 'Scene 1', synopsis: '', status: 'draft', content: '', comments: [], snapshots: [] };
+  }
+  function emptyChapter(title, n) {
+    return { id: uid(), title: title || ('Chapter ' + (n || 1)), synopsis: '', status: 'draft', scenes: [emptyScene('Scene 1')] };
+  }
+
+  let state = {
+    version: 2,
+    theme: 'parchment',
+    fontSize: 16,
+    chapters: [emptyChapter('Chapter 1', 1)],
+    activeChapterId: null,
+    activeSceneId: null,
+    locations: [],
+    characters: [],
+    religions: [],
+    planets: [],
+    brainstorm: '',
+    goals: { sessionTarget: 500, sessionBase: 0, draftTarget: 80000 },
+    viewMode: 'write',
+    openThreads: [],
+    pinnedRef: null,
+    typewriter: false
+  };
+  state.activeChapterId = state.chapters[0].id;
+  state.activeSceneId = state.chapters[0].scenes[0].id;
+  state.goals.sessionBase = 0;
+
+  const $ = (s) => ROOT.querySelector(s);
+  const $$ = (s) => Array.from(ROOT.querySelectorAll(s));
+
+  const editor = $('#sw-editor');
+  const chapterTitle = $('#sw-chapter-title');
+  const sceneTitle = $('#sw-scene-title');
+  const synopsisEl = $('#sw-synopsis');
+  const chapterList = $('#sw-chapter-list');
+  const outlineList = $('#sw-outline-list');
+  const wordcountEl = $('#sw-wordcount');
+  const goalLabel = $('#sw-goal-label');
+  const goalFill = $('#sw-goal-fill');
+  const acEl = $('#sw-ac');
+  const hoverEl = $('#sw-hover');
+  const dictEl = $('#sw-dict');
+  const modalBg = $('#sw-modal-bg');
+  const modalEl = $('#sw-modal');
+  const toastEl = $('#sw-toast');
+  const corkboard = $('#sw-corkboard');
+  const writeView = $('#sw-write-view');
+  const statusSel = $('#sw-status-sel');
+
+  function toast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    setTimeout(() => toastEl.classList.remove('show'), 2200);
+  }
+  function escapeHtml(s) {
+    if (!s) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+  function wordCount(html) {
+    const t = (html || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    return t ? t.split(/\s+/).length : 0;
+  }
+  function totalWords() {
+    let n = 0;
+    state.chapters.forEach(ch => ch.scenes.forEach(sc => { n += wordCount(sc.content); }));
+    return n;
+  }
+  function getActiveChapter() {
+    return state.chapters.find(c => c.id === state.activeChapterId) || state.chapters[0];
+  }
+  function getActiveScene() {
+    const ch = getActiveChapter();
+    if (!ch) return null;
+    return ch.scenes.find(s => s.id === state.activeSceneId) || ch.scenes[0];
+  }
+
+  function updateWordcount() {
+    const sc = getActiveScene();
+    const w = sc ? wordCount(sc.content) : 0;
+    const tot = totalWords();
+    wordcountEl.textContent = w + ' words | ' + tot + ' total';
+    const session = Math.max(0, tot - (state.goals.sessionBase || 0));
+    const target = state.goals.sessionTarget || 500;
+    goalLabel.textContent = session + '/' + target;
+    goalFill.style.width = Math.min(100, (session / target) * 100) + '%';
+  }
+
+  function save() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) { toast('Could not save'); }
+  }
+
+  function migrateV1(d) {
+    const chapters = (d.chapters || []).map((ch, i) => ({
+      id: ch.id || uid(),
+      title: ch.title || ('Chapter ' + (i + 1)),
+      synopsis: '',
+      status: 'draft',
+      scenes: [{
+        id: uid(),
+        title: 'Scene 1',
+        synopsis: '',
+        status: 'draft',
+        content: ch.content || '',
+        comments: [],
+        snapshots: []
+      }]
+    }));
+    if (!chapters.length) chapters.push(emptyChapter('Chapter 1', 1));
+    return {
+      version: 2,
+      theme: 'parchment',
+      fontSize: d.fontSize || 16,
+      chapters,
+      activeChapterId: chapters[0].id,
+      activeSceneId: chapters[0].scenes[0].id,
+      locations: d.locations || [],
+      characters: d.characters || [],
+      religions: d.religions || [],
+      planets: d.planets || [],
+      brainstorm: d.brainstorm || '',
+      goals: { sessionTarget: 500, sessionBase: 0, draftTarget: 80000 },
+      viewMode: 'write'
+    };
+  }
+
+  function load() {
+    try {
+      let raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) {
+        const leg = localStorage.getItem(LEGACY_KEY);
+        if (leg) {
+          state = migrateV1(JSON.parse(leg));
+          save();
+          return;
+        }
+        return;
+      }
+      const d = JSON.parse(raw);
+      if (!d.version || d.version < 2) {
+        state = migrateV1(d);
+        return;
+      }
+      state = Object.assign(state, d);
+      if (!state.chapters || !state.chapters.length) state.chapters = [emptyChapter('Chapter 1', 1)];
+      state.chapters.forEach(ch => {
+        if (!ch.scenes || !ch.scenes.length) {
+          ch.scenes = [emptyScene('Scene 1')];
+          if (ch.content) { ch.scenes[0].content = ch.content; delete ch.content; }
+        }
+        ch.scenes.forEach(sc => {
+          if (!sc.comments) sc.comments = [];
+          if (!sc.snapshots) sc.snapshots = [];
+          if (!sc.status) sc.status = 'draft';
+        });
+        if (!ch.status) ch.status = 'draft';
+      });
+      if (!state.goals) state.goals = { sessionTarget: 500, sessionBase: 0, draftTarget: 80000 };
+      if (state.goals.sessionBase == null) state.goals.sessionBase = totalWords();
+      if (!state.chapters.find(c => c.id === state.activeChapterId)) {
+        state.activeChapterId = state.chapters[0].id;
+      }
+      const ch = getActiveChapter();
+      if (!ch.scenes.find(s => s.id === state.activeSceneId)) {
+        state.activeSceneId = ch.scenes[0].id;
+      }
+    } catch (e) {}
+  }
+
+  function applyTheme() {
+    ROOT.setAttribute('data-theme', state.theme || 'parchment');
+  }
+  function applyFontSize() {
+    ROOT.style.setProperty('--sw-font-size', state.fontSize + 'px');
+    editor.style.fontSize = state.fontSize + 'px';
+  }
+
+  // ----- Sidebar -----
+  let dragSceneId = null;
+
+  function renderChapters() {
+    chapterList.innerHTML = '';
+    state.chapters.forEach((ch, ci) => {
+      const block = document.createElement('div');
+      block.className = 'sw-ch-block';
+      const head = document.createElement('div');
+      head.className = 'sw-chapter-item' + (ch.id === state.activeChapterId ? ' active' : '');
+      head.innerHTML = '<span class="sw-status-dot sw-status-' + (ch.status || 'draft') + '"></span>' +
+        '<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + escapeHtml(ch.title) + '</span>' +
+        '<button type="button" class="sw-ch-del" data-id="' + ch.id + '">×</button>';
+      head.addEventListener('click', (e) => {
+        if (e.target.classList.contains('sw-ch-del')) return;
+        switchChapter(ch.id);
+      });
+      block.appendChild(head);
+      ch.scenes.forEach((sc) => {
+        const row = document.createElement('div');
+        row.className = 'sw-scene-item' + (sc.id === state.activeSceneId && ch.id === state.activeChapterId ? ' active' : '');
+        row.draggable = true;
+        row.dataset.sceneId = sc.id;
+        row.dataset.chapterId = ch.id;
+        row.innerHTML = '<span class="sw-drag-handle">⠿</span>' +
+          '<span class="sw-status-dot sw-status-' + (sc.status || 'draft') + '"></span>' +
+          '<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + escapeHtml(sc.title || 'Scene') + '</span>' +
+          '<button type="button" class="sw-sc-del" data-sid="' + sc.id + '" data-cid="' + ch.id + '">×</button>';
+        row.addEventListener('click', (e) => {
+          if (e.target.classList.contains('sw-sc-del')) return;
+          switchScene(ch.id, sc.id);
+        });
+        row.addEventListener('dragstart', () => { dragSceneId = sc.id; row.style.opacity = '0.5'; });
+        row.addEventListener('dragend', () => { row.style.opacity = '1'; dragSceneId = null; });
+        row.addEventListener('dragover', (e) => { e.preventDefault(); });
+        row.addEventListener('drop', (e) => {
+          e.preventDefault();
+          if (!dragSceneId || dragSceneId === sc.id) return;
+          reorderScene(ch.id, dragSceneId, sc.id);
+        });
+        block.appendChild(row);
+      });
+      chapterList.appendChild(block);
+    });
+    chapterList.querySelectorAll('.sw-ch-del').forEach(btn => {
+      btn.addEventListener('click', (e) => { e.stopPropagation(); deleteChapter(btn.dataset.id); });
+    });
+    chapterList.querySelectorAll('.sw-sc-del').forEach(btn => {
+      btn.addEventListener('click', (e) => { e.stopPropagation(); deleteScene(btn.dataset.cid, btn.dataset.sid); });
+    });
+    renderOutline();
+  }
+
+  function renderOutline() {
+    outlineList.innerHTML = '';
+    state.chapters.forEach(ch => {
+      const item = document.createElement('div');
+      item.className = 'sw-outline-item';
+      item.innerHTML = '<div style="flex:1;min-width:0"><strong style="font-size:0.82rem">' + escapeHtml(ch.title) + '</strong>' +
+        '<span class="sw-out-syn">' + escapeHtml(ch.synopsis || (ch.scenes[0] && ch.scenes[0].synopsis) || 'No synopsis') + '</span></div>';
+      item.addEventListener('click', () => switchChapter(ch.id));
+      outlineList.appendChild(item);
+      ch.scenes.forEach(sc => {
+        const s = document.createElement('div');
+        s.className = 'sw-outline-item';
+        s.style.paddingLeft = '16px';
+        s.innerHTML = '<div style="flex:1;min-width:0"><span style="font-size:0.78rem">' + escapeHtml(sc.title) + '</span>' +
+          '<span class="sw-out-syn">' + escapeHtml(sc.synopsis || ' - ') + '</span></div>';
+        s.addEventListener('click', () => switchScene(ch.id, sc.id));
+        outlineList.appendChild(s);
+      });
+    });
+  }
+
+  function reorderScene(chapterId, fromId, toId) {
+    const ch = state.chapters.find(c => c.id === chapterId);
+    if (!ch) return;
+    const fromIdx = ch.scenes.findIndex(s => s.id === fromId);
+    const toIdx = ch.scenes.findIndex(s => s.id === toId);
+    if (fromIdx < 0 || toIdx < 0) return;
+    const [moved] = ch.scenes.splice(fromIdx, 1);
+    ch.scenes.splice(toIdx, 0, moved);
+    renderChapters();
+    save();
+  }
+
+  function saveCurrent() {
+    const ch = getActiveChapter();
+    const sc = getActiveScene();
+    if (!ch || !sc) return;
+    ch.title = chapterTitle.value.trim() || ch.title;
+    ch.synopsis = ch.synopsis; // chapter synopsis via outline - keep scene syn as primary
+    sc.title = sceneTitle.value.trim() || sc.title;
+    sc.synopsis = synopsisEl.value.trim();
+    sc.content = editor.innerHTML;
+    sc.status = statusSel.value || sc.status;
+    ch.status = sc.status; // mirror active scene status to chapter for sidebar dot simplicity
+  }
+
+  function loadIntoEditor() {
+    const ch = getActiveChapter();
+    const sc = getActiveScene();
+    if (!ch || !sc) return;
+    chapterTitle.value = ch.title || '';
+    sceneTitle.value = sc.title || '';
+    synopsisEl.value = sc.synopsis || '';
+    editor.innerHTML = sc.content || '';
+    statusSel.value = sc.status || 'draft';
+    updateWordcount();
+    renderComments();
+    if (state.viewMode === 'cork') renderCorkboard();
+  }
+
+  function switchChapter(id) {
+    saveCurrent();
+    state.activeChapterId = id;
+    const ch = getActiveChapter();
+    state.activeSceneId = ch.scenes[0].id;
+    renderChapters();
+    loadIntoEditor();
+    save();
+  }
+  function switchScene(cid, sid) {
+    saveCurrent();
+    state.activeChapterId = cid;
+    state.activeSceneId = sid;
+    renderChapters();
+    loadIntoEditor();
+    save();
+  }
+  function addChapter() {
+    saveCurrent();
+    const ch = emptyChapter('Chapter ' + (state.chapters.length + 1), state.chapters.length + 1);
+    state.chapters.push(ch);
+    state.activeChapterId = ch.id;
+    state.activeSceneId = ch.scenes[0].id;
+    renderChapters();
+    loadIntoEditor();
+    save();
+    toast('Chapter added');
+  }
+  function addScene() {
+    saveCurrent();
+    const ch = getActiveChapter();
+    const sc = emptyScene('Scene ' + (ch.scenes.length + 1));
+    ch.scenes.push(sc);
+    state.activeSceneId = sc.id;
+    renderChapters();
+    loadIntoEditor();
+    save();
+    toast('Scene added');
+  }
+  async function deleteChapter(id) {
+    if (state.chapters.length <= 1) { toast('Keep at least one chapter'); return; }
+    if (!(await swConfirm('Delete this chapter and all its scenes?'))) return;
+    state.chapters = state.chapters.filter(c => c.id !== id);
+    if (state.activeChapterId === id) {
+      state.activeChapterId = state.chapters[0].id;
+      state.activeSceneId = state.chapters[0].scenes[0].id;
+      loadIntoEditor();
+    }
+    renderChapters();
+    save();
+  }
+  async function deleteScene(cid, sid) {
+    const ch = state.chapters.find(c => c.id === cid);
+    if (!ch || ch.scenes.length <= 1) { toast('Keep at least one scene'); return; }
+    if (!(await swConfirm('Delete this scene?'))) return;
+    ch.scenes = ch.scenes.filter(s => s.id !== sid);
+    if (state.activeSceneId === sid) {
+      state.activeSceneId = ch.scenes[0].id;
+      loadIntoEditor();
+    }
+    renderChapters();
+    save();
+  }
+
+  // ----- Corkboard -----
+  function renderCorkboard() {
+    const ch = getActiveChapter();
+    corkboard.innerHTML = '';
+    (ch ? ch.scenes : []).forEach(sc => {
+      const card = document.createElement('div');
+      card.className = 'sw-cork-card';
+      card.innerHTML = '<h4>' + escapeHtml(sc.title) + '</h4><p>' + escapeHtml(sc.synopsis || 'No synopsis') + '</p>' +
+        '<span class="sw-cork-status">' + escapeHtml(sc.status || 'draft') + ' · ' + wordCount(sc.content) + 'w</span>';
+      card.addEventListener('click', () => {
+        state.viewMode = 'write';
+        setViewMode();
+        switchScene(ch.id, sc.id);
+      });
+      corkboard.appendChild(card);
+    });
+  }
+  function setViewMode() {
+    if (state.viewMode === 'cork') {
+      writeView.style.display = 'none';
+      corkboard.classList.add('active');
+      renderCorkboard();
+    } else {
+      writeView.style.display = '';
+      corkboard.classList.remove('active');
+    }
+  }
+
+  // ----- Comments -----
+  function renderComments() {
+    const sc = getActiveScene();
+    const list = $('#sw-comments-list');
+    if (!sc || !sc.comments.length) {
+      list.innerHTML = '<p style="font-size:0.8rem;color:var(--sw-muted)">No notes on this scene.</p>';
+      return;
+    }
+    list.innerHTML = sc.comments.map(c =>
+      '<div class="sw-comment-item">' + escapeHtml(c.text) +
+      '<div><button type="button" data-id="' + c.id + '">Delete</button></div></div>'
+    ).join('');
+    list.querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        sc.comments = sc.comments.filter(x => x.id !== btn.dataset.id);
+        save(); renderComments();
+      });
+    });
+  }
+  async function addComment() {
+    const text = await swPrompt('Scene note (not inserted into the prose)');
+    if (!text || !text.trim()) return;
+    const sc = getActiveScene();
+    if (!sc) return;
+    sc.comments.push({ id: uid(), text: text.trim() });
+    save();
+    ROOT.classList.add('sw-comments-open');
+    renderComments();
+  }
+
+  // ----- Snapshots -----
+  async function takeSnapshot() {
+    saveCurrent();
+    const sc = getActiveScene();
+    if (!sc) return;
+    const name = await swPrompt('Snapshot name', 'Before edit ' + new Date().toLocaleString());
+    if (!name) return;
+    sc.snapshots.push({ id: uid(), name: name.trim(), content: sc.content, date: new Date().toISOString() });
+    save();
+    toast('Snapshot saved');
+  }
+  function listSnapshots() {
+    const sc = getActiveScene();
+    if (!sc || !sc.snapshots.length) { toast('No snapshots yet'); return; }
+    let html = '<h3>Snapshots</h3>';
+    sc.snapshots.forEach(sn => {
+      html += '<div style="margin-bottom:8px;padding:8px;border:1px solid var(--sw-border);border-radius:6px">' +
+        '<strong>' + escapeHtml(sn.name) + '</strong><br><span style="font-size:0.75rem;color:var(--sw-muted)">' +
+        escapeHtml(sn.date || '') + '</span><div class="sw-modal-actions" style="justify-content:flex-start;margin-top:6px">' +
+        '<button type="button" class="sw-btn sw-btn-restore-sn" data-id="' + sn.id + '">Restore</button>' +
+        '<button type="button" class="sw-btn sw-btn-del-sn" data-id="' + sn.id + '">Delete</button></div></div>';
+    });
+    html += '<div class="sw-modal-actions"><button type="button" class="sw-btn" id="m-cancel">Close</button></div>';
+    openModal(html);
+    $('#m-cancel').onclick = closeModal;
+    $$('.sw-btn-restore-sn').forEach(btn => {
+      btn.onclick = async () => {
+        if (!(await swConfirm('Replace current scene text with this snapshot?'))) return;
+        const sn = sc.snapshots.find(x => x.id === btn.dataset.id);
+        if (sn) { sc.content = sn.content; loadIntoEditor(); save(); closeModal(); toast('Restored'); }
+      };
+    });
+    $$('.sw-btn-del-sn').forEach(btn => {
+      btn.onclick = () => {
+        sc.snapshots = sc.snapshots.filter(x => x.id !== btn.dataset.id);
+        save(); listSnapshots();
+      };
+    });
+  }
+
+  // ----- Tabs -----
+  function switchTab(name) {
+    saveCurrent();
+    $$('.sw-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+    $$('.sw-panel').forEach(p => p.classList.toggle('active', p.id === 'sw-panel-' + name));
+    if (name === 'story') loadIntoEditor();
+    if (name === 'locations') renderLocations();
+    if (name === 'characters') renderCharacters();
+    if (name === 'religions') renderReligions();
+    if (name === 'planets') renderPlanets();
+    if (name === 'brainstorm') $('#sw-brainstorm').value = state.brainstorm || '';
+  }
+
+  function exec(cmd, val) { document.execCommand(cmd, false, val); editor.focus(); onEditorInput(); }
+
+  // ----- @ mentions (same pattern) -----
+  let acIndex = 0, acItems = [];
+  function getMentionables() {
+    const list = [];
+    state.characters.forEach(c => list.push({ type: 'character', id: c.id, name: c.name, data: c }));
+    state.locations.forEach(l => list.push({ type: 'location', id: l.id, name: l.name, data: l }));
+    state.planets.forEach(p => list.push({ type: 'planet', id: p.id, name: p.name, data: p }));
+    state.religions.forEach(r => list.push({ type: 'religion', id: r.id, name: r.name, data: r }));
+    return list.filter(x => x.name);
+  }
+  function showAutocomplete(query, rect) {
+    const q = query.toLowerCase();
+    acItems = getMentionables().filter(x => x.name.toLowerCase().includes(q));
+    if (!acItems.length) { acEl.classList.remove('open'); return; }
+    acIndex = 0;
+    acEl.innerHTML = acItems.map((item, i) =>
+      '<div class="sw-ac-item' + (i === 0 ? ' active' : '') + '" data-i="' + i + '">' +
+      '<span class="sw-ac-type">' + escapeHtml(item.type) + '</span><span>' + escapeHtml(item.name) + '</span></div>'
+    ).join('');
+    const rootRect = ROOT.getBoundingClientRect();
+    acEl.style.left = (rect.left - rootRect.left) + 'px';
+    acEl.style.top = (rect.bottom - rootRect.top + 4) + 'px';
+    acEl.classList.add('open');
+    acEl.querySelectorAll('.sw-ac-item').forEach(el => {
+      el.addEventListener('mousedown', (e) => { e.preventDefault(); insertMention(acItems[+el.dataset.i]); });
+    });
+  }
+  function insertMention(item) {
+    const sel = window.getSelection();
+    if (!sel.rangeCount) return;
+    const range = sel.getRangeAt(0);
+    const node = range.startContainer;
+    if (node.nodeType !== 3) return;
+    const text = node.textContent;
+    let start = range.startOffset - 1;
+    while (start >= 0 && text[start] !== '@') start--;
+    if (start < 0 || text[start] !== '@') return;
+    const before = text.slice(0, start);
+    const after = text.slice(range.startOffset);
+    const span = document.createElement('span');
+    span.className = 'sw-mention';
+    span.dataset.type = item.type;
+    span.dataset.id = item.id;
+    span.textContent = item.name;
+    span.contentEditable = 'false';
+    node.textContent = before;
+    const parent = node.parentNode;
+    const afterNode = document.createTextNode(after || '\u00a0');
+    parent.insertBefore(span, node.nextSibling);
+    parent.insertBefore(afterNode, span.nextSibling);
+    const nr = document.createRange();
+    nr.setStartAfter(afterNode);
+    nr.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(nr);
+    acEl.classList.remove('open');
+    onEditorInput();
+  }
+  function checkAtTrigger() {
+    const sel = window.getSelection();
+    if (!sel.rangeCount || !editor.contains(sel.anchorNode)) { acEl.classList.remove('open'); return; }
+    const range = sel.getRangeAt(0);
+    if (range.startContainer.nodeType !== 3) { acEl.classList.remove('open'); return; }
+    const text = range.startContainer.textContent.slice(0, range.startOffset);
+    const m = text.match(/@([^\s@]*)$/);
+    if (m) showAutocomplete(m[1], range.getBoundingClientRect());
+    else acEl.classList.remove('open');
+  }
+
+  function findEntity(type, id) {
+    if (type === 'character') return state.characters.find(c => c.id === id);
+    if (type === 'location') return state.locations.find(l => l.id === id);
+    if (type === 'planet') return state.planets.find(p => p.id === id);
+    if (type === 'religion') return state.religions.find(r => r.id === id);
+    return null;
+  }
+  let hoverTimer = null;
+  function stripHtml(html) {
+    const d = document.createElement('div');
+    d.innerHTML = html || '';
+    return d.innerText || '';
+  }
+  function findLastSeen(type, id, name) {
+    const needle = (name || '').toLowerCase();
+    if (!needle) return null;
+    for (let ci = state.chapters.length - 1; ci >= 0; ci--) {
+      const ch = state.chapters[ci];
+      for (let si = ch.scenes.length - 1; si >= 0; si--) {
+        const sc = ch.scenes[si];
+        const plain = stripHtml(sc.content).toLowerCase();
+        const htmlc = (sc.content || '').toLowerCase();
+        if (htmlc.indexOf('data-id="' + id + '"') >= 0 || plain.indexOf(needle) >= 0) {
+          return ch.title + ' / ' + sc.title;
+        }
+      }
+    }
+    return null;
+  }
+
+  function showHover(mentionEl) {
+    const data = findEntity(mentionEl.dataset.type, mentionEl.dataset.id);
+    if (!data) { hoverEl.classList.remove('open'); return; }
+    const last = findLastSeen(mentionEl.dataset.type, mentionEl.dataset.id, data.name);
+    let body = '<div class="sw-hp-type">' + escapeHtml(mentionEl.dataset.type) + '</div><h4>' + escapeHtml(data.name) + '</h4>';
+    if (last) body += '<p style="font-size:0.75rem;color:var(--sw-muted)">Last seen: ' + escapeHtml(last) + '</p>';
+    if (data.role) body += '<p style="color:var(--sw-muted)">' + escapeHtml(data.role) + '</p>';
+    if (data.traits) body += '<p>' + escapeHtml(data.traits) + '</p>';
+    if (data.wants) body += '<p><em>Wants:</em> ' + escapeHtml(data.wants) + '</p>';
+    if (data.fears) body += '<p><em>Fears:</em> ' + escapeHtml(data.fears) + '</p>';
+    if (data.kind) body += '<p>' + escapeHtml(data.kind) + '</p>';
+    if (data.description) body += '<p>' + escapeHtml(data.description) + '</p>';
+    if (data.summary) body += '<p>' + escapeHtml(data.summary) + '</p>';
+    body += '<div style="margin-top:8px"><button type="button" class="sw-btn" id="sw-pin-from-hover">Pin ref</button></div>';
+    hoverEl.innerHTML = body;
+    const pinBtn = hoverEl.querySelector('#sw-pin-from-hover');
+    if (pinBtn) {
+      pinBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        pinReference(mentionEl.dataset.type, mentionEl.dataset.id);
+        hoverEl.classList.remove('open');
+      });
+    }
+    const r = mentionEl.getBoundingClientRect();
+    const rootR = ROOT.getBoundingClientRect();
+    hoverEl.classList.add('open');
+    let left = r.left - rootR.left;
+    let top = r.bottom - rootR.top + 6;
+    if (left + 300 > rootR.width) left = rootR.width - 310;
+    hoverEl.style.left = Math.max(4, left) + 'px';
+    hoverEl.style.top = Math.max(4, top) + 'px';
+  }
+  editor.addEventListener('mouseover', (e) => {
+    const m = e.target.closest('.sw-mention');
+    if (!m) return;
+    clearTimeout(hoverTimer);
+    hoverTimer = setTimeout(() => showHover(m), 250);
+  });
+  editor.addEventListener('mouseout', () => {
+    clearTimeout(hoverTimer);
+    hoverTimer = setTimeout(() => hoverEl.classList.remove('open'), 200);
+  });
+
+  let dictRange = null;
+
+  async function showDict(word) {
+    word = (word || '').replace(/[^a-zA-Z'-]/g, '');
+    if (word.length < 2) return;
+
+    // Preserve selection so we can replace the word after the modal opens
+    const sel = window.getSelection();
+    if (sel.rangeCount) {
+      try { dictRange = sel.getRangeAt(0).cloneRange(); } catch (e) { dictRange = null; }
+    }
+
+    openModal(
+      '<h3>Dictionary</h3>' +
+      '<p style="margin:0 0 10px;color:var(--sw-muted);font-size:0.88rem">Word: <strong style="color:var(--sw-ink)">' + escapeHtml(word) + '</strong></p>' +
+      '<div id="m-dict-body"><p style="color:var(--sw-muted)">Looking up…</p></div>' +
+      '<div class="sw-modal-actions"><button type="button" class="sw-btn" id="m-cancel">Close</button></div>'
+    );
+    $('#m-cancel').onclick = closeModal;
+
+    const body = $('#m-dict-body');
+    try {
+      const [syn, ant, rhy, rel] = await Promise.all([
+        fetch('https://api.datamuse.com/words?rel_syn=' + encodeURIComponent(word) + '&max=16').then(r => r.json()),
+        fetch('https://api.datamuse.com/words?rel_ant=' + encodeURIComponent(word) + '&max=10').then(r => r.json()),
+        fetch('https://api.datamuse.com/words?rel_rhy=' + encodeURIComponent(word) + '&max=10').then(r => r.json()),
+        fetch('https://api.datamuse.com/words?ml=' + encodeURIComponent(word) + '&max=12').then(r => r.json())
+      ]);
+
+      function block(title, arr) {
+        if (!arr || !arr.length) return '';
+        let h = '<h4 style="margin:12px 0 6px;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.04em;color:var(--sw-muted)">' + title + '</h4>';
+        h += '<div class="sw-dict-words">';
+        arr.forEach(w => {
+          const term = w.word || w;
+          h += '<button type="button" class="sw-btn" data-w="' + escapeHtml(term) + '" style="margin:2px">' + escapeHtml(term) + '</button>';
+        });
+        h += '</div>';
+        return h;
+      }
+
+      let htmlBody = block('Synonyms', syn) + block('Related', rel) + block('Antonyms', ant) + block('Rhymes', rhy);
+      if (!htmlBody) htmlBody = '<p style="color:var(--sw-muted)">No results for this word.</p>';
+      htmlBody += '<p style="margin-top:12px;font-size:0.78rem;color:var(--sw-muted)">Click a word to replace the selection in your scene.</p>';
+      body.innerHTML = htmlBody;
+
+      body.querySelectorAll('button[data-w]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const replacement = btn.dataset.w;
+          closeModal();
+          editor.focus();
+          const sel2 = window.getSelection();
+          sel2.removeAllRanges();
+          if (dictRange) {
+            try {
+              sel2.addRange(dictRange);
+              document.execCommand('insertText', false, replacement);
+            } catch (e) {
+              // fallback: append at end of selection failure
+              document.execCommand('insertText', false, replacement);
+            }
+          } else {
+            document.execCommand('insertText', false, replacement);
+          }
+          dictRange = null;
+          onEditorInput();
+          toast('Replaced with “' + replacement + '”');
+        });
+      });
+    } catch (e) {
+      body.innerHTML = '<p style="color:var(--sw-muted)">Dictionary could not load. Check your connection and try again.</p>';
+    }
+  }
+
+  editor.addEventListener('dblclick', (e) => {
+    // Let the browser select the word first, then read selection
+    setTimeout(() => {
+      const sel = window.getSelection();
+      if (!sel.rangeCount) return;
+      let word = sel.toString().trim();
+      // If selection is empty or multi-word, try expand from caret
+      if (!word || /\\s/.test(word)) {
+        try {
+          const range = sel.getRangeAt(0);
+          const node = range.startContainer;
+          if (node.nodeType === 3) {
+            const text = node.textContent;
+            let i = range.startOffset;
+            let j = range.startOffset;
+            while (i > 0 && /[a-zA-Z'-]/.test(text[i - 1])) i--;
+            while (j < text.length && /[a-zA-Z'-]/.test(text[j])) j++;
+            word = text.slice(i, j);
+            if (word.length >= 2) {
+              const r = document.createRange();
+              r.setStart(node, i);
+              r.setEnd(node, j);
+              sel.removeAllRanges();
+              sel.addRange(r);
+            }
+          }
+        } catch (err) {}
+      }
+      word = (word || '').trim();
+      if (!word || word.length < 2) return;
+      // Single token only
+      if (/\\s/.test(word)) return;
+      showDict(word);
+    }, 10);
+  });
+
+  function onEditorInput() {
+    saveCurrent();
+    updateWordcount();
+    save();
+    checkAtTrigger();
+    if (state.typewriter) scrollCaretToCenter();
+  }
+  editor.addEventListener('input', onEditorInput);
+  editor.addEventListener('keyup', (e) => {
+    if (state.typewriter && (e.key === 'Enter' || e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key.length === 1)) {
+      requestAnimationFrame(scrollCaretToCenter);
+    }
+  });
+  editor.addEventListener('keyup', (e) => {
+    if (!acEl.classList.contains('open')) return;
+    if (e.key === 'ArrowDown') { e.preventDefault(); acIndex = Math.min(acIndex + 1, acItems.length - 1); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); acIndex = Math.max(acIndex - 1, 0); }
+    else if (e.key === 'Enter' || e.key === 'Tab') {
+      if (acItems[acIndex]) { e.preventDefault(); insertMention(acItems[acIndex]); }
+    } else if (e.key === 'Escape') acEl.classList.remove('open');
+    $$('.sw-ac-item').forEach((el, i) => el.classList.toggle('active', i === acIndex));
+  });
+  [chapterTitle, sceneTitle, synopsisEl].forEach(el => {
+    el.addEventListener('input', () => { saveCurrent(); renderChapters(); save(); });
+  });
+  statusSel.addEventListener('change', () => { saveCurrent(); renderChapters(); save(); });
+
+  function openModal(html) { modalEl.innerHTML = html; modalBg.classList.add('open'); }
+  function closeModal() { modalBg.classList.remove('open'); }
+  modalBg.addEventListener('click', (e) => { if (e.target === modalBg) closeModal(); });
+
+  function swConfirm(message) {
+    return new Promise((resolve) => {
+      openModal('<h3>Confirm</h3><p style="margin:0 0 12px;line-height:1.5">' + escapeHtml(message) + '</p>' +
+        '<div class="sw-modal-actions">' +
+        '<button type="button" class="sw-btn" id="m-no">Cancel</button>' +
+        '<button type="button" class="sw-btn sw-btn-primary" id="m-yes">OK</button></div>');
+      $('#m-no').onclick = () => { closeModal(); resolve(false); };
+      $('#m-yes').onclick = () => { closeModal(); resolve(true); };
+    });
+  }
+  function swPrompt(message, defaultValue) {
+    return new Promise((resolve) => {
+      openModal('<h3>' + escapeHtml(message) + '</h3>' +
+        '<input class="sw-inp" id="m-prompt-input" value="' + escapeHtml(defaultValue || '') + '">' +
+        '<div class="sw-modal-actions">' +
+        '<button type="button" class="sw-btn" id="m-no">Cancel</button>' +
+        '<button type="button" class="sw-btn sw-btn-primary" id="m-yes">OK</button></div>');
+      const inp = $('#m-prompt-input');
+      setTimeout(() => { inp.focus(); inp.select(); }, 30);
+      const done = (val) => { closeModal(); resolve(val); };
+      $('#m-no').onclick = () => done(null);
+      $('#m-yes').onclick = () => done(inp.value);
+      inp.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); done(inp.value); }
+        if (e.key === 'Escape') done(null);
+      });
+    });
+  }
+  function field(label, id, value, type) {
+    if (type === 'textarea') {
+      return '<div style="margin-bottom:8px"><label class="sw-lbl">' + label + '</label><textarea class="sw-ta" id="' + id + '">' + escapeHtml(value || '') + '</textarea></div>';
+    }
+    if (type === 'file') {
+      return '<div style="margin-bottom:8px"><label class="sw-lbl">' + label + '</label><input type="file" accept="image/*" id="' + id + '"></div>';
+    }
+    return '<div style="margin-bottom:8px"><label class="sw-lbl">' + label + '</label><input class="sw-inp" id="' + id + '" value="' + escapeHtml(value || '') + '"></div>';
+  }
+  function detailRow(label, value) {
+    if (!value) return '';
+    return '<div class="sw-detail-row"><strong>' + escapeHtml(label) + '</strong><p>' + escapeHtml(value) + '</p></div>';
+  }
+
+  // World-building CRUD (compressed)
+  const LOC_CHIPS = 'city|village|forest|castle|harbor|desert|mountain pass|ruins|marketplace|palace';
+
+  function renderLocations() {
+    const list = $('#sw-loc-list');
+    if (!state.locations.length) { list.innerHTML = '<p style="color:var(--sw-muted);font-style:italic">No locations yet.</p>'; return; }
+    list.innerHTML = state.locations.map(l =>
+      '<div class="sw-card" data-id="' + l.id + '">' +
+      (l.image ? '<img class="sw-thumb" src="' + l.image + '" alt="">' : '') +
+      '<h4>' + escapeHtml(l.name) + '</h4>' +
+      (l.kind ? '<p>' + escapeHtml(l.kind) + '</p>' : '') +
+      (l.description ? '<p>' + escapeHtml(l.description.slice(0, 120)) + (l.description.length > 120 ? '…' : '') + '</p>' : '') +
+      '<div class="sw-card-actions"><button type="button" class="sw-btn sw-edit" data-id="' + l.id + '">Edit</button>' +
+      '<button type="button" class="sw-btn sw-del" data-id="' + l.id + '">Delete</button></div></div>'
+    ).join('');
+    list.querySelectorAll('.sw-card').forEach(card => {
+      card.addEventListener('click', (e) => {
+        if (e.target.closest('button')) return;
+        showDetail('location', card.dataset.id);
+      });
+    });
+    list.querySelectorAll('.sw-edit').forEach(b => b.addEventListener('click', (e) => { e.stopPropagation(); editLocation(b.dataset.id); }));
+    list.querySelectorAll('.sw-del').forEach(b => b.addEventListener('click', (e) => {
+      e.stopPropagation();
+      swConfirm('Delete this location?').then(ok => { if (!ok) return; state.locations = state.locations.filter(x => x.id !== b.dataset.id); save(); renderLocations(); });
+    }));
+  }
+  function editLocation(id) {
+    const l = id ? state.locations.find(x => x.id === id) : {};
+    openModal('<h3>' + (id ? 'Edit' : 'New') + ' location</h3>' +
+      field('Name', 'm-name', l.name) + field('Type', 'm-kind', l.kind) +
+      '<div class="sw-chips" id="m-chips"></div>' +
+      field('Description', 'm-desc', l.description, 'textarea') +
+      field('Notes', 'm-notes', l.notes, 'textarea') +
+      field('Image', 'm-img', '', 'file') +
+      (l.image ? '<p style="font-size:0.8rem;color:var(--sw-muted)">Image attached</p>' : '') +
+      '<div class="sw-modal-actions"><button type="button" class="sw-btn" id="m-cancel">Cancel</button>' +
+      '<button type="button" class="sw-btn sw-btn-primary" id="m-save">Save</button></div>');
+    LOC_CHIPS.split('|').forEach(p => {
+      const btn = document.createElement('button');
+      btn.type = 'button'; btn.className = 'sw-chip'; btn.textContent = p;
+      btn.onclick = () => { const el = $('#m-kind'); el.value = el.value ? el.value + ', ' + p : p; };
+      $('#m-chips').appendChild(btn);
+    });
+    let imgData = l.image || '';
+    $('#m-img').onchange = (e) => {
+      const f = e.target.files[0];
+      if (!f) return;
+      const reader = new FileReader();
+      reader.onload = () => { imgData = reader.result; };
+      reader.readAsDataURL(f);
+    };
+    $('#m-cancel').onclick = closeModal;
+    $('#m-save').onclick = () => {
+      const name = $('#m-name').value.trim();
+      if (!name) { toast('Name required'); return; }
+      const obj = { id: id || uid(), name, kind: $('#m-kind').value.trim(), description: $('#m-desc').value.trim(), notes: $('#m-notes').value.trim(), image: imgData };
+      if (id) { const i = state.locations.findIndex(x => x.id === id); state.locations[i] = obj; }
+      else state.locations.push(obj);
+      save(); closeModal(); renderLocations(); toast('Saved');
+    };
+  }
+
+  function renderCharacters() {
+    const list = $('#sw-char-list');
+    if (!state.characters.length) { list.innerHTML = '<p style="color:var(--sw-muted);font-style:italic">No characters yet.</p>'; return; }
+    list.innerHTML = state.characters.map(c =>
+      '<div class="sw-card" data-id="' + c.id + '">' +
+      (c.image ? '<img class="sw-thumb" src="' + c.image + '" alt="">' : '') +
+      '<h4>' + escapeHtml(c.name) + '</h4>' +
+      (c.role ? '<p>' + escapeHtml(c.role) + '</p>' : '') +
+      (c.traits ? '<p>' + escapeHtml(c.traits) + '</p>' : '') +
+      '<div class="sw-card-actions"><button type="button" class="sw-btn sw-edit" data-id="' + c.id + '">Edit</button>' +
+      '<button type="button" class="sw-btn sw-del" data-id="' + c.id + '">Delete</button></div></div>'
+    ).join('');
+    list.querySelectorAll('.sw-card').forEach(card => {
+      card.addEventListener('click', (e) => { if (!e.target.closest('button')) showDetail('character', card.dataset.id); });
+    });
+    list.querySelectorAll('.sw-edit').forEach(b => b.addEventListener('click', (e) => { e.stopPropagation(); editCharacter(b.dataset.id); }));
+    list.querySelectorAll('.sw-del').forEach(b => b.addEventListener('click', (e) => {
+      e.stopPropagation();
+      swConfirm('Delete this character?').then(ok => { if (!ok) return; state.characters = state.characters.filter(x => x.id !== b.dataset.id); save(); renderCharacters(); });
+    }));
+  }
+  function editCharacter(id) {
+    const c = id ? state.characters.find(x => x.id === id) : {};
+    openModal('<h3>' + (id ? 'Edit' : 'New') + ' character</h3>' +
+      field('Name', 'm-name', c.name) + field('Role', 'm-role', c.role) + field('Age', 'm-age', c.age) +
+      field('Appearance', 'm-app', c.appearance, 'textarea') + field('Traits', 'm-traits', c.traits, 'textarea') +
+      field('Wants', 'm-wants', c.wants, 'textarea') + field('Fears', 'm-fears', c.fears, 'textarea') +
+      field('Values', 'm-values', c.values, 'textarea') + field('Background', 'm-bg', c.background, 'textarea') +
+      field('Conflict', 'm-conflict', c.conflict, 'textarea') + field('Arc', 'm-arc', c.arc, 'textarea') +
+      field('Notes', 'm-notes', c.notes, 'textarea') + field('Image', 'm-img', '', 'file') +
+      '<div class="sw-modal-actions"><button type="button" class="sw-btn" id="m-cancel">Cancel</button>' +
+      '<button type="button" class="sw-btn sw-btn-primary" id="m-save">Save</button></div>');
+    let imgData = c.image || '';
+    $('#m-img').onchange = (e) => {
+      const f = e.target.files[0];
+      if (!f) return;
+      const reader = new FileReader();
+      reader.onload = () => { imgData = reader.result; };
+      reader.readAsDataURL(f);
+    };
+    $('#m-cancel').onclick = closeModal;
+    $('#m-save').onclick = () => {
+      const name = $('#m-name').value.trim();
+      if (!name) { toast('Name required'); return; }
+      const obj = {
+        id: id || uid(), name, role: $('#m-role').value.trim(), age: $('#m-age').value.trim(),
+        appearance: $('#m-app').value.trim(), traits: $('#m-traits').value.trim(),
+        wants: $('#m-wants').value.trim(), fears: $('#m-fears').value.trim(),
+        values: $('#m-values').value.trim(), background: $('#m-bg').value.trim(),
+        conflict: $('#m-conflict').value.trim(), arc: $('#m-arc').value.trim(),
+        notes: $('#m-notes').value.trim(), image: imgData
+      };
+      if (id) { const i = state.characters.findIndex(x => x.id === id); state.characters[i] = obj; }
+      else state.characters.push(obj);
+      save(); closeModal(); renderCharacters(); toast('Saved');
+    };
+  }
+
+  function renderReligions() {
+    const list = $('#sw-rel-list');
+    if (!state.religions.length) { list.innerHTML = '<p style="color:var(--sw-muted);font-style:italic">No religions yet.</p>'; return; }
+    list.innerHTML = state.religions.map(r =>
+      '<div class="sw-card" data-id="' + r.id + '"><h4>' + escapeHtml(r.name) + '</h4>' +
+      (r.deities ? '<p>' + escapeHtml(r.deities) + '</p>' : '') +
+      '<div class="sw-card-actions"><button type="button" class="sw-btn sw-edit" data-id="' + r.id + '">Edit</button>' +
+      '<button type="button" class="sw-btn sw-del" data-id="' + r.id + '">Delete</button></div></div>'
+    ).join('');
+    list.querySelectorAll('.sw-card').forEach(card => {
+      card.addEventListener('click', (e) => { if (!e.target.closest('button')) showDetail('religion', card.dataset.id); });
+    });
+    list.querySelectorAll('.sw-edit').forEach(b => b.addEventListener('click', (e) => { e.stopPropagation(); editReligion(b.dataset.id); }));
+    list.querySelectorAll('.sw-del').forEach(b => b.addEventListener('click', (e) => {
+      e.stopPropagation();
+      swConfirm('Delete this religion?').then(ok => { if (!ok) return; state.religions = state.religions.filter(x => x.id !== b.dataset.id); save(); renderReligions(); });
+    }));
+  }
+  function editReligion(id) {
+    const r = id ? state.religions.find(x => x.id === id) : {};
+    openModal('<h3>' + (id ? 'Edit' : 'New') + ' religion</h3>' +
+      field('Name', 'm-name', r.name) + field('Summary', 'm-summary', r.summary, 'textarea') +
+      field('Deities', 'm-deities', r.deities) + field('Sacred text', 'm-text', r.sacredText) +
+      field('Beliefs', 'm-beliefs', r.beliefs, 'textarea') + field('Practices', 'm-practices', r.practices, 'textarea') +
+      field('Notes', 'm-notes', r.notes, 'textarea') +
+      '<div class="sw-modal-actions"><button type="button" class="sw-btn" id="m-cancel">Cancel</button>' +
+      '<button type="button" class="sw-btn sw-btn-primary" id="m-save">Save</button></div>');
+    $('#m-cancel').onclick = closeModal;
+    $('#m-save').onclick = () => {
+      const name = $('#m-name').value.trim();
+      if (!name) { toast('Name required'); return; }
+      const obj = {
+        id: id || uid(), name, summary: $('#m-summary').value.trim(), deities: $('#m-deities').value.trim(),
+        sacredText: $('#m-text').value.trim(), beliefs: $('#m-beliefs').value.trim(),
+        practices: $('#m-practices').value.trim(), notes: $('#m-notes').value.trim()
+      };
+      if (id) { const i = state.religions.findIndex(x => x.id === id); state.religions[i] = obj; }
+      else state.religions.push(obj);
+      save(); closeModal(); renderReligions(); toast('Saved');
+    };
+  }
+
+  function renderPlanets() {
+    const list = $('#sw-pl-list');
+    if (!state.planets.length) { list.innerHTML = '<p style="color:var(--sw-muted);font-style:italic">No planets yet.</p>'; return; }
+    list.innerHTML = state.planets.map(p =>
+      '<div class="sw-card" data-id="' + p.id + '"><h4>' + escapeHtml(p.name) + '</h4>' +
+      (p.star ? '<p>Star: ' + escapeHtml(p.star) + '</p>' : '') +
+      '<div class="sw-card-actions"><button type="button" class="sw-btn sw-edit" data-id="' + p.id + '">Edit</button>' +
+      '<button type="button" class="sw-btn sw-del" data-id="' + p.id + '">Delete</button></div></div>'
+    ).join('');
+    list.querySelectorAll('.sw-card').forEach(card => {
+      card.addEventListener('click', (e) => { if (!e.target.closest('button')) showDetail('planet', card.dataset.id); });
+    });
+    list.querySelectorAll('.sw-edit').forEach(b => b.addEventListener('click', (e) => { e.stopPropagation(); editPlanet(b.dataset.id); }));
+    list.querySelectorAll('.sw-del').forEach(b => b.addEventListener('click', (e) => {
+      e.stopPropagation();
+      swConfirm('Delete this planet?').then(ok => { if (!ok) return; state.planets = state.planets.filter(x => x.id !== b.dataset.id); save(); renderPlanets(); });
+    }));
+  }
+  function editPlanet(id) {
+    const p = id ? state.planets.find(x => x.id === id) : {};
+    openModal('<h3>' + (id ? 'Edit' : 'New') + ' planet</h3>' +
+      field('Name', 'm-name', p.name) + field('Summary', 'm-summary', p.summary, 'textarea') +
+      field('Star', 'm-star', p.star) + field('Climate', 'm-climate', p.climate) +
+      field('Size', 'm-size', p.size) + field('Notes', 'm-notes', p.notes, 'textarea') +
+      '<div class="sw-modal-actions"><button type="button" class="sw-btn" id="m-cancel">Cancel</button>' +
+      '<button type="button" class="sw-btn sw-btn-primary" id="m-save">Save</button></div>');
+    $('#m-cancel').onclick = closeModal;
+    $('#m-save').onclick = () => {
+      const name = $('#m-name').value.trim();
+      if (!name) { toast('Name required'); return; }
+      const obj = {
+        id: id || uid(), name, summary: $('#m-summary').value.trim(), star: $('#m-star').value.trim(),
+        climate: $('#m-climate').value.trim(), size: $('#m-size').value.trim(), notes: $('#m-notes').value.trim()
+      };
+      if (id) { const i = state.planets.findIndex(x => x.id === id); state.planets[i] = obj; }
+      else state.planets.push(obj);
+      save(); closeModal(); renderPlanets(); toast('Saved');
+    };
+  }
+
+  function showDetail(kind, id) {
+    let data, title, body, editFn;
+    if (kind === 'character') {
+      data = state.characters.find(x => x.id === id); if (!data) return;
+      title = data.name;
+      body = '<div class="sw-hp-type">Character</div><div class="sw-detail-grid">' +
+        (data.image ? '<img src="' + data.image + '" style="max-width:100%;border-radius:8px;margin-bottom:8px">' : '') +
+        detailRow('Role', data.role) + detailRow('Age', data.age) + detailRow('Appearance', data.appearance) +
+        detailRow('Traits', data.traits) + detailRow('Wants', data.wants) + detailRow('Fears', data.fears) +
+        detailRow('Values', data.values) + detailRow('Background', data.background) +
+        detailRow('Conflict', data.conflict) + detailRow('Arc', data.arc) + detailRow('Notes', data.notes) + '</div>';
+      editFn = () => editCharacter(id);
+    } else if (kind === 'location') {
+      data = state.locations.find(x => x.id === id); if (!data) return;
+      title = data.name;
+      body = '<div class="sw-hp-type">Location</div><div class="sw-detail-grid">' +
+        (data.image ? '<img src="' + data.image + '" style="max-width:100%;border-radius:8px;margin-bottom:8px">' : '') +
+        detailRow('Type', data.kind) + detailRow('Description', data.description) + detailRow('Notes', data.notes) + '</div>';
+      editFn = () => editLocation(id);
+    } else if (kind === 'religion') {
+      data = state.religions.find(x => x.id === id); if (!data) return;
+      title = data.name;
+      body = '<div class="sw-hp-type">Religion</div><div class="sw-detail-grid">' +
+        detailRow('Summary', data.summary) + detailRow('Deities', data.deities) + detailRow('Sacred text', data.sacredText) +
+        detailRow('Beliefs', data.beliefs) + detailRow('Practices', data.practices) + detailRow('Notes', data.notes) + '</div>';
+      editFn = () => editReligion(id);
+    } else if (kind === 'planet') {
+      data = state.planets.find(x => x.id === id); if (!data) return;
+      title = data.name;
+      body = '<div class="sw-hp-type">Planet</div><div class="sw-detail-grid">' +
+        detailRow('Summary', data.summary) + detailRow('Star', data.star) + detailRow('Climate', data.climate) +
+        detailRow('Size', data.size) + detailRow('Notes', data.notes) + '</div>';
+      editFn = () => editPlanet(id);
+    } else return;
+    openModal('<h3>' + escapeHtml(title) + '</h3>' + body +
+      '<div class="sw-modal-actions"><button type="button" class="sw-btn" id="m-cancel">Close</button>' +
+      '<button type="button" class="sw-btn sw-btn-primary" id="m-edit">Edit</button></div>');
+    $('#m-cancel').onclick = closeModal;
+    $('#m-edit').onclick = () => { closeModal(); editFn(); };
+  }
+
+  // ----- Export -----
+  function htmlToPlain(html) {
+    const d = document.createElement('div');
+    d.innerHTML = html || '';
+    return d.innerText || '';
+  }
+  function manuscriptPlain() {
+    let t = '';
+    state.chapters.forEach(ch => {
+      t += '\n\n' + ch.title + '\n' + '='.repeat(Math.min(40, ch.title.length)) + '\n';
+      ch.scenes.forEach(sc => {
+        t += '\n' + sc.title + '\n\n' + htmlToPlain(sc.content) + '\n';
+      });
+    });
+    return t.trim();
+  }
+  function manuscriptHtml() {
+    let h = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Manuscript</title>' +
+      '<style>body{font-family:Georgia,serif;max-width:40em;margin:2em auto;line-height:1.6;padding:0 1em}h1{font-size:1.6em}h2{font-size:1.25em;margin-top:1.5em}</style></head><body>';
+    state.chapters.forEach(ch => {
+      h += '<h1>' + escapeHtml(ch.title) + '</h1>';
+      ch.scenes.forEach(sc => {
+        h += '<h2>' + escapeHtml(sc.title) + '</h2>';
+        const plain = htmlToPlain(sc.content).split(/\n/).map(l => '<p>' + escapeHtml(l || ' ') + '</p>').join('');
+        h += plain;
+      });
+    });
+    return h + '</body></html>';
+  }
+  async function exportDocx() {
+    if (!window.docx) { toast('DOCX library not loaded'); return; }
+    const { Document, Packer, Paragraph, TextRun, PageBreak } = window.docx;
+    const children = [];
+    state.chapters.forEach((ch, i) => {
+      if (i > 0) children.push(new Paragraph({ children: [new PageBreak()] }));
+      children.push(new Paragraph({
+        spacing: { after: 200 },
+        children: [new TextRun({ text: ch.title, bold: true, font: 'Georgia', size: 36 })]
+      }));
+      ch.scenes.forEach(sc => {
+        children.push(new Paragraph({
+          spacing: { before: 240, after: 120 },
+          children: [new TextRun({ text: sc.title, bold: true, font: 'Georgia', size: 28 })]
+        }));
+        htmlToPlain(sc.content).split(/\n/).forEach(line => {
+          children.push(new Paragraph({
+            spacing: { after: 100 },
+            children: [new TextRun({ text: line || ' ', font: 'Georgia', size: 24 })]
+          }));
+        });
+      });
+    });
+    const doc = new Document({ sections: [{ children }] });
+    const blob = await Packer.toBlob(doc);
+    saveAs(blob, 'manuscript.docx');
+    toast('DOCX downloaded');
+  }
+  function exportTxt() {
+    const blob = new Blob([manuscriptPlain()], { type: 'text/plain;charset=utf-8' });
+    saveAs(blob, 'manuscript.txt');
+    toast('Text downloaded');
+  }
+  function exportHtml() {
+    const blob = new Blob([manuscriptHtml()], { type: 'text/html;charset=utf-8' });
+    saveAs(blob, 'manuscript.html');
+    toast('HTML downloaded');
+  }
+  function exportJson() {
+    saveCurrent();
+    const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+    saveAs(blob, 'storywriter-project.json');
+    toast('Project JSON downloaded');
+  }
+
+  async function saveListDocx(title, items, fields, filename) {
+    if (!items.length) { toast('Nothing to export'); return; }
+    if (!window.docx) { toast('DOCX library not loaded'); return; }
+    const { Document, Packer, Paragraph, TextRun } = window.docx;
+    const children = [new Paragraph({ children: [new TextRun({ text: title, bold: true, size: 36, font: 'Georgia' })] })];
+    items.forEach(item => {
+      children.push(new Paragraph({ spacing: { before: 280 }, children: [new TextRun({ text: item.name || 'Untitled', bold: true, size: 28, font: 'Georgia' })] }));
+      fields.forEach(([label, key]) => {
+        if (item[key]) children.push(new Paragraph({ children: [new TextRun({ text: label + ': ' + item[key], size: 22, font: 'Georgia' })] }));
+      });
+    });
+    const doc = new Document({ sections: [{ children }] });
+    saveAs(await Packer.toBlob(doc), filename);
+    toast('Downloaded');
+  }
+
+  // ----- Search -----
+  function openSearch() {
+    openModal('<h3>Search project</h3><input class="sw-inp" id="m-search" placeholder="Find in manuscript, characters, locations…">' +
+      '<div id="m-search-results" style="margin-top:12px;max-height:280px;overflow:auto"></div>' +
+      '<div class="sw-modal-actions"><button type="button" class="sw-btn" id="m-cancel">Close</button></div>');
+    $('#m-cancel').onclick = closeModal;
+    const run = () => {
+      const q = ($('#m-search').value || '').trim().toLowerCase();
+      const box = $('#m-search-results');
+      if (!q) { box.innerHTML = ''; return; }
+      const hits = [];
+      state.chapters.forEach(ch => ch.scenes.forEach(sc => {
+        if ((sc.title + ' ' + sc.synopsis + ' ' + htmlToPlain(sc.content)).toLowerCase().includes(q)) {
+          hits.push({ type: 'Scene', label: ch.title + ' / ' + sc.title, go: () => { closeModal(); switchTab('story'); switchScene(ch.id, sc.id); } });
+        }
+      }));
+      state.characters.forEach(c => {
+        if (JSON.stringify(c).toLowerCase().includes(q)) hits.push({ type: 'Character', label: c.name, go: () => { closeModal(); switchTab('characters'); showDetail('character', c.id); } });
+      });
+      state.locations.forEach(l => {
+        if (JSON.stringify(l).toLowerCase().includes(q)) hits.push({ type: 'Location', label: l.name, go: () => { closeModal(); switchTab('locations'); showDetail('location', l.id); } });
+      });
+      if (!hits.length) { box.innerHTML = '<p style="color:var(--sw-muted)">No matches</p>'; return; }
+      box.innerHTML = hits.map((h, i) =>
+        '<button type="button" class="sw-btn" data-i="' + i + '" style="display:block;width:100%;text-align:left;margin-bottom:4px">' +
+        '<span style="color:var(--sw-muted);font-size:0.7rem">' + escapeHtml(h.type) + '</span> ' + escapeHtml(h.label) + '</button>'
+      ).join('');
+      box.querySelectorAll('button').forEach(btn => btn.onclick = () => hits[+btn.dataset.i].go());
+    };
+    $('#m-search').oninput = run;
+    $('#m-search').focus();
+  }
+
+  function openShortcuts() {
+    openModal('<h3>Keyboard shortcuts</h3>' +
+      '<div class="sw-detail-grid">' +
+      detailRow('Bold', 'Ctrl/Cmd + B') +
+      detailRow('Italic', 'Ctrl/Cmd + I') +
+      detailRow('Search', 'Ctrl/Cmd + K') +
+      detailRow('Toggle sidebar', 'Ctrl/Cmd + \\') +
+      detailRow('Save reminder', 'Export often  -  browser storage is not a vault') +
+      detailRow('Insert entity', 'Type @ then a name') +
+      detailRow('Dictionary', 'Double-click a word') +
+      '</div><div class="sw-modal-actions"><button type="button" class="sw-btn" id="m-cancel">Close</button></div>');
+    $('#m-cancel').onclick = closeModal;
+  }
+
+  function openGoals() {
+    openModal('<h3>Word goals</h3>' +
+      field('Session target', 'm-session', String(state.goals.sessionTarget || 500)) +
+      field('Draft target (whole manuscript)', 'm-draft', String(state.goals.draftTarget || 80000)) +
+      '<p style="font-size:0.82rem;color:var(--sw-muted)">Session count starts from when you last reset or loaded the project.</p>' +
+      '<div class="sw-modal-actions">' +
+      '<button type="button" class="sw-btn" id="m-reset-session">Reset session count</button>' +
+      '<button type="button" class="sw-btn" id="m-cancel">Cancel</button>' +
+      '<button type="button" class="sw-btn sw-btn-primary" id="m-save">Save</button></div>');
+    $('#m-cancel').onclick = closeModal;
+    $('#m-reset-session').onclick = () => {
+      state.goals.sessionBase = totalWords();
+      save(); updateWordcount(); toast('Session reset');
+    };
+    $('#m-save').onclick = () => {
+      state.goals.sessionTarget = parseInt($('#m-session').value, 10) || 500;
+      state.goals.draftTarget = parseInt($('#m-draft').value, 10) || 80000;
+      save(); updateWordcount(); closeModal(); toast('Goals saved');
+    };
+  }
+
+  function openTemplates() {
+    openModal('<h3>New project template</h3>' +
+      '<p style="font-size:0.88rem;color:var(--sw-muted);margin-bottom:12px">Replaces the current project after confirmation. Export JSON first if you need a backup.</p>' +
+      '<div class="sw-modal-actions" style="justify-content:stretch;flex-direction:column;align-items:stretch">' +
+      '<button type="button" class="sw-btn" data-tpl="novel">Novel (10 chapters, 2 scenes each)</button>' +
+      '<button type="button" class="sw-btn" data-tpl="novella">Novella (6 chapters)</button>' +
+      '<button type="button" class="sw-btn" data-tpl="short">Short story (opening, turn, ending)</button>' +
+      '<button type="button" class="sw-btn" data-tpl="trilogy">Trilogy bible (3 books + shared cast slots)</button>' +
+      '<button type="button" class="sw-btn" data-tpl="poetry">Poetry collection (12 poem slots)</button>' +
+      '<button type="button" class="sw-btn" data-tpl="scenes">Scene workshop (8 untitled scenes)</button>' +
+      '<button type="button" class="sw-btn" data-tpl="blank">Blank project</button>' +
+      '<button type="button" class="sw-btn" id="m-cancel">Cancel</button></div>');
+    $('#m-cancel').onclick = closeModal;
+    $$('[data-tpl]').forEach(btn => {
+      btn.onclick = async () => {
+        if (!(await swConfirm('Replace current project with this template?'))) return;
+        applyTemplate(btn.dataset.tpl);
+        closeModal();
+      };
+    });
+  }
+  function applyTemplate(tpl) {
+    state.locations = state.locations || [];
+    state.characters = state.characters || [];
+    if (tpl === 'novel') {
+      state.chapters = [];
+      for (let i = 1; i <= 10; i++) {
+        const ch = emptyChapter('Chapter ' + i, i);
+        ch.synopsis = 'What changes in this chapter?';
+        ch.scenes = [emptyScene('Scene 1'), emptyScene('Scene 2')];
+        ch.scenes[0].synopsis = 'Opening beat';
+        ch.scenes[1].synopsis = 'Closing beat';
+        state.chapters.push(ch);
+      }
+    } else if (tpl === 'novella') {
+      state.chapters = [];
+      for (let i = 1; i <= 6; i++) {
+        const ch = emptyChapter('Chapter ' + i, i);
+        ch.scenes = [emptyScene('Scene 1')];
+        state.chapters.push(ch);
+      }
+    } else if (tpl === 'short') {
+      const ch = emptyChapter('Short story', 1);
+      ch.synopsis = 'One-sentence story promise';
+      ch.scenes = [
+        Object.assign(emptyScene('Opening'), { synopsis: 'World and want' }),
+        Object.assign(emptyScene('Turn'), { synopsis: 'Complication' }),
+        Object.assign(emptyScene('Ending'), { synopsis: 'Cost or change' })
+      ];
+      state.chapters = [ch];
+    } else if (tpl === 'trilogy') {
+      state.chapters = [
+        Object.assign(emptyChapter('Book 1 - Outline', 1), { synopsis: 'Book 1 arc' }),
+        Object.assign(emptyChapter('Book 2 - Outline', 2), { synopsis: 'Book 2 arc' }),
+        Object.assign(emptyChapter('Book 3 - Outline', 3), { synopsis: 'Book 3 arc' })
+      ];
+      state.characters = [
+        { id: uid(), name: 'Protagonist', role: 'Lead', age: '', appearance: '', traits: '', wants: '', fears: '', values: '', background: '', conflict: '', arc: 'Arc across three books', notes: '', image: '' },
+        { id: uid(), name: 'Antagonist', role: 'Opposition', age: '', appearance: '', traits: '', wants: '', fears: '', values: '', background: '', conflict: '', arc: '', notes: '', image: '' }
+      ];
+      state.locations = [
+        { id: uid(), name: 'Home region', kind: 'region', description: '', notes: 'Shared across the trilogy', image: '' }
+      ];
+    } else if (tpl === 'poetry') {
+      state.chapters = [];
+      for (let i = 1; i <= 12; i++) {
+        const ch = emptyChapter('Poem ' + i, i);
+        ch.synopsis = 'Theme or first line';
+        ch.scenes = [Object.assign(emptyScene('Draft'), { synopsis: 'Working draft' })];
+        state.chapters.push(ch);
+      }
+    } else if (tpl === 'scenes') {
+      const ch = emptyChapter('Workshop', 1);
+      ch.synopsis = 'Loose scene practice';
+      ch.scenes = [];
+      for (let i = 1; i <= 8; i++) ch.scenes.push(emptyScene('Scene ' + i));
+      state.chapters = [ch];
+    } else {
+      state.chapters = [emptyChapter('Chapter 1', 1)];
+      state.characters = [];
+      state.locations = [];
+      state.religions = [];
+      state.planets = [];
+      state.brainstorm = '';
+    }
+    state.activeChapterId = state.chapters[0].id;
+    state.activeSceneId = state.chapters[0].scenes[0].id;
+    state.goals.sessionBase = 0;
+    state.openThreads = state.openThreads || [];
+    renderChapters();
+    loadIntoEditor();
+    save();
+    toast('Template applied');
+  }
+
+  function cycleTheme() {
+    const order = ['parchment', 'sepia', 'dark'];
+    const i = order.indexOf(state.theme);
+    state.theme = order[(i + 1) % order.length];
+    applyTheme();
+    save();
+    toast('Theme: ' + state.theme);
+  }
+
+
+  function pinReference(type, id) {
+    const data = findEntity(type, id);
+    if (!data) {
+      // prompt pick
+      const all = getMentionables();
+      if (!all.length) { toast('Add a character or location first'); return; }
+      openModal('<h3>Pin reference</h3>' +
+        all.map((x, i) => '<button type="button" class="sw-btn" data-i="' + i + '" style="display:block;width:100%;margin-bottom:4px;text-align:left">' +
+          escapeHtml(x.type) + ': ' + escapeHtml(x.name) + '</button>').join('') +
+        '<div class="sw-modal-actions"><button type="button" class="sw-btn" id="m-cancel">Cancel</button></div>');
+      $('#m-cancel').onclick = closeModal;
+      $$('#sw-modal [data-i]').forEach(btn => {
+        btn.onclick = () => {
+          const item = all[+btn.dataset.i];
+          closeModal();
+          pinReference(item.type, item.id);
+        };
+      });
+      return;
+    }
+    state.pinnedRef = { type, id };
+    ROOT.classList.add('sw-ref-open');
+    renderPinnedRef();
+    save();
+  }
+  function renderPinnedRef() {
+    const body = $('#sw-ref-body');
+    if (!state.pinnedRef) {
+      body.innerHTML = '<p style="color:var(--sw-muted);font-size:0.82rem">Nothing pinned.</p>';
+      return;
+    }
+    const data = findEntity(state.pinnedRef.type, state.pinnedRef.id);
+    if (!data) {
+      body.innerHTML = '<p style="color:var(--sw-muted)">Missing entity</p>';
+      return;
+    }
+    const last = findLastSeen(state.pinnedRef.type, state.pinnedRef.id, data.name);
+    let html = '<h4 style="margin:0 0 6px;font-family:EB Garamond,Georgia,serif">' + escapeHtml(data.name) + '</h4>';
+    html += '<p style="font-size:0.72rem;color:var(--sw-muted);text-transform:uppercase">' + escapeHtml(state.pinnedRef.type) + '</p>';
+    if (last) html += '<p style="font-size:0.78rem;color:var(--sw-muted)">Last seen: ' + escapeHtml(last) + '</p>';
+    if (data.image) html += '<img src="' + data.image + '" style="max-width:100%;border-radius:6px;margin:6px 0">';
+    ['role','traits','wants','fears','arc','kind','description','summary','notes'].forEach(k => {
+      if (data[k]) html += '<p style="margin:6px 0"><strong style="font-size:0.68rem;text-transform:uppercase;color:var(--sw-muted)">' + k + '</strong><br>' + escapeHtml(data[k]) + '</p>';
+    });
+    html += '<button type="button" class="sw-btn" id="sw-unpin" style="margin-top:8px">Unpin</button>';
+    body.innerHTML = html;
+    const u = body.querySelector('#sw-unpin');
+    if (u) u.onclick = () => {
+      state.pinnedRef = null;
+      ROOT.classList.remove('sw-ref-open');
+      save();
+    };
+  }
+
+  function renderThreads() {
+    const list = $('#sw-threads-list');
+    if (!state.openThreads) state.openThreads = [];
+    list.innerHTML = state.openThreads.map((t, i) =>
+      '<span class="sw-thread-chip">' + escapeHtml(t) +
+      '<button type="button" data-i="' + i + '" title="Resolve">×</button></span>'
+    ).join('');
+    list.querySelectorAll('button').forEach(btn => {
+      btn.onclick = () => {
+        state.openThreads.splice(+btn.dataset.i, 1);
+        save(); renderThreads();
+      };
+    });
+  }
+
+  async function addThread() {
+    const t = await swPrompt('Open thread (mystery, promise, or unanswered question)');
+    if (!t || !t.trim()) return;
+    if (!state.openThreads) state.openThreads = [];
+    state.openThreads.push(t.trim());
+    ROOT.classList.add('sw-threads-open');
+    save(); renderThreads();
+  }
+
+  function scrollCaretToCenter() {
+    if (!state.typewriter) return;
+    const wrap = writeView;
+    if (!wrap) return;
+    const sel = window.getSelection();
+    if (!sel.rangeCount || !editor.contains(sel.anchorNode)) return;
+    try {
+      const range = sel.getRangeAt(0).cloneRange();
+      range.collapse(true);
+      const rects = range.getClientRects();
+      let caretTop;
+      if (rects.length) {
+        caretTop = rects[0].top;
+      } else {
+        const marker = document.createElement('span');
+        marker.textContent = '\u200b';
+        range.insertNode(marker);
+        caretTop = marker.getBoundingClientRect().top;
+        marker.parentNode.removeChild(marker);
+      }
+      const wrapRect = wrap.getBoundingClientRect();
+      const offsetWithin = caretTop - wrapRect.top + wrap.scrollTop;
+      const target = offsetWithin - wrap.clientHeight / 2;
+      wrap.scrollTop = Math.max(0, target);
+    } catch (e) {}
+  }
+
+  function toggleTypewriter() {
+    state.typewriter = !state.typewriter;
+    ROOT.classList.toggle('sw-typewriter', state.typewriter);
+    save();
+    if (state.typewriter) {
+      setTimeout(scrollCaretToCenter, 40);
+      toast('Typewriter on');
+    } else {
+      toast('Typewriter off');
+    }
+  }
+
+  let isReading = false;
+  function updateReadBtn() {
+    const btn = $('#sw-read-btn');
+    if (!btn) return;
+    btn.textContent = isReading ? 'Stop' : 'Read';
+    btn.title = isReading ? 'Stop reading' : 'Read scene aloud';
+  }
+  function stopReading() {
+    if (window.speechSynthesis) window.speechSynthesis.cancel();
+    isReading = false;
+    updateReadBtn();
+  }
+  function readAloud() {
+    if (!window.speechSynthesis) { toast('Speech not supported'); return; }
+    if (isReading) {
+      stopReading();
+      toast('Stopped');
+      return;
+    }
+    const text = stripHtml(editor.innerHTML);
+    if (!text.trim()) { toast('Nothing to read'); return; }
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text.slice(0, 12000));
+    u.rate = 1;
+    u.onend = () => { isReading = false; updateReadBtn(); };
+    u.onerror = () => { isReading = false; updateReadBtn(); };
+    isReading = true;
+    updateReadBtn();
+    window.speechSynthesis.speak(u);
+    toast('Reading… (click Stop to end)');
+  }
+
+
+  // ----- Wire UI -----
+  $('#sw-toggle-sidebar').onclick = () => ROOT.classList.toggle('sw-sidebar-collapsed');
+  $('#sw-add-chapter').onclick = addChapter;
+  $('#sw-add-scene').onclick = addScene;
+  $('#sw-bold').onclick = () => exec('bold');
+  $('#sw-italic').onclick = () => exec('italic');
+  $('#sw-heading').onclick = () => exec('formatBlock', 'h3');
+  $('#sw-font-down').onclick = () => { state.fontSize = Math.max(12, state.fontSize - 2); applyFontSize(); save(); };
+  $('#sw-font-up').onclick = () => { state.fontSize = Math.min(28, state.fontSize + 2); applyFontSize(); save(); };
+  $('#sw-theme-btn').onclick = cycleTheme;
+  $('#sw-search-btn').onclick = openSearch;
+  $('#sw-shortcuts-btn').onclick = openShortcuts;
+  $('#sw-focus').onclick = () => ROOT.classList.toggle('sw-focus-mode');
+  $('#sw-focus-exit').onclick = () => ROOT.classList.remove('sw-focus-mode');
+  $('#sw-fullscreen').onclick = () => {
+    if (!document.fullscreenElement) ROOT.requestFullscreen?.() || ROOT.webkitRequestFullscreen?.();
+    else document.exitFullscreen?.() || document.webkitExitFullscreen?.();
+  };
+  $('#sw-export-btn').onclick = (e) => { e.stopPropagation(); $('#sw-export-dd').classList.toggle('open'); };
+  document.addEventListener('click', () => $('#sw-export-dd').classList.remove('open'));
+  $$('[data-export]').forEach(btn => {
+    btn.onclick = () => {
+      saveCurrent();
+      const t = btn.dataset.export;
+      if (t === 'docx') exportDocx();
+      else if (t === 'txt') exportTxt();
+      else if (t === 'html') exportHtml();
+      else if (t === 'json') exportJson();
+      $('#sw-export-dd').classList.remove('open');
+    };
+  });
+  $('#sw-restore-btn').onclick = () => $('#sw-restore-file').click();
+  $('#sw-restore-file').onchange = (e) => {
+    const f = e.target.files[0];
+    if (!f) return;
+    const reader = new FileReader();
+    reader.onload = async () => {
+      try {
+        const d = JSON.parse(reader.result);
+        const ok = await swConfirm('Replace current project with this file?');
+        if (!ok) return;
+        if (!d.version || d.version < 2) state = migrateV1(d);
+        else state = Object.assign(state, d);
+        if (!state.chapters.length) state.chapters = [emptyChapter('Chapter 1', 1)];
+        state.activeChapterId = state.chapters[0].id;
+        state.activeSceneId = state.chapters[0].scenes[0].id;
+        applyTheme(); applyFontSize();
+        renderChapters(); loadIntoEditor(); save();
+        toast('Project restored');
+      } catch (err) { toast('Invalid project file'); }
+    };
+    reader.readAsText(f);
+    e.target.value = '';
+  };
+  $('#sw-template-btn').onclick = openTemplates;
+  $('#sw-clear-data').onclick = async () => {
+    if (!(await swConfirm('Clear all StoryWriter data?'))) return;
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(LEGACY_KEY);
+    state = {
+      version: 2, theme: 'parchment', fontSize: 16,
+      chapters: [emptyChapter('Chapter 1', 1)], activeChapterId: null, activeSceneId: null,
+      locations: [], characters: [], religions: [], planets: [], brainstorm: '',
+      goals: { sessionTarget: 500, sessionBase: 0, draftTarget: 80000 }, viewMode: 'write'
+    };
+    state.activeChapterId = state.chapters[0].id;
+    state.activeSceneId = state.chapters[0].scenes[0].id;
+    applyTheme(); applyFontSize();
+    renderChapters(); loadIntoEditor();
+    toast('Cleared');
+  };
+  $('#sw-view-write').onclick = () => { state.viewMode = 'write'; setViewMode(); };
+  $('#sw-view-cork').onclick = () => { saveCurrent(); state.viewMode = 'cork'; setViewMode(); };
+  $('#sw-toggle-comments').onclick = () => ROOT.classList.toggle('sw-comments-open');
+  $('#sw-add-comment').onclick = addComment;
+  $('#sw-snapshot-btn').onclick = takeSnapshot;
+  $('#sw-snapshots-list-btn').onclick = listSnapshots;
+  $('#sw-goals-btn').onclick = openGoals;
+
+  $('#sw-typewriter-btn').onclick = toggleTypewriter;
+  $('#sw-read-btn').onclick = readAloud;
+  $('#sw-threads-btn').onclick = () => {
+    ROOT.classList.toggle('sw-threads-open');
+    renderThreads();
+  };
+  $('#sw-thread-add').onclick = addThread;
+  $('#sw-ref-btn').onclick = () => pinReference(null, null);
+
+
+  $$('.sw-side-tabs button').forEach(btn => {
+    btn.onclick = () => {
+      $$('.sw-side-tabs button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const side = btn.dataset.side;
+      $('#sw-side-chapters').style.display = side === 'chapters' ? '' : 'none';
+      $('#sw-side-outline').style.display = side === 'outline' ? '' : 'none';
+      if (side === 'outline') renderOutline();
+    };
+  });
+  $$('.sw-tab').forEach(t => t.addEventListener('click', () => switchTab(t.dataset.tab)));
+  $('#sw-loc-add').onclick = () => editLocation(null);
+  $('#sw-loc-docx').onclick = () => saveListDocx('Locations', state.locations, [['Type','kind'],['Description','description'],['Notes','notes']], 'locations.docx');
+  $('#sw-char-add').onclick = () => editCharacter(null);
+  $('#sw-char-docx').onclick = () => saveListDocx('Characters', state.characters, [['Role','role'],['Age','age'],['Traits','traits'],['Wants','wants'],['Fears','fears'],['Arc','arc']], 'characters.docx');
+  $('#sw-rel-add').onclick = () => editReligion(null);
+  $('#sw-rel-docx').onclick = () => saveListDocx('Religions', state.religions, [['Summary','summary'],['Deities','deities'],['Beliefs','beliefs']], 'religions.docx');
+  $('#sw-pl-add').onclick = () => editPlanet(null);
+  $('#sw-pl-docx').onclick = () => saveListDocx('Planets', state.planets, [['Summary','summary'],['Star','star'],['Climate','climate']], 'planets.docx');
+  $('#sw-brain-docx').onclick = async () => {
+    state.brainstorm = $('#sw-brainstorm').value; save();
+    if (!window.docx) { toast('DOCX not loaded'); return; }
+    const { Document, Packer, Paragraph, TextRun } = window.docx;
+    const children = [new Paragraph({ children: [new TextRun({ text: 'Brainstorm', bold: true, size: 32 })] })];
+    (state.brainstorm || '').split(/\n/).forEach(line => {
+      children.push(new Paragraph({ children: [new TextRun({ text: line || ' ', size: 22 })] }));
+    });
+    saveAs(await Packer.toBlob(new Document({ sections: [{ children }] })), 'brainstorm.docx');
+    toast('Downloaded');
+  };
+  $('#sw-brainstorm').oninput = () => { state.brainstorm = $('#sw-brainstorm').value; save(); };
+
+  // Keyboard
+  document.addEventListener('keydown', (e) => {
+    if (!ROOT.contains(document.activeElement) && document.activeElement !== editor) {
+      // still allow global when focus in root
+    }
+    const mod = e.metaKey || e.ctrlKey;
+    if (mod && e.key === 'k') { e.preventDefault(); openSearch(); }
+    if (mod && e.key === '\\') { e.preventDefault(); ROOT.classList.toggle('sw-sidebar-collapsed'); }
+    if (mod && e.key === 'b' && document.activeElement === editor) { /* let browser bold work via exec in some browsers */ }
+  });
+
+  // Init
+  load();
+  if (!state.goals.sessionBase && state.goals.sessionBase !== 0) state.goals.sessionBase = totalWords();
+  if (!state.openThreads) state.openThreads = [];
+  applyTheme();
+  applyFontSize();
+  ROOT.classList.toggle('sw-typewriter', !!state.typewriter);
+  if (state.pinnedRef) ROOT.classList.add('sw-ref-open');
+  renderChapters();
+  loadIntoEditor();
+  setViewMode();
+  renderThreads();
+  renderPinnedRef();
+  window.addEventListener('beforeunload', () => { saveCurrent(); save(); });
+
+  // PWA: service worker + install prompt
+  if ('serviceWorker' in navigator) {
+    var swUrl = new URL('story-writer-sw.js', window.location.href);
+    navigator.serviceWorker.register(swUrl.href, { scope: new URL('./', window.location.href).href }).catch(function () {});
+  }
+  var deferredInstall = null;
+  window.addEventListener('beforeinstallprompt', function (e) {
+    e.preventDefault();
+    deferredInstall = e;
+    var btn = document.getElementById('sw-install-btn');
+    if (btn) btn.style.display = '';
+  });
+  var installBtn = document.getElementById('sw-install-btn');
+  if (installBtn) {
+    installBtn.addEventListener('click', function () {
+      if (!deferredInstall) {
+        toast('Use your browser Install app menu if available');
+        return;
+      }
+      deferredInstall.prompt();
+      deferredInstall.userChoice.then(function () { deferredInstall = null; installBtn.style.display = 'none'; });
+    });
+  }
+  // Stay in in-browser focus by default; focus button toggles it
+  if (!ROOT.classList.contains('sw-focus-mode')) ROOT.classList.add('sw-focus-mode');
+})();
+</script>
+</body>
+</html>
