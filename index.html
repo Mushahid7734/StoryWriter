@@ -17,6 +17,14 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Source+Sans+3:wght@400;500;600&display=swap');
 
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #f4f0e8;
+    }
     #sw-root {
       --sw-bg: #f4f0e8;
       --sw-paper: #faf7f0;
@@ -39,16 +47,19 @@
       background: var(--sw-bg);
       line-height: 1.5;
       box-sizing: border-box;
-      max-width: 1280px;
-      margin: 0 auto;
-      border-radius: 12px;
-      border: 1px solid var(--sw-border);
-      overflow: visible;
+      width: 100%;
+      max-width: none;
+      margin: 0;
+      border-radius: 0;
+      border: none;
+      overflow: hidden;
       display: flex;
       flex-direction: column;
-      min-height: 640px;
-      height: 88vh;
-      position: relative;
+      height: 100%;
+      min-height: 100%;
+      height: 100dvh;
+      position: fixed;
+      inset: 0;
       z-index: 1;
       isolation: isolate;
     }
@@ -65,6 +76,7 @@
       --sw-tag: #5a4a28;
       --sw-tag-bg: #efe6d0;
     }
+    body:has(#sw-root[data-theme="dark"]) { background: #1a1c1e; }
     #sw-root[data-theme="dark"] {
       --sw-bg: #1a1c1e;
       --sw-paper: #232628;
@@ -380,23 +392,6 @@
     }
     #sw-root .sw-dropdown-menu button:hover { background: var(--sw-hover); }
 
-    #sw-root.sw-focus-mode {
-      position: fixed !important; inset: 0 !important; max-width: none !important;
-      width: 100vw !important; height: 100vh !important; border-radius: 0 !important;
-      z-index: 2147483000 !important; margin: 0 !important; overflow: hidden !important;
-      display: flex !important; flex-direction: column !important;
-    }
-    #sw-root.sw-focus-mode .sw-topbar,
-    #sw-root.sw-focus-mode .sw-tabs,
-    #sw-root.sw-focus-mode .sw-sidebar { display: flex !important; flex-shrink: 0 !important; }
-    #sw-root.sw-focus-mode .sw-body {
-      display: flex !important; flex: 1 1 auto !important; min-height: 0 !important; overflow: hidden !important;
-    }
-    #sw-root .sw-focus-exit {
-      display: none; position: absolute; top: 8px; right: 10px; z-index: 2147483010;
-      background: var(--sw-accent); color: var(--sw-paper); border-color: var(--sw-accent);
-    }
-    #sw-root.sw-focus-mode .sw-focus-exit { display: inline-flex; }
     #sw-root:fullscreen, #sw-root:-webkit-full-screen {
       max-width: none !important; width: 100% !important; height: 100% !important;
       border-radius: 0 !important; overflow: hidden !important;
@@ -445,43 +440,10 @@
       border: none; background: none; color: var(--sw-danger); cursor: pointer; margin-left: 4px;
     }
 
-    #sw-page {
-      max-width: 1280px; margin: 0 auto; padding: 24px 14px 40px;
-      font-family: "Source Sans 3", system-ui, sans-serif; color: #2c2416;
-    }
-    #sw-page .sw-intro { text-align: center; max-width: 640px; margin: 0 auto 22px; }
-    #sw-page .sw-intro h2 {
-      font-family: "EB Garamond", Georgia, serif; font-weight: 600; font-size: 1.9rem;
-      color: #5c4a32; margin: 0 0 10px;
-    }
-    #sw-page .sw-intro p { margin: 0; font-size: 1.02rem; line-height: 1.6; color: #5a5348; }
-    #sw-page .sw-changelog {
-      max-width: 720px; margin: 28px auto 0; padding: 18px 20px;
-      background: #faf7f0; border: 1px solid #ddd4c4; border-radius: 12px;
-    }
-    #sw-page .sw-changelog h3 {
-      font-family: "EB Garamond", Georgia, serif; font-size: 1.3rem; color: #5c4a32; margin: 0 0 4px;
-    }
-    #sw-page .sw-changelog .sw-ver { font-size: 0.78rem; color: #6b5e4a; margin-bottom: 12px; }
-    #sw-page .sw-changelog h4 {
-      font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; color: #6b5e4a; margin: 14px 0 6px;
-    }
-    #sw-page .sw-changelog ul { margin: 0; padding-left: 1.15em; line-height: 1.5; font-size: 0.9rem; }
-    #sw-page .sw-changelog li { margin-bottom: 5px; }
-    #sw-page .sw-changelog .sw-advice {
-      margin-top: 14px; padding: 10px 12px; background: #ebe4d6; border-radius: 8px;
-      font-size: 0.88rem; line-height: 1.5;
-    }
   </style>
 </head>
 <body>
-<div id="sw-page">
-  <header class="sw-intro">
-    <h2>StoryWriter</h2>
-    <p>A calm studio for indie authors: draft chapters and scenes, keep characters and places beside the page, and export clean files when a chapter is done. Installable as an app. Opens in focus mode; browser fullscreen stays optional. Your work autosaves in this browser.</p>
-  </header>
-
-<div id="sw-root" data-theme="parchment" class="sw-focus-mode">
+<div id="sw-root" data-theme="parchment">
   <div class="sw-topbar">
     <span class="sw-logo">StoryWriter</span>
     <button type="button" class="sw-btn sw-btn-icon" id="sw-toggle-sidebar" title="Toggle sidebar (Ctrl+B)">☰</button>
@@ -497,8 +459,7 @@
     <button type="button" class="sw-btn" id="sw-search-btn" title="Search (Ctrl+K)">Search</button>
     <button type="button" class="sw-btn" id="sw-shortcuts-btn" title="Keyboard shortcuts">Keys</button>
     <div class="sw-top-sep"></div>
-    <button type="button" class="sw-btn sw-btn-icon" id="sw-focus" title="Toggle focus mode (fills the browser)">⛶</button>
-    <button type="button" class="sw-btn sw-btn-icon" id="sw-fullscreen" title="True browser fullscreen (beyond page)">⛶⛶</button>
+    <button type="button" class="sw-btn sw-btn-icon" id="sw-fullscreen" title="Fullscreen">⛶</button>
     <button type="button" class="sw-btn" id="sw-install-btn" title="Install as app" style="display:none">Install app</button>
     <div class="sw-top-sep"></div>
     <div class="sw-dropdown" id="sw-export-dd">
@@ -520,8 +481,6 @@
     </div>
     <span class="sw-wordcount" id="sw-wordcount">0 words</span>
   </div>
-  <button type="button" class="sw-btn sw-focus-exit" id="sw-focus-exit">✕ Exit focus</button>
-
   <div class="sw-body">
     <aside class="sw-sidebar" id="sw-sidebar">
       <div class="sw-sidebar-inner">
@@ -638,56 +597,6 @@
   <div class="sw-modal-bg" id="sw-modal-bg"><div class="sw-modal" id="sw-modal"></div></div>
   <div class="sw-toast" id="sw-toast"></div>
 </div>
-
-  <section class="sw-changelog" aria-label="Guide and features">
-    <h3>Quick start</h3>
-    <p class="sw-ver">Version 1.3 · StoryWriter for indie authors</p>
-    <h4>Tips</h4>
-    <ul>
-      <li>Add chapters and scenes from the left sidebar. Drag the handle to reorder scenes.</li>
-      <li>Write a one-line synopsis under the scene title so Outline and Corkboard stay useful.</li>
-      <li>Type <code>@</code> to insert a character, place, planet, or religion. Hover the blue tag for its profile.</li>
-      <li>Use <strong>Notes</strong> for scene reminders that never enter the manuscript.</li>
-      <li>Take a <strong>Snapshot</strong> before a big cut so you can restore later.</li>
-      <li>Set a session goal under <strong>Goals</strong>. The top bar tracks progress.</li>
-      <li>Export often: DOCX for sharing, JSON for a full backup you can Restore later.</li>
-      <li>Cycle <strong>Theme</strong> for parchment, sepia, or dark during long sessions.</li>
-      <li>Opens in <strong>focus mode</strong> (fills the browser). Use ⛶ to toggle. Use ⛶⛶ for true OS fullscreen.</li>
-      <li>On supported browsers, <strong>Install app</strong> adds StoryWriter as a PWA on your device.</li>
-      <li>Hosted on GitHub Pages (HTTPS): open the site as a full page to install. Embeds on other sites will not show the install prompt.</li>
-      <li>Double-click a word for synonyms, antonyms, and rhymes (needs internet).</li>
-      <li>Press <strong>Ctrl/Cmd+K</strong> to search the whole project.</li>
-    </ul>
-    <h4>All features</h4>
-    <ul>
-      <li>Chapters and scenes with drag reorder and status (Draft, Revise, Done)</li>
-      <li>Corkboard view (title, synopsis, status, word count)</li>
-      <li>Outline sidebar (titles + synopsis)</li>
-      <li>Session and draft word goals with progress bar</li>
-      <li>Named snapshots per scene</li>
-      <li>Scene notes (comments outside the prose)</li>
-      <li>@ mentions with hover profiles and last-seen chapter/scene</li>
-      <li>Split reference pane (pin a character or location while writing)</li>
-      <li>Typewriter scrolling and read-aloud</li>
-      <li>Open threads tracker</li>
-      <li>Project-wide search</li>
-      <li>Parchment, sepia, and dark themes</li>
-      <li>Keyboard shortcuts panel</li>
-      <li>Templates: novel, short story, trilogy bible, poetry collection, novella, screenplay-ish scenes</li>
-      <li>Image attach for characters and locations (local)</li>
-      <li>Export: manuscript DOCX, plain text, HTML, full project JSON</li>
-      <li>Restore project from JSON</li>
-      <li>World tabs: locations, characters, religions, planets, brainstorm</li>
-      <li>Focus mode by default (fills the browser) and optional true browser fullscreen</li>
-      <li>Installable PWA (Add to Home Screen / Install app)</li>
-      <li>Autosave in this browser (export JSON for real backups)</li>
-    </ul>
-    <div class="sw-advice">
-      <strong>Backup:</strong> Browser storage has no expiry date, but clearing site data or switching devices can wipe it. After each solid session, use Export → Full project JSON (or DOCX) and keep that file somewhere safe.
-    </div>
-  </section>
-</div>
-
 <script>
 (function () {
   const ROOT = document.getElementById('sw-root');
@@ -2159,8 +2068,6 @@
   $('#sw-theme-btn').onclick = cycleTheme;
   $('#sw-search-btn').onclick = openSearch;
   $('#sw-shortcuts-btn').onclick = openShortcuts;
-  $('#sw-focus').onclick = () => ROOT.classList.toggle('sw-focus-mode');
-  $('#sw-focus-exit').onclick = () => ROOT.classList.remove('sw-focus-mode');
   $('#sw-fullscreen').onclick = () => {
     if (!document.fullscreenElement) ROOT.requestFullscreen?.() || ROOT.webkitRequestFullscreen?.();
     else document.exitFullscreen?.() || document.webkitExitFullscreen?.();
@@ -2317,9 +2224,7 @@
       deferredInstall.userChoice.then(function () { deferredInstall = null; installBtn.style.display = 'none'; });
     });
   }
-  // Stay in in-browser focus by default; focus button toggles it
-  if (!ROOT.classList.contains('sw-focus-mode')) ROOT.classList.add('sw-focus-mode');
-})();
+  })();
 </script>
 </body>
 </html>
