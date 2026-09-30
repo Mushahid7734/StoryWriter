@@ -1,5 +1,5 @@
-/* StoryWriter service worker - offline-first for GitHub Pages / custom domain */
-const CACHE = 'storywriter-offline-v2';
+/* StoryWriter service worker - offline-first */
+const CACHE = 'storywriter-offline-v3';
 
 const PRECACHE = [
   './',
@@ -15,21 +15,21 @@ const PRECACHE = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE).then((cache) =>
-      Promise.all(
-        PRECACHE.map((url) =>
-          cache.add(url).catch(function () { /* skip failed optional assets */ })
-        )
-      )
-    ).then(function () { return self.skipWaiting(); })
+      Promise.all(PRECACHE.map((url) => cache.add(url).catch(function () {})))
+    )
   );
+});
+
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then(function (keys) {
-      return Promise.all(
-        keys.filter(function (k) { return k !== CACHE; }).map(function (k) { return caches.delete(k); })
-      );
+      return Promise.all(keys.filter(function (k) { return k !== CACHE; }).map(function (k) { return caches.delete(k); }));
     }).then(function () { return self.clients.claim(); })
   );
 });
@@ -37,10 +37,8 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET') return;
-
   const url = new URL(req.url);
 
-  // App shell: cache-first so reload works offline
   const isAppShell =
     url.origin === self.location.origin &&
     (url.pathname.endsWith('/') ||
@@ -48,7 +46,7 @@ self.addEventListener('fetch', (event) => {
       url.pathname.endsWith('/story-writer.html') ||
       url.pathname.endsWith('.webmanifest') ||
       url.pathname.endsWith('.png') ||
-      url.pathname.endsWith('.js'));
+      url.pathname.endsWith('story-writer-sw.js'));
 
   if (isAppShell) {
     event.respondWith(
@@ -68,7 +66,6 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // CDN scripts: cache-first
   if (
     url.hostname.indexOf('cdn.jsdelivr.net') !== -1 ||
     url.hostname.indexOf('cdnjs.cloudflare.com') !== -1 ||
@@ -90,7 +87,6 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Datamuse dictionary: network-only (needs live API); fail soft
   if (url.hostname.indexOf('datamuse.com') !== -1) {
     event.respondWith(fetch(req).catch(function () {
       return new Response('[]', { headers: { 'Content-Type': 'application/json' } });
@@ -98,7 +94,6 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Default: network, fall back to cache
   event.respondWith(
     fetch(req).then(function (res) {
       if (res && res.ok && url.origin === self.location.origin) {
