@@ -449,18 +449,10 @@
       font-size: 0.85rem;
     }
     @media print {
-      body * { visibility: hidden; }
-      #sw-root, #sw-root .sw-editor-wrap, #sw-root .sw-editor, #sw-root .sw-chapter-title-input,
-      #sw-root .sw-scene-title-input { visibility: visible; }
-      #sw-root {
-        position: static !important; height: auto !important; overflow: visible !important;
-        background: #fff !important; color: #000 !important;
-      }
+      /* Prefer Print manuscript dialog; hide app chrome if user prints the page */
       #sw-root .sw-topbar, #sw-root .sw-sidebar, #sw-root .sw-tabs, #sw-root .sw-story-toolbar,
       #sw-root .sw-comments-panel, #sw-root .sw-ref-panel, #sw-root .sw-threads-bar,
-      #sw-root .sw-modal-bg, #sw-root .sw-toast, #sw-root .sw-ac, #sw-root .sw-hover-panel { display: none !important; }
-      #sw-root .sw-editor-wrap { padding: 0 !important; overflow: visible !important; }
-      #sw-root .sw-main { overflow: visible !important; }
+      #sw-root .sw-modal-bg, #sw-root .sw-toast, #sw-root .sw-typewriter-exit { display: none !important; }
     }
 
     #sw-root:fullscreen, #sw-root:-webkit-full-screen {
@@ -477,13 +469,41 @@
     }
 
 
+    /* Typewriter = distraction-free writing (hide chrome, keep sidebar) */
+    #sw-root.sw-typewriter .sw-topbar,
+    #sw-root.sw-typewriter .sw-tabs,
+    #sw-root.sw-typewriter .sw-story-toolbar,
+    #sw-root.sw-typewriter .sw-comments-panel,
+    #sw-root.sw-typewriter .sw-ref-panel,
+    #sw-root.sw-typewriter .sw-threads-bar {
+      display: none !important;
+    }
+    #sw-root.sw-typewriter .sw-body {
+      height: 100%;
+    }
     #sw-root.sw-typewriter .sw-editor-wrap {
-      padding-top: 28vh;
-      padding-bottom: 45vh;
+      padding-top: 30vh;
+      padding-bottom: 40vh;
       scroll-behavior: auto;
     }
     #sw-root.sw-typewriter .sw-editor {
-      min-height: 50vh;
+      min-height: 40vh;
+    }
+    #sw-root .sw-typewriter-exit {
+      display: none;
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      z-index: 50;
+      background: var(--sw-accent);
+      color: var(--sw-paper);
+      border-color: var(--sw-accent);
+    }
+    #sw-root.sw-typewriter .sw-typewriter-exit {
+      display: inline-flex;
+    }
+    #sw-root.sw-typewriter .sw-sidebar {
+      display: flex;
     }
     #sw-root .sw-ref-panel {
       width: 0; overflow: hidden; border-left: none; background: var(--sw-panel);
@@ -515,6 +535,7 @@
 </head>
 <body>
 <div id="sw-root" data-theme="parchment">
+  <button type="button" class="sw-btn sw-typewriter-exit" id="sw-typewriter-exit" title="Exit typewriter mode">✕ Exit typewriter</button>
   <div class="sw-topbar">
     <span class="sw-logo">StoryWriter</span>
     <button type="button" class="sw-btn sw-btn-icon" id="sw-toggle-sidebar" title="Toggle sidebar (Ctrl+B)">☰</button>
@@ -2609,7 +2630,11 @@
 
   function toggleTypewriter() {
     state.typewriter = !state.typewriter;
-    ROOT.classList.toggle('sw-typewriter', state.typewriter);
+    ROOT.classList.toggle('sw-typewriter', !!state.typewriter);
+    if (state.typewriter) {
+      // keep sidebar available but allow collapse
+      setTimeout(scrollCaretToCenter, 50);
+    }
     save();
     if (state.typewriter) {
       setTimeout(scrollCaretToCenter, 40);
@@ -2730,6 +2755,13 @@
   $('#sw-goals-btn').onclick = openGoals;
 
   $('#sw-typewriter-btn').onclick = toggleTypewriter;
+  var twExit = document.getElementById('sw-typewriter-exit');
+  if (twExit) twExit.onclick = function () {
+    state.typewriter = false;
+    ROOT.classList.remove('sw-typewriter');
+    save();
+    toast('Typewriter off');
+  };
   $('#sw-read-btn').onclick = readAloud;
   $('#sw-threads-btn').onclick = () => {
     ROOT.classList.toggle('sw-threads-open');
@@ -2783,13 +2815,8 @@
   });
 
 
-  // Welcome popup (once per 24 hours)
-  var WELCOME_KEY = 'storywriter-welcome-at';
+  // Welcome popup (every open)
   function maybeShowWelcome() {
-    try {
-      var last = parseInt(localStorage.getItem(WELCOME_KEY) || '0', 10);
-      if (last && (Date.now() - last) < 24 * 60 * 60 * 1000) return;
-    } catch (e) {}
     openModal(
       '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:4px">' +
       '<h3 style="margin:0">Welcome to StoryWriter</h3>' +
@@ -2802,26 +2829,16 @@
       'Developed by <strong style="color:var(--sw-accent)">Mason Carter</strong>' +
       '</p>' +
       '<div class="sw-modal-actions" style="flex-direction:column;align-items:stretch;gap:8px">' +
-      '<a class="sw-btn sw-btn-primary" id="m-welcome-books" href="https://www.authormasoncarter.com/p/books-series.html" target="_blank" rel="noopener noreferrer" style="text-align:center;text-decoration:none;justify-content:center">Support development — browse books</a>' +
-      '<a class="sw-btn" id="m-welcome-blog" href="https://www.authormasoncarter.com/2026/09/storywriter-free-offline-writing-app.html" target="_blank" rel="noopener noreferrer" style="text-align:center;text-decoration:none;justify-content:center">Suggest features, roadmap &amp; changelog</a>' +
+      '<a class="sw-btn sw-btn-primary" href="https://www.authormasoncarter.com/p/books-series.html" target="_blank" rel="noopener noreferrer" style="text-align:center;text-decoration:none;justify-content:center">Support development — browse books</a>' +
+      '<a class="sw-btn" href="https://www.authormasoncarter.com/2026/09/storywriter-free-offline-writing-app.html" target="_blank" rel="noopener noreferrer" style="text-align:center;text-decoration:none;justify-content:center">Suggest features, roadmap &amp; changelog</a>' +
       '<button type="button" class="sw-btn" id="m-welcome-close">Continue writing</button>' +
       '</div>'
     );
-    function dismissWelcome() {
-      try { localStorage.setItem(WELCOME_KEY, String(Date.now())); } catch (e) {}
-      closeModal();
-    }
+    function dismissWelcome() { closeModal(); }
     var x = $('#m-welcome-x');
     var c = $('#m-welcome-close');
     if (x) x.onclick = dismissWelcome;
     if (c) c.onclick = dismissWelcome;
-    // Mark seen when they follow a link too
-    ['m-welcome-books', 'm-welcome-blog'].forEach(function (id) {
-      var a = document.getElementById(id);
-      if (a) a.addEventListener('click', function () {
-        try { localStorage.setItem(WELCOME_KEY, String(Date.now())); } catch (e) {}
-      });
-    });
   }
 
 
@@ -4015,7 +4032,109 @@
     });
   })();
 
+
+  function openPrintSetup() {
+    saveCurrent();
+    openModal(
+      '<h3>Print manuscript</h3>' +
+      '<p style="font-size:0.85rem;color:var(--sw-muted);margin:0 0 12px">Opens a clean print view (no StoryWriter chrome). In the browser print dialog, turn off headers and footers to hide date and URL.</p>' +
+      '<div style="margin-bottom:10px"><label class="sw-lbl">Book size</label>' +
+      '<select class="sw-sel" id="m-print-size">' +
+      '<option value="6x9">6 × 9 in (standard trade)</option>' +
+      '<option value="5.5x8.5">5.5 × 8.5 in</option>' +
+      '<option value="5x8">5 × 8 in</option>' +
+      '<option value="5.25x8">5.25 × 8 in</option>' +
+      '<option value="8.5x11">8.5 × 11 in (letter)</option>' +
+      '<option value="a5">A5</option>' +
+      '</select></div>' +
+      '<div style="margin-bottom:10px"><label class="sw-lbl">Layout template</label>' +
+      '<select class="sw-sel" id="m-print-tpl">' +
+      '<option value="classic">Classic (drop cap, indented body)</option>' +
+      '<option value="modern">Modern (no indent, spaced paragraphs)</option>' +
+      '<option value="elegant">Elegant (ornament under title)</option>' +
+      '<option value="compact">Compact (tighter leading)</option>' +
+      '</select></div>' +
+      '<div class="sw-modal-actions">' +
+      '<button type="button" class="sw-btn" id="m-cancel">Cancel</button>' +
+      '<button type="button" class="sw-btn sw-btn-primary" id="m-print-go">Open print view</button></div>'
+    );
+    $('#m-cancel').onclick = closeModal;
+    $('#m-print-go').onclick = function () {
+      var size = $('#m-print-size').value;
+      var tpl = $('#m-print-tpl').value;
+      closeModal();
+      runPrintView(size, tpl);
+    };
+  }
+
+  function runPrintView(size, tpl) {
+    var sizes = {
+      '6x9': { w: '6in', h: '9in', pad: '0.75in 0.85in' },
+      '5.5x8.5': { w: '5.5in', h: '8.5in', pad: '0.7in 0.75in' },
+      '5x8': { w: '5in', h: '8in', pad: '0.65in 0.7in' },
+      '5.25x8': { w: '5.25in', h: '8in', pad: '0.65in 0.7in' },
+      '8.5x11': { w: '8.5in', h: '11in', pad: '1in' },
+      'a5': { w: '148mm', h: '210mm', pad: '18mm 16mm' }
+    };
+    var s = sizes[size] || sizes['6x9'];
+    var bodyCss = '';
+    if (tpl === 'modern') {
+      bodyCss = '.chapter p{text-indent:0;margin:0 0 0.85em} .chapter p.drop::first-letter{font-size:inherit;float:none;line-height:inherit;padding:0;font-weight:inherit}';
+    } else if (tpl === 'compact') {
+      bodyCss = 'body{font-size:11pt;line-height:1.35} .chapter p{text-indent:1.2em;margin:0}';
+    } else if (tpl === 'elegant') {
+      bodyCss = '.chapter h1::after{content:"❖";display:block;font-size:12pt;margin-top:0.4em;color:#666;font-weight:normal}';
+    }
+    var parts = [];
+    state.chapters.forEach(function (ch, ci) {
+      var paras = [];
+      ch.scenes.forEach(function (sc) {
+        var plain = stripHtml(sc.content || '');
+        plain.split(/\n+/).forEach(function (line) {
+          line = line.trim();
+          if (line) paras.push(line);
+        });
+      });
+      if (!paras.length) paras = [''];
+      var htmlc = '<section class="chapter' + (ci ? ' break' : '') + '">';
+      htmlc += '<h1>' + escapeHtml(ch.title || ('Chapter ' + (ci + 1))) + '</h1>';
+      paras.forEach(function (p, pi) {
+        var cls = (pi === 0 && tpl !== 'modern') ? ' class="drop"' : '';
+        htmlc += '<p' + cls + '>' + escapeHtml(p) + '</p>';
+      });
+      htmlc += '</section>';
+      parts.push(htmlc);
+    });
+    var doc = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title></title><style>' +
+      '@page{size:' + s.w + ' ' + s.h + ';margin:0}' +
+      'html,body{margin:0;padding:0;background:#fff}' +
+      'body{width:' + s.w + ';min-height:' + s.h + ';margin:0 auto;padding:' + s.pad + ';' +
+      'font-family:Georgia,"Times New Roman",serif;font-size:12pt;line-height:1.5;color:#111}' +
+      '.chapter{page-break-after:always}.chapter:last-child{page-break-after:auto}' +
+      '.chapter.break{page-break-before:always}' +
+      'h1{text-align:center;font-size:1.35em;font-weight:600;margin:2.5em 0 1.75em;' +
+      'page-break-after:avoid;letter-spacing:0.02em}' +
+      '.chapter p{margin:0;text-indent:1.5em;orphans:3;widows:3;text-align:justify}' +
+      '.chapter p.drop{text-indent:0}' +
+      '.chapter p.drop::first-letter{float:left;font-size:3.2em;line-height:0.85;padding:0.05em 0.08em 0 0;font-weight:600}' +
+      bodyCss +
+      '@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}' +
+      '</style></head><body>' + parts.join('') +
+      '<scr'+'ipt>window.onload=function(){setTimeout(function(){window.print()},250)}<\/scr'+'ipt>' +
+      '</body></html>';
+    var w = window.open('', '_blank');
+    if (!w) { toast('Allow pop-ups to print'); return; }
+    w.document.open();
+    w.document.write(doc);
+    w.document.close();
+    // empty title reduces "StoryWriter" in some browser headers
+    try { w.document.title = '\u200b'; } catch (e) {}
+  }
+
+
   // Wire project / disk buttons
+  var printBtn = document.getElementById('sw-print-btn');
+  if (printBtn) printBtn.onclick = function () { openPrintSetup(); };
   var projBtn = document.getElementById('sw-projects-btn');
   if (projBtn) projBtn.onclick = function () { openProjectsModal(); };
   var diskSave = document.getElementById('sw-disk-save');
@@ -4041,25 +4160,10 @@
   });
 
 
-  // Welcome popup — once per 24 hours
-  var WELCOME_KEY = 'storywriter-welcome-at';
-  var WELCOME_MS = 24 * 60 * 60 * 1000;
-
-  function shouldShowWelcome() {
-    try {
-      var last = parseInt(localStorage.getItem(WELCOME_KEY) || '0', 10);
-      if (!last) return true;
-      return (Date.now() - last) >= WELCOME_MS;
-    } catch (e) { return true; }
-  }
-
-  function markWelcomeSeen() {
-    try { localStorage.setItem(WELCOME_KEY, String(Date.now())); } catch (e) {}
-  }
+  // Welcome popup (every open)
 
   function showWelcomePopup() {
-    if (!shouldShowWelcome()) return;
-    openModal(
+        openModal(
       '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:4px">' +
         '<h3 style="margin:0">Welcome to StoryWriter</h3>' +
         '<button type="button" class="sw-btn sw-btn-icon" id="m-welcome-x" title="Close" aria-label="Close" style="flex-shrink:0">×</button>' +
@@ -4076,7 +4180,6 @@
         '<button type="button" class="sw-btn" id="m-welcome-close">Continue writing</button>' +
       '</div>'
     );
-    markWelcomeSeen();
     function closeWelcome() { closeModal(); }
     var x = $('#m-welcome-x');
     var c = $('#m-welcome-close');
@@ -4107,7 +4210,14 @@
     if (!state.openThreads) state.openThreads = [];
     refreshUI();
 
-    setTimeout(function () { showWelcomePopup(); }, 500);
+  // Mobile: collapse sidebar by default
+  try {
+    if (window.matchMedia && window.matchMedia('(max-width: 768px)').matches) {
+      ROOT.classList.add('sw-sidebar-collapsed');
+    }
+  } catch (e) {}
+
+    setTimeout(function () { showWelcomePopup(); }, 400);
 
     // PWA shortcuts: ?action=new-scene | new-project
     try {
