@@ -553,7 +553,8 @@
     <div class="sw-top-sep"></div>
     <button type="button" class="sw-btn sw-btn-icon" id="sw-fullscreen" title="Fullscreen">⛶</button>
     <button type="button" class="sw-btn" id="sw-projects-btn" title="Projects">Projects</button>
-    <button type="button" class="sw-btn" id="sw-disk-save" title="Save project JSON to your computer (best multi-device backup)">Save disk</button>
+    <button type="button" class="sw-btn" id="sw-disk-save" title="Save to linked file (Ctrl/Cmd+S). First time chooses a file.">Save disk</button>
+    <button type="button" class="sw-btn" id="sw-disk-save-as" title="Save as… choose a new file">Save as</button>
     <button type="button" class="sw-btn" id="sw-disk-open" title="Open a project JSON from another device or backup">Open disk</button>
     <button type="button" class="sw-btn" id="sw-install-btn" title="Install as app" style="display:none">Install app</button>
     <span id="sw-project-label" style="font-size:0.75rem;color:var(--sw-muted);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
@@ -1162,6 +1163,8 @@
     };
     state.activeChapterId = state.chapters[0].id;
     state.activeSceneId = state.chapters[0].scenes[0].id;
+    fileHandle = null;
+    updateDiskSaveLabel();
     await persistToIdbPromise();
     refreshUI();
     toast('New project');
@@ -1220,7 +1223,7 @@
         await persistToIdbPromise();
         var ok = await loadProjectById(btn.dataset.id);
         closeModal();
-        if (ok) { refreshUI(); toast('Opened project'); }
+        if (ok) { fileHandle = null; updateDiskSaveLabel(); refreshUI(); toast('Opened project'); }
         else toast('Could not open');
       };
     });
@@ -1260,34 +1263,96 @@
     });
   }
 
-  async function saveToDisk() {
-    saveCurrent();
-    await persistToIdbPromise();
-    var payload = JSON.stringify({
+  function buildProjectPayload() {
+    return JSON.stringify({
       storywriterProject: 1,
       id: currentProjectId,
       name: currentProjectName,
       updatedAt: new Date().toISOString(),
       state: state
     }, null, 2);
-    var blob = new Blob([payload], { type: 'application/json' });
+  }
+
+  function updateDiskSaveLabel() {
+    var btn = document.getElementById('sw-disk-save');
+    if (!btn) return;
+    if (fileHandle) {
+      btn.textContent = 'Save';
+      btn.title = 'Save to linked file (Ctrl/Cmd+S)';
+    } else {
+      btn.textContent = 'Save disk';
+      btn.title = 'Choose a file on disk, then Ctrl/Cmd+S updates it';
+    }
+  }
+
+  async function writeToFileHandle(handle) {
+    var blob = new Blob([buildProjectPayload()], { type: 'application/json' });
+    var w = await handle.createWritable();
+    await w.write(blob);
+    await w.close();
+  }
+
+  async function saveToDisk(opts) {
+    opts = opts || {};
+    var forcePicker = !!opts.forcePicker;
+    saveCurrent();
+    await persistToIdbPromise();
+    var blob = new Blob([buildProjectPayload()], { type: 'application/json' });
+
+    // Word-style: reuse existing file handle when possible
+    if (!forcePicker && fileHandle && window.showSaveFilePicker) {
+      try {
+        // Verify permission
+        var ok = true;
+        if (fileHandle.queryPermission) {
+          var perm = await fileHandle.queryPermission({ mode: 'readwrite' });
+          if (perm !== 'granted') {
+            if (fileHandle.requestPermission) {
+              perm = await fileHandle.requestPermission({ mode: 'readwrite' });
+            }
+            ok = perm === 'granted';
+          }
+        }
+        if (ok) {
+          await writeToFileHandle(fileHandle);
+          toast('Saved' + (fileHandle.name ? ' · ' + fileHandle.name : ''));
+          updateDiskSaveLabel();
+          return;
+        }
+      } catch (e) {
+        // fall through to picker / download
+        fileHandle = null;
+      }
+    }
+
     if (window.showSaveFilePicker) {
       try {
         fileHandle = await window.showSaveFilePicker({
           suggestedName: (currentProjectName || 'storywriter').replace(/[^a-z0-9-_]+/gi, '_') + '.json',
           types: [{ description: 'StoryWriter project', accept: { 'application/json': ['.json'] } }]
         });
-        var w = await fileHandle.createWritable();
-        await w.write(blob);
-        await w.close();
-        toast('Saved to disk');
+        await writeToFileHandle(fileHandle);
+        updateDiskSaveLabel();
+        toast('Saved' + (fileHandle.name ? ' · ' + fileHandle.name : ' to disk'));
         return;
       } catch (e) {
         if (e && e.name === 'AbortError') return;
+        fileHandle = null;
       }
     }
-    saveAs(blob, (currentProjectName || 'storywriter') + '.json');
-    toast('Downloaded project JSON');
+
+    // Fallback browsers: download each time (no persistent handle API)
+    if (typeof saveAs === 'function') {
+      saveAs(blob, (currentProjectName || 'storywriter') + '.json');
+      toast('Downloaded project JSON');
+    } else {
+      toast('Save not supported in this browser');
+    }
+    updateDiskSaveLabel();
+  }
+
+  async function saveAsToDisk() {
+    await saveToDisk({ forcePicker: true });
   }
 
   async function openFromDisk() {
@@ -1297,12 +1362,16 @@
           types: [{ description: 'StoryWriter JSON', accept: { 'application/json': ['.json'] } }],
           multiple: false
         });
-        var file = await handles[0].getFile();
+        fileHandle = handles[0];
+        var file = await fileHandle.getFile();
         var text = await file.text();
         await importProjectJson(text, file.name);
+        updateDiskSaveLabel();
+        toast('Opened · ' + (fileHandle.name || file.name) + ' — Ctrl+S will update this file');
         return;
       } catch (e) {
         if (e && e.name === 'AbortError') return;
+        fileHandle = null;
       }
     }
     var input = document.createElement('input');
@@ -1311,8 +1380,11 @@
     input.onchange = async function () {
       var f = input.files[0];
       if (!f) return;
+      fileHandle = null; // input files cannot be re-written in place
       var text = await f.text();
       await importProjectJson(text, f.name);
+      updateDiskSaveLabel();
+      toast('Imported — use Save disk once to link a file for Ctrl+S');
     };
     input.click();
   }
@@ -2343,6 +2415,7 @@
       '<div class="sw-detail-grid">' +
       detailRow('Bold', 'Ctrl/Cmd + B') +
       detailRow('Italic', 'Ctrl/Cmd + I') +
+      detailRow('Save to disk', 'Ctrl/Cmd + S') +
       detailRow('Search', 'Ctrl/Cmd + K') +
       detailRow('Toggle sidebar', 'Ctrl/Cmd + \\') +
       detailRow('Save reminder', 'Export often  -  browser storage is not a vault') +
@@ -2809,6 +2882,11 @@
       // still allow global when focus in root
     }
     const mod = e.metaKey || e.ctrlKey;
+    if (mod && (e.key === 's' || e.key === 'S')) {
+      e.preventDefault();
+      saveToDisk();
+      return;
+    }
     if (mod && e.key === 'k') { e.preventDefault(); openSearch(); }
     if (mod && e.key === '\\') { e.preventDefault(); ROOT.classList.toggle('sw-sidebar-collapsed'); }
     if (mod && e.key === 'b' && document.activeElement === editor) { /* let browser bold work via exec in some browsers */ }
@@ -4139,8 +4217,11 @@
   if (projBtn) projBtn.onclick = function () { openProjectsModal(); };
   var diskSave = document.getElementById('sw-disk-save');
   if (diskSave) diskSave.onclick = function () { saveToDisk(); };
+  var diskSaveAs = document.getElementById('sw-disk-save-as');
+  if (diskSaveAs) diskSaveAs.onclick = function () { saveAsToDisk(); };
   var diskOpen = document.getElementById('sw-disk-open');
   if (diskOpen) diskOpen.onclick = function () { openFromDisk(); };
+  updateDiskSaveLabel();
 
   // Drag-and-drop JSON restore
   ;['dragenter', 'dragover'].forEach(function (ev) {
