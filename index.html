@@ -103,6 +103,13 @@
       font-family: "EB Garamond", Georgia, serif; font-weight: 600;
       font-size: 1.1rem; color: var(--sw-accent); margin-right: 6px;
     }
+    #sw-root a.sw-btn {
+      text-decoration: none;
+      color: inherit;
+    }
+    #sw-root a.sw-btn.sw-btn-primary {
+      color: var(--sw-paper);
+    }
     #sw-root .sw-btn {
       font: inherit; font-size: 0.78rem; font-weight: 500;
       border: 1px solid var(--sw-border); background: var(--sw-paper);
@@ -317,6 +324,7 @@
       box-shadow: 0 12px 40px rgba(0,0,0,0.2); color: var(--sw-ink);
     }
     #sw-root .sw-modal h3 { margin: 0 0 10px; font-family: "EB Garamond", Georgia, serif; font-size: 1.2rem; }
+    #sw-root .sw-modal a.sw-btn { display: inline-flex; align-items: center; }
     #sw-root .sw-modal-actions { display: flex; gap: 6px; justify-content: flex-end; margin-top: 12px; flex-wrap: wrap; }
     #sw-root .sw-detail-grid { display: grid; gap: 8px; margin: 6px 0; }
     #sw-root .sw-detail-row strong {
@@ -2586,6 +2594,48 @@
     if (mod && e.key === 'b' && document.activeElement === editor) { /* let browser bold work via exec in some browsers */ }
   });
 
+
+  // Welcome popup (once per 24 hours)
+  var WELCOME_KEY = 'storywriter-welcome-at';
+  function maybeShowWelcome() {
+    try {
+      var last = parseInt(localStorage.getItem(WELCOME_KEY) || '0', 10);
+      if (last && (Date.now() - last) < 24 * 60 * 60 * 1000) return;
+    } catch (e) {}
+    openModal(
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:4px">' +
+      '<h3 style="margin:0">Welcome to StoryWriter</h3>' +
+      '<button type="button" class="sw-btn sw-btn-icon" id="m-welcome-x" title="Close" style="flex-shrink:0;font-size:1.1rem;line-height:1">×</button>' +
+      '</div>' +
+      '<p style="margin:0 0 14px;line-height:1.55;color:var(--sw-ink);font-size:0.95rem">' +
+      'A free offline writing desk for indie authors. Draft scenes, keep your world nearby, and export when you are ready.' +
+      '</p>' +
+      '<p style="margin:0 0 16px;font-size:0.82rem;color:var(--sw-muted);line-height:1.45">' +
+      'Developed by <strong style="color:var(--sw-accent)">Mason Carter</strong>' +
+      '</p>' +
+      '<div class="sw-modal-actions" style="flex-direction:column;align-items:stretch;gap:8px">' +
+      '<a class="sw-btn sw-btn-primary" id="m-welcome-books" href="https://www.authormasoncarter.com/p/books-series.html" target="_blank" rel="noopener noreferrer" style="text-align:center;text-decoration:none;justify-content:center">Support development — browse books</a>' +
+      '<a class="sw-btn" id="m-welcome-blog" href="https://www.authormasoncarter.com/2026/09/storywriter-free-offline-writing-app.html" target="_blank" rel="noopener noreferrer" style="text-align:center;text-decoration:none;justify-content:center">Suggest features, roadmap &amp; changelog</a>' +
+      '<button type="button" class="sw-btn" id="m-welcome-close">Continue writing</button>' +
+      '</div>'
+    );
+    function dismissWelcome() {
+      try { localStorage.setItem(WELCOME_KEY, String(Date.now())); } catch (e) {}
+      closeModal();
+    }
+    var x = $('#m-welcome-x');
+    var c = $('#m-welcome-close');
+    if (x) x.onclick = dismissWelcome;
+    if (c) c.onclick = dismissWelcome;
+    // Mark seen when they follow a link too
+    ['m-welcome-books', 'm-welcome-blog'].forEach(function (id) {
+      var a = document.getElementById(id);
+      if (a) a.addEventListener('click', function () {
+        try { localStorage.setItem(WELCOME_KEY, String(Date.now())); } catch (e) {}
+      });
+    });
+  }
+
   // Wire project / disk buttons
   var projBtn = document.getElementById('sw-projects-btn');
   if (projBtn) projBtn.onclick = function () { openProjectsModal(); };
@@ -2611,6 +2661,50 @@
     await importProjectJson(text, f.name);
   });
 
+
+  // Welcome popup — once per 24 hours
+  var WELCOME_KEY = 'storywriter-welcome-at';
+  var WELCOME_MS = 24 * 60 * 60 * 1000;
+
+  function shouldShowWelcome() {
+    try {
+      var last = parseInt(localStorage.getItem(WELCOME_KEY) || '0', 10);
+      if (!last) return true;
+      return (Date.now() - last) >= WELCOME_MS;
+    } catch (e) { return true; }
+  }
+
+  function markWelcomeSeen() {
+    try { localStorage.setItem(WELCOME_KEY, String(Date.now())); } catch (e) {}
+  }
+
+  function showWelcomePopup() {
+    if (!shouldShowWelcome()) return;
+    openModal(
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:4px">' +
+        '<h3 style="margin:0">Welcome to StoryWriter</h3>' +
+        '<button type="button" class="sw-btn sw-btn-icon" id="m-welcome-x" title="Close" aria-label="Close" style="flex-shrink:0">×</button>' +
+      '</div>' +
+      '<p style="margin:0 0 10px;line-height:1.55;color:var(--sw-muted);font-size:0.9rem">' +
+        'A free offline writing desk for indie authors. Built by <strong style="color:var(--sw-ink)">Mason Carter</strong>.' +
+      '</p>' +
+      '<p style="margin:0 0 14px;line-height:1.55;font-size:0.9rem">' +
+        'If StoryWriter helps your work, you can support development by buying a book, or leave feature ideas on the project page (roadmap and changelog live there too).' +
+      '</p>' +
+      '<div class="sw-modal-actions" style="flex-direction:column;align-items:stretch;gap:8px">' +
+        '<a class="sw-btn sw-btn-primary" id="m-welcome-books" href="https://www.authormasoncarter.com/p/books-series.html" target="_blank" rel="noopener noreferrer" style="text-decoration:none;justify-content:center;text-align:center">Buy books to support development</a>' +
+        '<a class="sw-btn" id="m-welcome-feedback" href="https://www.authormasoncarter.com/2026/09/storywriter-free-offline-writing-app.html" target="_blank" rel="noopener noreferrer" style="text-decoration:none;justify-content:center;text-align:center">Suggest features · roadmap · changelog</a>' +
+        '<button type="button" class="sw-btn" id="m-welcome-close">Continue writing</button>' +
+      '</div>'
+    );
+    markWelcomeSeen();
+    function closeWelcome() { closeModal(); }
+    var x = $('#m-welcome-x');
+    var c = $('#m-welcome-close');
+    if (x) x.onclick = closeWelcome;
+    if (c) c.onclick = closeWelcome;
+  }
+
   // Init (async)
   (async function boot() {
     try {
@@ -2633,6 +2727,8 @@
     if (!state.goals.sessionBase && state.goals.sessionBase !== 0) state.goals.sessionBase = totalWords();
     if (!state.openThreads) state.openThreads = [];
     refreshUI();
+
+    setTimeout(function () { showWelcomePopup(); }, 500);
 
     // PWA shortcuts: ?action=new-scene | new-project
     try {
