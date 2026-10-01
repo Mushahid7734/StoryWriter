@@ -400,6 +400,69 @@
     }
     #sw-root .sw-dropdown-menu button:hover { background: var(--sw-hover); }
 
+
+    #sw-root .sw-timer { font-size: 0.75rem; color: var(--sw-muted); font-variant-numeric: tabular-nums; min-width: 3.5em; }
+    #sw-root .sw-streak { font-size: 0.72rem; color: var(--sw-muted); }
+    #sw-root .sw-streak strong { color: var(--sw-ok); }
+    #sw-root .sw-compare {
+      display: none; grid-template-columns: 1fr 1fr; gap: 12px; flex: 1; min-height: 0;
+      padding: 12px; overflow: hidden;
+    }
+    #sw-root.sw-compare-on .sw-compare { display: grid; }
+    #sw-root.sw-compare-on #sw-write-view { display: none; }
+    #sw-root .sw-compare-pane {
+      overflow-y: auto; background: var(--sw-bg); border: 1px solid var(--sw-border);
+      border-radius: 8px; padding: 12px; font-family: "EB Garamond", Georgia, serif;
+      font-size: 0.95rem; line-height: 1.6; white-space: pre-wrap;
+    }
+    #sw-root .sw-hl-dialogue { background: #cfe8ff; }
+    #sw-root .sw-hl-adverb { background: #ffe6b3; }
+    #sw-root .sw-hl-filter { background: #ffd0d0; }
+    #sw-root[data-theme="dark"] .sw-hl-dialogue { background: #1a3a55; }
+    #sw-root[data-theme="dark"] .sw-hl-adverb { background: #4a3a10; }
+    #sw-root[data-theme="dark"] .sw-hl-filter { background: #4a2020; }
+    #sw-root .sw-timeline-list, #sw-root .sw-rel-grid { flex: 1; overflow-y: auto; padding: 12px; }
+    #sw-root .sw-rel-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+
+    #sw-root .sw-hl-dialogue { background: rgba(120, 160, 220, 0.25); }
+    #sw-root .sw-hl-adverb { background: rgba(220, 160, 80, 0.3); }
+    #sw-root .sw-hl-filter { background: rgba(200, 100, 100, 0.25); }
+    #sw-root .sw-compare {
+      display: none; flex: 1; min-height: 0; gap: 8px; padding: 12px;
+    }
+    #sw-root .sw-compare.active { display: flex; }
+    #sw-root .sw-compare-pane {
+      flex: 1; overflow: auto; border: 1px solid var(--sw-border); border-radius: 8px;
+      padding: 12px; background: var(--sw-paper); font-family: "EB Garamond", Georgia, serif;
+      font-size: 0.95rem; line-height: 1.6; white-space: pre-wrap;
+    }
+    #sw-root .sw-timeline-list { flex: 1; overflow-y: auto; padding: 12px; }
+    #sw-root .sw-tl-item {
+      display: flex; gap: 8px; align-items: flex-start; padding: 10px; margin-bottom: 8px;
+      border: 1px solid var(--sw-border); border-radius: 8px; background: var(--sw-paper);
+    }
+    #sw-root .sw-rel-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; padding: 12px;
+    }
+    #sw-root .sw-rel-card {
+      border: 1px solid var(--sw-border); border-radius: 8px; padding: 10px; background: var(--sw-paper);
+      font-size: 0.85rem;
+    }
+    @media print {
+      body * { visibility: hidden; }
+      #sw-root, #sw-root .sw-editor-wrap, #sw-root .sw-editor, #sw-root .sw-chapter-title-input,
+      #sw-root .sw-scene-title-input { visibility: visible; }
+      #sw-root {
+        position: static !important; height: auto !important; overflow: visible !important;
+        background: #fff !important; color: #000 !important;
+      }
+      #sw-root .sw-topbar, #sw-root .sw-sidebar, #sw-root .sw-tabs, #sw-root .sw-story-toolbar,
+      #sw-root .sw-comments-panel, #sw-root .sw-ref-panel, #sw-root .sw-threads-bar,
+      #sw-root .sw-modal-bg, #sw-root .sw-toast, #sw-root .sw-ac, #sw-root .sw-hover-panel { display: none !important; }
+      #sw-root .sw-editor-wrap { padding: 0 !important; overflow: visible !important; }
+      #sw-root .sw-main { overflow: visible !important; }
+    }
+
     #sw-root:fullscreen, #sw-root:-webkit-full-screen {
       max-width: none !important; width: 100% !important; height: 100% !important;
       border-radius: 0 !important; overflow: hidden !important;
@@ -469,8 +532,8 @@
     <div class="sw-top-sep"></div>
     <button type="button" class="sw-btn sw-btn-icon" id="sw-fullscreen" title="Fullscreen">⛶</button>
     <button type="button" class="sw-btn" id="sw-projects-btn" title="Projects">Projects</button>
-    <button type="button" class="sw-btn" id="sw-disk-save" title="Save to disk">Save disk</button>
-    <button type="button" class="sw-btn" id="sw-disk-open" title="Open from disk">Open disk</button>
+    <button type="button" class="sw-btn" id="sw-disk-save" title="Save project JSON to your computer (best multi-device backup)">Save disk</button>
+    <button type="button" class="sw-btn" id="sw-disk-open" title="Open a project JSON from another device or backup">Open disk</button>
     <button type="button" class="sw-btn" id="sw-install-btn" title="Install as app" style="display:none">Install app</button>
     <span id="sw-project-label" style="font-size:0.75rem;color:var(--sw-muted);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
     <div class="sw-top-sep"></div>
@@ -491,6 +554,10 @@
       <span id="sw-goal-label">0/500</span>
       <div class="sw-goal-bar"><div class="sw-goal-fill" id="sw-goal-fill"></div></div>
     </div>
+    <span class="sw-timer" id="sw-timer" title="Focus timer">25:00</span>
+    <button type="button" class="sw-btn" id="sw-timer-btn" title="Pomodoro focus timer">Timer</button>
+    <button type="button" class="sw-btn" id="sw-pomodoro" title="Focus timer">25:00</button>
+    <span class="sw-streak" id="sw-streak" title="Writing streak">Streak: <strong>0</strong></span>
     <span class="sw-wordcount" id="sw-wordcount">0 words</span>
   </div>
   <div class="sw-body">
@@ -519,6 +586,9 @@
         <button type="button" class="sw-tab" data-tab="religions">Religions</button>
         <button type="button" class="sw-tab" data-tab="planets">Planets</button>
         <button type="button" class="sw-tab" data-tab="brainstorm">Brainstorm</button>
+        <button type="button" class="sw-tab" data-tab="timeline">Timeline</button>
+        <button type="button" class="sw-tab" data-tab="relations">Relations</button>
+        <button type="button" class="sw-tab" data-tab="series">Series</button>
       </div>
 
       <div class="sw-panel active" id="sw-panel-story">
@@ -540,7 +610,17 @@
           <button type="button" class="sw-btn" id="sw-read-btn" title="Read scene aloud">Read</button>
           <button type="button" class="sw-btn" id="sw-threads-btn" title="Open threads">Threads</button>
           <button type="button" class="sw-btn" id="sw-ref-btn" title="Pin reference">Pin ref</button>
+          <button type="button" class="sw-btn" id="sw-find-btn" title="Find and replace">Find</button>
+          <button type="button" class="sw-btn" id="sw-hl-btn" title="Highlight passes">Highlight</button>
+          <button type="button" class="sw-btn" id="sw-stats-btn" title="Readability stats">Stats</button>
+          <button type="button" class="sw-btn" id="sw-mentions-btn" title="Mention index">Mentions</button>
+          <button type="button" class="sw-btn" id="sw-continuity-btn" title="Continuity check">Continuity</button>
+          <button type="button" class="sw-btn" id="sw-rev-btn" title="Revision mode">Revise</button>
+          <button type="button" class="sw-btn" id="sw-compare-btn" title="Compare snapshots">Compare</button>
+          <button type="button" class="sw-btn" id="sw-paste-plain" title="Paste as plain text">Plain paste</button>
+          <button type="button" class="sw-btn" id="sw-print-btn" title="Print manuscript">Print</button>
         </div>
+        <div class="sw-warn-bar" id="sw-warn-bar"></div>
         <div class="sw-threads-bar" id="sw-threads-bar">
           <button type="button" class="sw-btn" id="sw-thread-add">+ Thread</button>
           <div id="sw-threads-list" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
@@ -554,6 +634,10 @@
               <div class="sw-editor" id="sw-editor" contenteditable="true" data-placeholder="Begin writing… Type @ to insert a name. Double-click a word for synonyms." spellcheck="true"></div>
             </div>
             <div class="sw-corkboard" id="sw-corkboard"></div>
+            <div class="sw-compare" id="sw-compare">
+              <div class="sw-compare-pane" id="sw-compare-a"></div>
+              <div class="sw-compare-pane" id="sw-compare-b"></div>
+            </div>
           </div>
           <aside class="sw-comments-panel" id="sw-comments-panel">
             <h3>Scene notes</h3>
@@ -599,6 +683,28 @@
           <button type="button" class="sw-btn" id="sw-brain-docx">DOCX</button>
         </div>
         <div class="sw-brainstorm"><textarea id="sw-brainstorm" placeholder="Ideas, threads, questions…"></textarea></div>
+      </div>
+      <div class="sw-panel" id="sw-panel-timeline">
+        <div class="sw-wb-toolbar">
+          <button type="button" class="sw-btn sw-btn-primary" id="sw-tl-add">+ Event</button>
+          <span style="font-size:0.78rem;color:var(--sw-muted)">Story-order timeline (not chapter order)</span>
+        </div>
+        <div class="sw-timeline-list" id="sw-timeline-list"></div>
+      </div>
+      <div class="sw-panel" id="sw-panel-relations">
+        <div class="sw-wb-toolbar">
+          <button type="button" class="sw-btn sw-btn-primary" id="sw-relmap-add">+ Relationship</button>
+          <span style="font-size:0.78rem;color:var(--sw-muted)">Ally, rival, family, and other ties</span>
+        </div>
+        <div class="sw-rel-grid" id="sw-rel-grid"></div>
+      </div>
+      <div class="sw-panel" id="sw-panel-series">
+        <div class="sw-wb-toolbar">
+          <button type="button" class="sw-btn sw-btn-primary" id="sw-series-set">Set series name</button>
+          <button type="button" class="sw-btn" id="sw-series-link">Mark as book in series</button>
+          <span style="font-size:0.78rem;color:var(--sw-muted)">Shared bible across linked projects</span>
+        </div>
+        <div class="sw-wb-list" id="sw-series-list"></div>
       </div>
     </div>
   </div>
@@ -698,7 +804,7 @@
   }
 
   function emptyScene(title) {
-    return { id: uid(), title: title || 'Scene 1', synopsis: '', status: 'draft', content: '', comments: [], snapshots: [] };
+    return { id: uid(), title: title || 'Scene 1', synopsis: '', status: 'draft', content: '', contentB: '', revMode: false, comments: [], snapshots: [] };
   }
   function emptyChapter(title, n) {
     return { id: uid(), title: title || ('Chapter ' + (n || 1)), synopsis: '', status: 'draft', scenes: [emptyScene('Scene 1')] };
@@ -720,7 +826,13 @@
     viewMode: 'write',
     openThreads: [],
     pinnedRef: null,
-    typewriter: false
+    typewriter: false,
+    pastePlain: true,
+    timeline: [],
+    relationships: [],
+    seriesName: '',
+    highlightMode: '',
+    streak: { days: {}, lastDate: '' }
   };
   state.activeChapterId = state.chapters[0].id;
   state.activeSceneId = state.chapters[0].scenes[0].id;
@@ -920,6 +1032,18 @@
     });
     if (!state.goals) state.goals = { sessionTarget: 500, sessionBase: 0, draftTarget: 80000 };
     if (!state.openThreads) state.openThreads = [];
+    if (!state.timeline) state.timeline = [];
+    if (!state.relationships) state.relationships = [];
+    if (!state.seriesName) state.seriesName = '';
+    if (!state.seriesBookLabel) state.seriesBookLabel = '';
+    if (!state.pastePlain && state.pastePlain !== false) state.pastePlain = true;
+    if (!state.streak) state.streak = { days: {}, lastDate: '' };
+    if (Array.isArray(state.streak.days)) {
+      var map = {};
+      state.streak.days.forEach(function (d) { map[d] = 1; });
+      state.streak.days = map;
+    }
+    if (!state.streak.days) state.streak.days = {};
     if (!state.chapters.find(function (c) { return c.id === state.activeChapterId; })) {
       state.activeChapterId = state.chapters[0].id;
     }
@@ -1006,7 +1130,14 @@
       viewMode: 'write',
       openThreads: [],
       pinnedRef: null,
-      typewriter: false
+      typewriter: false,
+      pastePlain: true,
+      timeline: [],
+      relationships: [],
+      seriesName: state.seriesName || '',
+      seriesProjectIds: state.seriesProjectIds ? state.seriesProjectIds.slice() : [],
+      highlightMode: '',
+      streak: state.streak || { days: [], lastDate: '' }
     };
     state.activeChapterId = state.chapters[0].id;
     state.activeSceneId = state.chapters[0].scenes[0].id;
@@ -1283,12 +1414,13 @@
     const sc = getActiveScene();
     if (!ch || !sc) return;
     ch.title = chapterTitle.value.trim() || ch.title;
-    ch.synopsis = ch.synopsis; // chapter synopsis via outline - keep scene syn as primary
     sc.title = sceneTitle.value.trim() || sc.title;
     sc.synopsis = synopsisEl.value.trim();
-    sc.content = editor.innerHTML;
+    if (sc.revMode) sc.contentB = editor.innerHTML;
+    else sc.content = editor.innerHTML;
     sc.status = statusSel.value || sc.status;
-    ch.status = sc.status; // mirror active scene status to chapter for sidebar dot simplicity
+    ch.status = sc.status;
+    recordStreakProgress();
   }
 
   function loadIntoEditor() {
@@ -1298,8 +1430,10 @@
     chapterTitle.value = ch.title || '';
     sceneTitle.value = sc.title || '';
     synopsisEl.value = sc.synopsis || '';
-    editor.innerHTML = sc.content || '';
+    editor.innerHTML = (sc.revMode ? (sc.contentB || '') : (sc.content || ''));
     statusSel.value = sc.status || 'draft';
+    var rb = document.getElementById('sw-rev-btn');
+    if (rb) rb.textContent = sc.revMode ? 'Draft B' : 'Revise';
     updateWordcount();
     renderComments();
     if (state.viewMode === 'cork') renderCorkboard();
@@ -1387,13 +1521,16 @@
     });
   }
   function setViewMode() {
+    var cmp = document.getElementById('sw-compare');
     if (state.viewMode === 'cork') {
       writeView.style.display = 'none';
       corkboard.classList.add('active');
+      if (cmp) cmp.classList.remove('active');
       renderCorkboard();
     } else {
       writeView.style.display = '';
       corkboard.classList.remove('active');
+      if (cmp) cmp.classList.remove('active');
     }
   }
 
@@ -1478,6 +1615,8 @@
     if (name === 'religions') renderReligions();
     if (name === 'planets') renderPlanets();
     if (name === 'brainstorm') $('#sw-brainstorm').value = state.brainstorm || '';
+    if (name === 'timeline') renderTimeline();
+    if (name === 'relations') renderRelations();
   }
 
   function exec(cmd, val) { document.execCommand(cmd, false, val); editor.focus(); onEditorInput(); }
@@ -1837,7 +1976,9 @@
   function editLocation(id) {
     const l = id ? state.locations.find(x => x.id === id) : {};
     openModal('<h3>' + (id ? 'Edit' : 'New') + ' location</h3>' +
-      field('Name', 'm-name', l.name) + field('Type', 'm-kind', l.kind) +
+      field('Name', 'm-name', l.name) + field('Type (planet / region / city…)', 'm-kind', l.kind) +
+      field('Parent location', 'm-parent', l.parent) +
+      field('Parent location (region / planet)', 'm-parent', l.parentName || '') +
       '<div class="sw-chips" id="m-chips"></div>' +
       field('Description', 'm-desc', l.description, 'textarea') +
       field('Notes', 'm-notes', l.notes, 'textarea') +
@@ -1863,7 +2004,7 @@
     $('#m-save').onclick = () => {
       const name = $('#m-name').value.trim();
       if (!name) { toast('Name required'); return; }
-      const obj = { id: id || uid(), name, kind: $('#m-kind').value.trim(), description: $('#m-desc').value.trim(), notes: $('#m-notes').value.trim(), image: imgData };
+      const obj = { id: id || uid(), name, kind: $('#m-kind').value.trim(), parentName: $('#m-parent').value.trim(), description: $('#m-desc').value.trim(), notes: $('#m-notes').value.trim(), image: imgData };
       if (id) { const i = state.locations.findIndex(x => x.id === id); state.locations[i] = obj; }
       else state.locations.push(obj);
       save(); closeModal(); renderLocations(); toast('Saved');
@@ -1899,7 +2040,7 @@
       field('Wants', 'm-wants', c.wants, 'textarea') + field('Fears', 'm-fears', c.fears, 'textarea') +
       field('Values', 'm-values', c.values, 'textarea') + field('Background', 'm-bg', c.background, 'textarea') +
       field('Conflict', 'm-conflict', c.conflict, 'textarea') + field('Arc', 'm-arc', c.arc, 'textarea') +
-      field('Notes', 'm-notes', c.notes, 'textarea') + field('Image', 'm-img', '', 'file') +
+      field('Voice notes (sample lines, words they avoid)', 'm-voice', c.voice, 'textarea') + field('Notes', 'm-notes', c.notes, 'textarea') + field('Image', 'm-img', '', 'file') +
       '<div class="sw-modal-actions"><button type="button" class="sw-btn" id="m-cancel">Cancel</button>' +
       '<button type="button" class="sw-btn sw-btn-primary" id="m-save">Save</button></div>');
     let imgData = c.image || '';
@@ -1920,7 +2061,9 @@
         wants: $('#m-wants').value.trim(), fears: $('#m-fears').value.trim(),
         values: $('#m-values').value.trim(), background: $('#m-bg').value.trim(),
         conflict: $('#m-conflict').value.trim(), arc: $('#m-arc').value.trim(),
-        notes: $('#m-notes').value.trim(), image: imgData
+        notes: $('#m-notes').value.trim(), image: imgData,
+        eyeColor: $('#m-eye').value.trim(), status: $('#m-status').value.trim() || 'alive',
+        voiceNotes: $('#m-voice').value.trim()
       };
       if (id) { const i = state.characters.findIndex(x => x.id === id); state.characters[i] = obj; }
       else state.characters.push(obj);
@@ -2020,14 +2163,14 @@
         detailRow('Role', data.role) + detailRow('Age', data.age) + detailRow('Appearance', data.appearance) +
         detailRow('Traits', data.traits) + detailRow('Wants', data.wants) + detailRow('Fears', data.fears) +
         detailRow('Values', data.values) + detailRow('Background', data.background) +
-        detailRow('Conflict', data.conflict) + detailRow('Arc', data.arc) + detailRow('Notes', data.notes) + '</div>';
+        detailRow('Conflict', data.conflict) + detailRow('Arc', data.arc) + detailRow('Voice notes', data.voice) + detailRow('Notes', data.notes) + '</div>';
       editFn = () => editCharacter(id);
     } else if (kind === 'location') {
       data = state.locations.find(x => x.id === id); if (!data) return;
       title = data.name;
       body = '<div class="sw-hp-type">Location</div><div class="sw-detail-grid">' +
         (data.image ? '<img src="' + data.image + '" style="max-width:100%;border-radius:8px;margin-bottom:8px">' : '') +
-        detailRow('Type', data.kind) + detailRow('Description', data.description) + detailRow('Notes', data.notes) + '</div>';
+        detailRow('Type', data.kind) + detailRow('Parent', data.parent) + detailRow('Description', data.description) + detailRow('Notes', data.notes) + '</div>';
       editFn = () => editLocation(id);
     } else if (kind === 'religion') {
       data = state.religions.find(x => x.id === id); if (!data) return;
@@ -2219,7 +2362,12 @@
       '<button type="button" class="sw-btn" data-tpl="trilogy">Trilogy bible (3 books + shared cast slots)</button>' +
       '<button type="button" class="sw-btn" data-tpl="poetry">Poetry collection (12 poem slots)</button>' +
       '<button type="button" class="sw-btn" data-tpl="scenes">Scene workshop (8 untitled scenes)</button>' +
+      '<button type="button" class="sw-btn" data-tpl="mystery">Mystery novel beats</button>' +
+      '<button type="button" class="sw-btn" data-tpl="romance">Romance arc beats</button>' +
       '<button type="button" class="sw-btn" data-tpl="blank">Blank project</button>' +
+      '<button type="button" class="sw-btn" data-tpl="mystery">Mystery novel beats</button>' +
+      '<button type="button" class="sw-btn" data-tpl="romance">Romance arc</button>' +
+      '<button type="button" class="sw-btn" data-tpl="series">Series bible (3 books)</button>' +
       '<button type="button" class="sw-btn" id="m-cancel">Cancel</button></div>');
     $('#m-cancel').onclick = closeModal;
     $$('[data-tpl]').forEach(btn => {
@@ -2286,6 +2434,44 @@
       ch.scenes = [];
       for (let i = 1; i <= 8; i++) ch.scenes.push(emptyScene('Scene ' + i));
       state.chapters = [ch];
+    } else if (tpl === 'mystery') {
+      state.chapters = [];
+      ['Crime', 'Investigation', 'Midpoint twist', 'Crisis', 'Revelation', 'Resolution'].forEach(function (t, i) {
+        var ch = emptyChapter(t, i + 1);
+        ch.synopsis = t;
+        state.chapters.push(ch);
+      });
+      state.characters = [
+        { id: uid(), name: 'Detective', role: 'Protagonist', status: 'alive', eyeColor: '', voiceNotes: '', age: '', appearance: '', traits: '', wants: 'Truth', fears: '', values: '', background: '', conflict: '', arc: '', notes: '', image: '' },
+        { id: uid(), name: 'Victim', role: 'Victim', status: 'dead', eyeColor: '', voiceNotes: '', age: '', appearance: '', traits: '', wants: '', fears: '', values: '', background: '', conflict: '', arc: '', notes: '', image: '' }
+      ];
+      state.timeline = [
+        { id: uid(), order: '1', title: 'Crime occurs', note: '' },
+        { id: uid(), order: '2', title: 'Detective takes case', note: '' },
+        { id: uid(), order: '3', title: 'False lead', note: '' },
+        { id: uid(), order: '4', title: 'Truth', note: '' }
+      ];
+    } else if (tpl === 'romance') {
+      state.chapters = [];
+      ['Meet-cute', 'Tension', 'Deepening', 'Breakup / crisis', 'Grand gesture', 'HEA / HFN'].forEach(function (t, i) {
+        var ch = emptyChapter(t, i + 1);
+        ch.synopsis = t;
+        state.chapters.push(ch);
+      });
+      state.characters = [
+        { id: uid(), name: 'Lead A', role: 'Romantic lead', status: 'alive', eyeColor: '', voiceNotes: '', age: '', appearance: '', traits: '', wants: '', fears: '', values: '', background: '', conflict: '', arc: '', notes: '', image: '' },
+        { id: uid(), name: 'Lead B', role: 'Romantic lead', status: 'alive', eyeColor: '', voiceNotes: '', age: '', appearance: '', traits: '', wants: '', fears: '', values: '', background: '', conflict: '', arc: '', notes: '', image: '' }
+      ];
+      state.relationships = [{ id: uid(), a: 'Lead A', b: 'Lead B', kind: 'romance', note: 'Central relationship' }];
+    } else if (tpl === 'series') {
+      state.seriesName = 'My series';
+      state.chapters = [
+        Object.assign(emptyChapter('Book 1 - Outline', 1), { synopsis: 'Book 1' }),
+        Object.assign(emptyChapter('Book 2 - Outline', 2), { synopsis: 'Book 2' }),
+        Object.assign(emptyChapter('Book 3 - Outline', 3), { synopsis: 'Book 3' })
+      ];
+      state.characters = [];
+      state.locations = [];
     } else {
       state.chapters = [emptyChapter('Chapter 1', 1)];
       state.characters = [];
@@ -2293,6 +2479,8 @@
       state.religions = [];
       state.planets = [];
       state.brainstorm = '';
+      state.timeline = [];
+      state.relationships = [];
     }
     state.activeChapterId = state.chapters[0].id;
     state.activeSceneId = state.chapters[0].scenes[0].id;
@@ -2533,7 +2721,7 @@
     renderChapters(); loadIntoEditor();
     toast('Cleared');
   };
-  $('#sw-view-write').onclick = () => { state.viewMode = 'write'; setViewMode(); };
+  $('#sw-view-write').onclick = () => { state.viewMode = 'write'; var cmp=document.getElementById('sw-compare'); if(cmp) cmp.classList.remove('active'); writeView.style.display=''; setViewMode(); };
   $('#sw-view-cork').onclick = () => { saveCurrent(); state.viewMode = 'cork'; setViewMode(); };
   $('#sw-toggle-comments').onclick = () => ROOT.classList.toggle('sw-comments-open');
   $('#sw-add-comment').onclick = addComment;
@@ -2635,6 +2823,1197 @@
       });
     });
   }
+
+
+  // ----- Streak -----
+  function todayKey() {
+    var d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+  function recordStreakProgress() {
+    if (!state.streak) state.streak = { days: {}, lastDate: '' };
+    if (!state.streak.days) state.streak.days = {};
+    var k = todayKey();
+    var w = totalWords();
+    if (!state.streak.days[k]) state.streak.days[k] = 0;
+    // mark day active if any writing session words > 0 today relative to session base is weak;
+    // instead: if manuscript has content and user saved, count day when session > 0
+    var session = Math.max(0, w - (state.goals.sessionBase || 0));
+    if (session > 0) state.streak.days[k] = Math.max(state.streak.days[k], session);
+    state.streak.lastDate = k;
+    updateStreakUI();
+  }
+  function currentStreakCount() {
+    if (!state.streak || !state.streak.days) return 0;
+    var count = 0;
+    var d = new Date();
+    for (var i = 0; i < 366; i++) {
+      var k = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+      if (state.streak.days[k] && state.streak.days[k] > 0) count++;
+      else if (i > 0) break;
+      d.setDate(d.getDate() - 1);
+    }
+    return count;
+  }
+  function updateStreakUI() {
+    var el = document.getElementById('sw-streak');
+    if (!el) return;
+    el.innerHTML = 'Streak: <strong>' + currentStreakCount() + '</strong>d';
+  }
+
+  // ----- Pomodoro -----
+  var pomoLeft = 25 * 60;
+  var pomoTimer = null;
+  var pomoRunning = false;
+  function formatPomo(s) {
+    var m = Math.floor(s / 60); var sec = s % 60;
+    return String(m).padStart(2, '0') + ':' + String(sec).padStart(2, '0');
+  }
+  function updatePomoUI() {
+    var el = document.getElementById('sw-timer');
+    if (el) el.textContent = formatPomo(pomoLeft);
+  }
+  function togglePomo() {
+    if (pomoRunning) {
+      clearInterval(pomoTimer); pomoRunning = false;
+      var b = document.getElementById('sw-timer-btn'); if (b) b.textContent = 'Timer';
+      toast('Timer paused');
+      return;
+    }
+    if (pomoLeft <= 0) pomoLeft = 25 * 60;
+    pomoRunning = true;
+    var b = document.getElementById('sw-timer-btn'); if (b) b.textContent = 'Pause';
+    pomoTimer = setInterval(function () {
+      pomoLeft--;
+      updatePomoUI();
+      if (pomoLeft <= 0) {
+        clearInterval(pomoTimer); pomoRunning = false;
+        if (b) b.textContent = 'Timer';
+        toast('Focus block done');
+        try { if (navigator.vibrate) navigator.vibrate(200); } catch (e) {}
+      }
+    }, 1000);
+  }
+
+  // ----- Paste plain -----
+  function updatePastePlainBtn() {
+    var b = document.getElementById('sw-paste-plain');
+    if (b) b.textContent = state.pastePlain !== false ? 'Plain paste: on' : 'Plain paste: off';
+  }
+  editor.addEventListener('paste', function (e) {
+    if (state.pastePlain === false) return;
+    e.preventDefault();
+    var text = (e.clipboardData || window.clipboardData).getData('text/plain');
+    document.execCommand('insertText', false, text);
+    onEditorInput();
+  });
+
+  // ----- Find & replace -----
+  function openFindReplace() {
+    openModal(
+      '<h3>Find &amp; replace</h3>' +
+      field('Find', 'm-find', '') +
+      field('Replace with', 'm-repl', '') +
+      '<label class="sw-lbl"><input type="checkbox" id="m-find-all"> Whole manuscript</label>' +
+      '<div class="sw-modal-actions">' +
+      '<button type="button" class="sw-btn" id="m-cancel">Close</button>' +
+      '<button type="button" class="sw-btn" id="m-find-next">Find in scene</button>' +
+      '<button type="button" class="sw-btn sw-btn-primary" id="m-repl-do">Replace</button></div>'
+    );
+    $('#m-cancel').onclick = closeModal;
+    $('#m-find-next').onclick = function () {
+      var q = ($('#m-find').value || '');
+      if (!q) return;
+      var sc = getActiveScene();
+      if (!sc) return;
+      var plain = stripHtml(sc.content);
+      var idx = plain.toLowerCase().indexOf(q.toLowerCase());
+      if (idx < 0) { toast('Not found in scene'); return; }
+      toast('Found at position ' + (idx + 1));
+      // select in editor via window.find when possible
+      if (window.find) {
+        editor.focus();
+        window.find(q, false, false, true, false, false, false);
+      }
+    };
+    $('#m-repl-do').onclick = function () {
+      var q = $('#m-find').value || '';
+      var r = $('#m-repl').value || '';
+      if (!q) return;
+      var whole = $('#m-find-all').checked;
+      var count = 0;
+      function replHtml(html) {
+        var d = document.createElement('div');
+        d.innerHTML = html || '';
+        var walk = document.createTreeWalker(d, NodeFilter.SHOW_TEXT);
+        var nodes = [];
+        while (walk.nextNode()) nodes.push(walk.currentNode);
+        nodes.forEach(function (n) {
+          if (n.nodeValue && n.nodeValue.toLowerCase().indexOf(q.toLowerCase()) >= 0) {
+            var re = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+            var before = n.nodeValue;
+            n.nodeValue = n.nodeValue.replace(re, r);
+            if (n.nodeValue !== before) count++;
+          }
+        });
+        return d.innerHTML;
+      }
+      saveCurrent();
+      if (whole) {
+        state.chapters.forEach(function (ch) {
+          ch.scenes.forEach(function (sc) { sc.content = replHtml(sc.content); });
+        });
+      } else {
+        var sc = getActiveScene();
+        if (sc) sc.content = replHtml(sc.content);
+      }
+      loadIntoEditor(); save();
+      toast('Replaced in ' + count + ' text node(s)');
+      closeModal();
+    };
+  }
+
+  // ----- Mention index -----
+  function openMentionIndex() {
+    var rows = [];
+    getMentionables().forEach(function (item) {
+      var scenes = [];
+      state.chapters.forEach(function (ch) {
+        ch.scenes.forEach(function (sc) {
+          var htmlc = (sc.content || '').toLowerCase();
+          var plain = stripHtml(sc.content).toLowerCase();
+          var name = (item.name || '').toLowerCase();
+          if (htmlc.indexOf('data-id="' + item.id + '"') >= 0 || (name && plain.indexOf(name) >= 0)) {
+            scenes.push(ch.title + ' / ' + sc.title);
+          }
+        });
+      });
+      rows.push({ item: item, scenes: scenes });
+    });
+    var body = '<h3>Mention index</h3>';
+    if (!rows.length) body += '<p style="color:var(--sw-muted)">No characters or places yet.</p>';
+    rows.forEach(function (r) {
+      body += '<div style="margin-bottom:10px;padding:8px;border:1px solid var(--sw-border);border-radius:8px">' +
+        '<strong>' + escapeHtml(r.item.name) + '</strong> <span style="font-size:0.72rem;color:var(--sw-muted)">' + escapeHtml(r.item.type) + '</span>' +
+        '<div style="font-size:0.82rem;margin-top:4px;color:var(--sw-muted)">' +
+        (r.scenes.length ? r.scenes.map(function (s) { return escapeHtml(s); }).join('<br>') : 'Not mentioned yet') +
+        '</div></div>';
+    });
+    body += '<div class="sw-modal-actions"><button type="button" class="sw-btn" id="m-cancel">Close</button></div>';
+    openModal(body);
+    $('#m-cancel').onclick = closeModal;
+  }
+
+  // ----- Continuity warnings -----
+  function runContinuityCheck() {
+    var warnings = [];
+    state.characters.forEach(function (c) {
+      var ages = [];
+      var eyes = [];
+      var fields = [c.age, c.appearance, c.notes, c.background, c.traits].join(' ');
+      var eyeM = fields.match(/\b(blue|green|brown|hazel|grey|gray|black|amber|violet)\s+eyes?\b/i);
+      if (c.eyeColor) eyes.push(c.eyeColor);
+      if (eyeM) eyes.push(eyeM[1].toLowerCase());
+      eyes = eyes.filter(Boolean);
+      if (eyes.length >= 2 && eyes[0].toLowerCase() !== eyes[1].toLowerCase()) {
+        warnings.push(c.name + ': possible eye-color mismatch (' + eyes.join(' vs ') + ')');
+      }
+      if (c.status === 'dead' || /\\bdead\\b/i.test(c.notes || '') || /\\bdied\\b/i.test(c.notes || '')) {
+        state.chapters.forEach(function (ch) {
+          ch.scenes.forEach(function (sc) {
+            var plain = stripHtml(sc.content);
+            if (plain.indexOf(c.name) >= 0 && /\\b(said|says|asks|replied|whispered)\\b/i.test(plain)) {
+              warnings.push(c.name + ' may still be speaking in ' + ch.title + ' / ' + sc.title + ' (marked dead)');
+            }
+          });
+        });
+      }
+      // age number conflict crude
+      var ageNums = (fields.match(/\\b(\\d{1,3})\\s*(years?\\s*old|yrs?)\\b/gi) || []).map(function (x) {
+        return parseInt(x, 10);
+      }).filter(function (n) { return n > 0 && n < 130; });
+      if (c.age && /^\\d+$/.test(String(c.age).trim())) ageNums.push(parseInt(c.age, 10));
+      if (ageNums.length >= 2) {
+        var min = Math.min.apply(null, ageNums), max = Math.max.apply(null, ageNums);
+        if (max - min >= 3) warnings.push(c.name + ': age notes differ (' + min + '–' + max + ')');
+      }
+    });
+    var body = '<h3>Continuity check</h3>';
+    if (!warnings.length) body += '<p style="color:var(--sw-muted)">No soft warnings found. Checks are heuristic only.</p>';
+    else body += '<ul style="margin:0;padding-left:1.2em;font-size:0.9rem;line-height:1.5">' +
+      warnings.map(function (w) { return '<li>' + escapeHtml(w) + '</li>'; }).join('') + '</ul>';
+    body += '<div class="sw-modal-actions"><button type="button" class="sw-btn" id="m-cancel">Close</button></div>';
+    openModal(body);
+    $('#m-cancel').onclick = closeModal;
+  }
+
+  // ----- Timeline -----
+  function renderTimeline() {
+    var list = document.getElementById('sw-timeline-list');
+    if (!list) return;
+    if (!state.timeline) state.timeline = [];
+    var sorted = state.timeline.slice().sort(function (a, b) {
+      return (parseFloat(a.order) || 0) - (parseFloat(b.order) || 0);
+    });
+    if (!sorted.length) {
+      list.innerHTML = '<p style="color:var(--sw-muted);font-style:italic">No events yet. Add story-order beats here.</p>';
+      return;
+    }
+    list.innerHTML = sorted.map(function (ev) {
+      return '<div class="sw-tl-item" data-id="' + ev.id + '">' +
+        '<div style="font-size:0.75rem;color:var(--sw-muted);min-width:2.5em">' + escapeHtml(String(ev.order)) + '</div>' +
+        '<div style="flex:1"><strong>' + escapeHtml(ev.title) + '</strong>' +
+        (ev.note ? '<div style="font-size:0.82rem;color:var(--sw-muted)">' + escapeHtml(ev.note) + '</div>' : '') +
+        '</div>' +
+        '<button type="button" class="sw-btn sw-tl-edit" data-id="' + ev.id + '">Edit</button>' +
+        '<button type="button" class="sw-btn sw-tl-del" data-id="' + ev.id + '">×</button></div>';
+    }).join('');
+    list.querySelectorAll('.sw-tl-edit').forEach(function (b) {
+      b.onclick = function () { editTimelineEvent(b.dataset.id); };
+    });
+    list.querySelectorAll('.sw-tl-del').forEach(function (b) {
+      b.onclick = async function () {
+        if (!(await swConfirm('Delete this event?'))) return;
+        state.timeline = state.timeline.filter(function (x) { return x.id !== b.dataset.id; });
+        save(); renderTimeline();
+      };
+    });
+  }
+  async function editTimelineEvent(id) {
+    var ev = id ? state.timeline.find(function (x) { return x.id === id; }) : { title: '', order: String((state.timeline || []).length + 1), note: '' };
+    openModal('<h3>' + (id ? 'Edit' : 'New') + ' timeline event</h3>' +
+      field('Title', 'm-title', ev.title) +
+      field('Story order (number)', 'm-order', ev.order) +
+      field('Note', 'm-note', ev.note, 'textarea') +
+      '<div class="sw-modal-actions"><button type="button" class="sw-btn" id="m-cancel">Cancel</button>' +
+      '<button type="button" class="sw-btn sw-btn-primary" id="m-save">Save</button></div>');
+    $('#m-cancel').onclick = closeModal;
+    $('#m-save').onclick = function () {
+      var title = $('#m-title').value.trim();
+      if (!title) { toast('Title required'); return; }
+      var obj = { id: id || uid(), title: title, order: $('#m-order').value.trim() || '0', note: $('#m-note').value.trim() };
+      if (!state.timeline) state.timeline = [];
+      if (id) {
+        var i = state.timeline.findIndex(function (x) { return x.id === id; });
+        state.timeline[i] = obj;
+      } else state.timeline.push(obj);
+      save(); closeModal(); renderTimeline();
+    };
+  }
+
+  // ----- Relationships -----
+  function renderRelations() {
+    var grid = document.getElementById('sw-rel-grid');
+    if (!grid) return;
+    if (!state.relationships) state.relationships = [];
+    if (!state.relationships.length) {
+      grid.innerHTML = '<p style="color:var(--sw-muted);font-style:italic">No relationships yet.</p>';
+      return;
+    }
+    grid.innerHTML = state.relationships.map(function (r) {
+      return '<div class="sw-rel-card"><strong>' + escapeHtml(r.a || '?') + '</strong>' +
+        ' <span style="color:var(--sw-muted)">· ' + escapeHtml(r.kind || 'linked') + ' ·</span> ' +
+        '<strong>' + escapeHtml(r.b || '?') + '</strong>' +
+        (r.note ? '<div style="margin-top:6px;font-size:0.8rem;color:var(--sw-muted)">' + escapeHtml(r.note) + '</div>' : '') +
+        '<div style="margin-top:8px"><button type="button" class="sw-btn sw-rel-edit" data-id="' + r.id + '">Edit</button> ' +
+        '<button type="button" class="sw-btn sw-rel-del" data-id="' + r.id + '">Delete</button></div></div>';
+    }).join('');
+    grid.querySelectorAll('.sw-rel-edit').forEach(function (b) {
+      b.onclick = function () { editRelation(b.dataset.id); };
+    });
+    grid.querySelectorAll('.sw-rel-del').forEach(function (b) {
+      b.onclick = async function () {
+        if (!(await swConfirm('Delete relationship?'))) return;
+        state.relationships = state.relationships.filter(function (x) { return x.id !== b.dataset.id; });
+        save(); renderRelations();
+      };
+    });
+  }
+  function editRelation(id) {
+    var r = id ? state.relationships.find(function (x) { return x.id === id; }) : {};
+    var names = state.characters.map(function (c) { return c.name; }).filter(Boolean);
+    openModal('<h3>' + (id ? 'Edit' : 'New') + ' relationship</h3>' +
+      field('Person A', 'm-a', r.a) + field('Person B', 'm-b', r.b) +
+      field('Type (ally, rival, family…)', 'm-kind', r.kind || 'ally') +
+      field('Note', 'm-note', r.note, 'textarea') +
+      (names.length ? '<p style="font-size:0.78rem;color:var(--sw-muted)">Characters: ' + escapeHtml(names.join(', ')) + '</p>' : '') +
+      '<div class="sw-modal-actions"><button type="button" class="sw-btn" id="m-cancel">Cancel</button>' +
+      '<button type="button" class="sw-btn sw-btn-primary" id="m-save">Save</button></div>');
+    $('#m-cancel').onclick = closeModal;
+    $('#m-save').onclick = function () {
+      var obj = { id: id || uid(), a: $('#m-a').value.trim(), b: $('#m-b').value.trim(), kind: $('#m-kind').value.trim(), note: $('#m-note').value.trim() };
+      if (!obj.a || !obj.b) { toast('Both names required'); return; }
+      if (!state.relationships) state.relationships = [];
+      if (id) {
+        var i = state.relationships.findIndex(function (x) { return x.id === id; });
+        state.relationships[i] = obj;
+      } else state.relationships.push(obj);
+      save(); closeModal(); renderRelations();
+    };
+  }
+
+  // ----- Highlight passes -----
+  var ADVERBS = /\\b\\w+ly\\b/gi;
+  var FILTERS = /\\b(just|really|very|quite|rather|suddenly|somehow|began to|started to|felt|saw|heard|knew|realized|noticed)\\b/gi;
+  function clearHighlights() {
+    var marks = editor.querySelectorAll('.sw-hl-dialogue, .sw-hl-adverb, .sw-hl-filter');
+    // simpler: reload content without highlight wrappers
+    var sc = getActiveScene();
+    if (sc) editor.innerHTML = sc.content || '';
+    state.highlightMode = '';
+  }
+  function applyHighlight(mode) {
+    saveCurrent();
+    var sc = getActiveScene();
+    if (!sc) return;
+    if (state.highlightMode === mode) { clearHighlights(); save(); return; }
+    clearHighlights();
+    state.highlightMode = mode;
+    var html = sc.content || '';
+    // work on plain-ish: wrap in temp
+    var d = document.createElement('div');
+    d.innerHTML = html;
+    if (mode === 'dialogue') {
+      // highlight text in quotes
+      var walk = document.createTreeWalker(d, NodeFilter.SHOW_TEXT);
+      var nodes = [];
+      while (walk.nextNode()) nodes.push(walk.currentNode);
+      nodes.forEach(function (n) {
+        if (!n.nodeValue || n.nodeValue.indexOf('"') < 0) return;
+        var parts = n.nodeValue.split(/(\"[^\"]*\")/g);
+        if (parts.length < 2) return;
+        var frag = document.createDocumentFragment();
+        parts.forEach(function (p) {
+          if (/^\"[^\"]*\"$/.test(p)) {
+            var sp = document.createElement('span');
+            sp.className = 'sw-hl-dialogue';
+            sp.textContent = p;
+            frag.appendChild(sp);
+          } else frag.appendChild(document.createTextNode(p));
+        });
+        n.parentNode.replaceChild(frag, n);
+      });
+    } else if (mode === 'adverb') {
+      var walk2 = document.createTreeWalker(d, NodeFilter.SHOW_TEXT);
+      var nodes2 = [];
+      while (walk2.nextNode()) nodes2.push(walk2.currentNode);
+      nodes2.forEach(function (n) {
+        if (!n.nodeValue || !/ly\\b/i.test(n.nodeValue)) return;
+        var html2 = n.nodeValue.replace(ADVERBS, function (m) { return '[[HLADV]]' + m + '[[/HLADV]]'; });
+        if (html2 === n.nodeValue) return;
+        var wrap = document.createElement('span');
+        wrap.innerHTML = html2.replace(/\\[\\[HLADV\\]\\]/g, '<span class="sw-hl-adverb">').replace(/\\[\\[\\/HLADV\\]\\]/g, '</span>');
+        n.parentNode.replaceChild(wrap, n);
+      });
+    } else if (mode === 'filter') {
+      var walk3 = document.createTreeWalker(d, NodeFilter.SHOW_TEXT);
+      var nodes3 = [];
+      while (walk3.nextNode()) nodes3.push(walk3.currentNode);
+      nodes3.forEach(function (n) {
+        if (!n.nodeValue) return;
+        var html3 = n.nodeValue.replace(FILTERS, function (m) { return '[[HLFIL]]' + m + '[[/HLFIL]]'; });
+        if (html3 === n.nodeValue) return;
+        var wrap = document.createElement('span');
+        wrap.innerHTML = html3.replace(/\\[\\[HLFIL\\]\\]/g, '<span class="sw-hl-filter">').replace(/\\[\\[\\/HLFIL\\]\\]/g, '</span>');
+        n.parentNode.replaceChild(wrap, n);
+      });
+    }
+    editor.innerHTML = d.innerHTML;
+    // do not save highlighted markup into scene permanently
+  }
+  function openHighlightMenu() {
+    openModal('<h3>Highlight pass</h3>' +
+      '<p style="font-size:0.88rem;color:var(--sw-muted);margin:0 0 12px">Highlights are temporary and not saved into the manuscript.</p>' +
+      '<div class="sw-modal-actions" style="flex-direction:column;align-items:stretch">' +
+      '<button type="button" class="sw-btn" data-hl="dialogue">Dialogue (quoted text)</button>' +
+      '<button type="button" class="sw-btn" data-hl="adverb">Adverbs (-ly)</button>' +
+      '<button type="button" class="sw-btn" data-hl="filter">Filter words</button>' +
+      '<button type="button" class="sw-btn" data-hl="clear">Clear highlights</button>' +
+      '<button type="button" class="sw-btn" id="m-cancel">Close</button></div>');
+    $('#m-cancel').onclick = closeModal;
+    ROOT.querySelectorAll('[data-hl]').forEach(function (btn) {
+      btn.onclick = function () {
+        if (btn.dataset.hl === 'clear') clearHighlights();
+        else applyHighlight(btn.dataset.hl);
+        closeModal();
+      };
+    });
+  }
+
+  // ----- Readability stats -----
+  function showStats() {
+    var text = stripHtml(getActiveScene() ? getActiveScene().content : '');
+    var words = text.trim() ? text.trim().split(/\\s+/).length : 0;
+    var sentences = (text.match(/[.!?]+/g) || []).length || (words ? 1 : 0);
+    var chars = text.replace(/\\s/g, '').length;
+    var dialogueChars = 0;
+    var parts = text.split('\"');
+    for (var i = 1; i < parts.length; i += 2) dialogueChars += parts[i].length;
+    var avg = sentences ? (words / sentences) : 0;
+    var dialogueRatio = chars ? Math.round((dialogueChars / Math.max(chars, 1)) * 100) : 0;
+    var body = '<h3>Readability (this scene)</h3><div class="sw-detail-grid">' +
+      detailRow('Words', String(words)) +
+      detailRow('Sentences', String(sentences)) +
+      detailRow('Avg words / sentence', avg.toFixed(1)) +
+      detailRow('Dialogue share (approx.)', dialogueRatio + '%') +
+      detailRow('Manuscript words', String(totalWords())) +
+      '</div><div class="sw-modal-actions"><button type="button" class="sw-btn" id="m-cancel">Close</button></div>';
+    openModal(body);
+    $('#m-cancel').onclick = closeModal;
+  }
+
+  // ----- Revision mode (A/B) -----
+  function toggleRevisionMode() {
+    var sc = getActiveScene();
+    if (!sc) return;
+    // flush editor into the active draft
+    if (sc.revMode) sc.contentB = editor.innerHTML;
+    else sc.content = editor.innerHTML;
+    if (!sc.revMode) {
+      if (!sc.contentB) sc.contentB = sc.content || '';
+      sc.revMode = true;
+      editor.innerHTML = sc.contentB || '';
+      toast('Draft B (A locked)');
+    } else {
+      sc.revMode = false;
+      editor.innerHTML = sc.content || '';
+      toast('Draft A');
+    }
+    var b = document.getElementById('sw-rev-btn');
+    if (b) b.textContent = sc.revMode ? 'Draft B' : 'Revise';
+    save();
+    updateWordcount();
+  }
+
+  // ----- Snapshot compare -----
+  function openCompare() {
+    var sc = getActiveScene();
+    if (!sc || !sc.snapshots || sc.snapshots.length < 1) {
+      toast('Take at least one snapshot first');
+      return;
+    }
+    var opts = sc.snapshots.map(function (s, i) {
+      return '<option value="' + s.id + '">' + escapeHtml(s.name || ('Snapshot ' + (i + 1))) + '</option>';
+    }).join('');
+    openModal('<h3>Compare snapshots</h3>' +
+      '<label class="sw-lbl">Left</label><select class="sw-sel" id="m-ca">' + opts + '</select>' +
+      '<label class="sw-lbl" style="margin-top:8px">Right</label><select class="sw-sel" id="m-cb">' + opts + '</select>' +
+      '<div class="sw-modal-actions"><button type="button" class="sw-btn" id="m-cancel">Close</button>' +
+      '<button type="button" class="sw-btn sw-btn-primary" id="m-go">Compare</button></div>');
+    $('#m-cancel').onclick = closeModal;
+    $('#m-go').onclick = function () {
+      var a = sc.snapshots.find(function (x) { return x.id === $('#m-ca').value; });
+      var b = sc.snapshots.find(function (x) { return x.id === $('#m-cb').value; });
+      closeModal();
+      writeView.style.display = 'none';
+      corkboard.classList.remove('active');
+      var cmp = document.getElementById('sw-compare');
+      cmp.classList.add('active');
+      document.getElementById('sw-compare-a').textContent = stripHtml(a ? a.content : '');
+      document.getElementById('sw-compare-b').textContent = stripHtml(b ? b.content : '');
+      toast('Comparing — click Write to return');
+    };
+  }
+
+  // ----- Series name in project modal hint handled via series field -----
+  async function editSeries() {
+    var name = await swPrompt('Series name (shared bible label for linked books)', state.seriesName || '');
+    if (name === null) return;
+    state.seriesName = name.trim();
+    save();
+    toast(state.seriesName ? ('Series: ' + state.seriesName) : 'Series cleared');
+  }
+
+  // ----- Disk onboarding once -----
+  function maybeDiskOnboarding() {
+    try {
+      if (localStorage.getItem('storywriter-disk-tip')) return;
+      localStorage.setItem('storywriter-disk-tip', '1');
+    } catch (e) { return; }
+    setTimeout(function () {
+      openModal('<h3>Back up across devices</h3>' +
+        '<p style="margin:0 0 12px;line-height:1.5;font-size:0.92rem">This app stores projects in <strong>this browser</strong>. To move to another device or protect against cleared data, use <strong>Save disk</strong> (JSON) or Export. On the other device, use <strong>Open disk</strong> or drop the JSON file onto the page.</p>' +
+        '<div class="sw-modal-actions"><button type="button" class="sw-btn sw-btn-primary" id="m-cancel">Got it</button></div>');
+      $('#m-cancel').onclick = closeModal;
+    }, 2000);
+  }
+
+
+
+  var _tb = function (id, fn) { var el = document.getElementById(id); if (el) el.onclick = fn; };
+  _tb('sw-timer-btn', togglePomo);
+  _tb('sw-find-btn', openFindReplace);
+  _tb('sw-hl-btn', openHighlightMenu);
+  _tb('sw-stats-btn', showStats);
+  _tb('sw-mentions-btn', openMentionIndex);
+  _tb('sw-continuity-btn', runContinuityCheck);
+  _tb('sw-rev-btn', toggleRevisionMode);
+  _tb('sw-compare-btn', openCompare);
+  _tb('sw-paste-plain', function () {
+    state.pastePlain = state.pastePlain === false ? true : false;
+    updatePastePlainBtn(); save();
+    toast(state.pastePlain !== false ? 'Plain paste on' : 'Plain paste off');
+  });
+  _tb('sw-print-btn', function () { saveCurrent(); window.print(); });
+  _tb('sw-tl-add', function () { editTimelineEvent(null); });
+  _tb('sw-rel-add', function () { editRelation(null); });
+  updatePomoUI();
+  updatePastePlainBtn();
+  updateStreakUI();
+
+
+  // ========== Extended features ==========
+  var pomoTimer = null;
+  var pomoLeft = 25 * 60;
+  var pomoRunning = false;
+
+  function todayStr() {
+    var d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+
+  function updateStreakDisplay() {
+    if (!state.streak) state.streak = { days: {}, lastDate: '' };
+    if (Array.isArray(state.streak.days)) {
+      var m = {}; state.streak.days.forEach(function (d) { m[d] = 1; }); state.streak.days = m;
+    }
+    if (!state.streak.days) state.streak.days = {};
+    var el = document.getElementById('sw-streak');
+    if (!el) return;
+    var count = 0;
+    var d = new Date();
+    for (var i = 0; i < 400; i++) {
+      var key = d.toISOString().slice(0, 10);
+      if (state.streak.days[key]) count++;
+      else if (i > 0) break;
+      d.setDate(d.getDate() - 1);
+    }
+    el.innerHTML = 'Streak: <strong>' + count + '</strong>';
+  }
+
+  function recordStreakIfNeeded() {
+    if (!state.streak) state.streak = { days: [], lastDate: '' };
+    var t = todayStr();
+    if (state.streak.lastDate === t) return;
+    // only record if wrote something today (called from save when words increase)
+    var words = totalWords();
+    if (words <= 0) return;
+    if (state.streak.days.indexOf(t) === -1) state.streak.days.push(t);
+    // keep last 365
+    state.streak.days = state.streak.days.slice(-365);
+    state.streak.lastDate = t;
+    // trim broken streaks for display count: count consecutive days ending today
+    var count = 0;
+    var cur = new Date();
+    for (var i = 0; i < 400; i++) {
+      var key = cur.getFullYear() + '-' + String(cur.getMonth() + 1).padStart(2, '0') + '-' + String(cur.getDate()).padStart(2, '0');
+      if (state.streak.days.indexOf(key) >= 0) count++;
+      else break;
+      cur.setDate(cur.getDate() - 1);
+    }
+    updateStreakDisplay();
+  }
+
+  function formatPomo(sec) {
+    var m = Math.floor(sec / 60);
+    var s = sec % 60;
+    return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+  }
+  function updatePomoDisplay() {
+    var el = document.getElementById('sw-pomodoro');
+    if (el) el.textContent = formatPomo(pomoLeft);
+  }
+  function togglePomodoro() {
+    if (pomoRunning) {
+      clearInterval(pomoTimer);
+      pomoTimer = null;
+      pomoRunning = false;
+      toast('Timer paused');
+      return;
+    }
+    if (pomoLeft <= 0) pomoLeft = 25 * 60;
+    pomoRunning = true;
+    toast('Focus timer running');
+    pomoTimer = setInterval(function () {
+      pomoLeft--;
+      updatePomoDisplay();
+      if (pomoLeft <= 0) {
+        clearInterval(pomoTimer);
+        pomoTimer = null;
+        pomoRunning = false;
+        pomoLeft = 25 * 60;
+        updatePomoDisplay();
+        toast('Focus session complete');
+      }
+    }, 1000);
+  }
+
+  // Paste plain text
+  editor.addEventListener('paste', function (e) {
+    if (!state.pastePlain) return;
+    e.preventDefault();
+    var text = (e.clipboardData || window.clipboardData).getData('text/plain');
+    document.execCommand('insertText', false, text);
+    onEditorInput();
+  });
+
+  function togglePastePlain() {
+    state.pastePlain = !state.pastePlain;
+    save();
+    var btn = document.getElementById('sw-paste-plain-btn');
+    if (btn) btn.style.outline = state.pastePlain ? '2px solid var(--sw-ok)' : '';
+    toast(state.pastePlain ? 'Paste as plain text on' : 'Paste as plain text off');
+  }
+
+  // Find & replace
+  function openFindReplace() {
+    openModal(
+      '<h3>Find &amp; replace</h3>' +
+      field('Find', 'm-find', '') +
+      field('Replace with', 'm-repl', '') +
+      '<label style="display:flex;align-items:center;gap:8px;margin:8px 0;font-size:0.88rem">' +
+      '<input type="checkbox" id="m-find-all"> Whole manuscript</label>' +
+      '<div class="sw-modal-actions">' +
+      '<button type="button" class="sw-btn" id="m-cancel">Close</button>' +
+      '<button type="button" class="sw-btn" id="m-find-next">Find next</button>' +
+      '<button type="button" class="sw-btn sw-btn-primary" id="m-repl-one">Replace</button>' +
+      '<button type="button" class="sw-btn sw-btn-primary" id="m-repl-all">Replace all</button></div>'
+    );
+    $('#m-cancel').onclick = closeModal;
+    var lastIdx = 0;
+    function getTargets() {
+      if ($('#m-find-all').checked) {
+        var list = [];
+        state.chapters.forEach(function (ch) {
+          ch.scenes.forEach(function (sc) { list.push(sc); });
+        });
+        return list;
+      }
+      return [getActiveScene()].filter(Boolean);
+    }
+    $('#m-find-next').onclick = function () {
+      var q = ($('#m-find').value || '');
+      if (!q) return;
+      var sc = getActiveScene();
+      if (!sc) return;
+      var plain = stripHtml(sc.content);
+      var idx = plain.toLowerCase().indexOf(q.toLowerCase(), lastIdx);
+      if (idx < 0) { lastIdx = 0; idx = plain.toLowerCase().indexOf(q.toLowerCase(), 0); }
+      if (idx < 0) { toast('Not found'); return; }
+      lastIdx = idx + q.length;
+      toast('Found at position ' + (idx + 1) + ' in scene text');
+    };
+    function replaceInScene(sc, find, repl, all) {
+      var plain = stripHtml(sc.content);
+      var re = new RegExp(find.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), all ? 'gi' : 'i');
+      if (!re.test(plain)) return 0;
+      if (all) {
+        var count = (plain.match(new RegExp(find.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi')) || []).length;
+        // operate on HTML carefully: replace in text nodes via plain rebuild
+        sc.content = plain.replace(new RegExp(find.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), repl).split('\n').map(function (l) {
+          return '<p>' + escapeHtml(l) + '</p>';
+        }).join('');
+        return count;
+      }
+      sc.content = plain.replace(new RegExp(find.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i'), repl).split('\n').map(function (l) {
+        return '<p>' + escapeHtml(l) + '</p>';
+      }).join('');
+      return 1;
+    }
+    $('#m-repl-one').onclick = function () {
+      var find = $('#m-find').value;
+      var repl = $('#m-repl').value;
+      if (!find) return;
+      saveCurrent();
+      var n = replaceInScene(getActiveScene(), find, repl, false);
+      loadIntoEditor(); save();
+      toast(n ? 'Replaced' : 'Not found');
+    };
+    $('#m-repl-all').onclick = function () {
+      var find = $('#m-find').value;
+      var repl = $('#m-repl').value;
+      if (!find) return;
+      saveCurrent();
+      var total = 0;
+      getTargets().forEach(function (sc) { total += replaceInScene(sc, find, repl, true); });
+      loadIntoEditor(); save();
+      toast('Replaced ' + total + ' occurrence(s)');
+    };
+  }
+
+  // Mention index (enhance hover)
+  function buildMentionIndex(type, id, name) {
+    var hits = [];
+    var needle = (name || '').toLowerCase();
+    state.chapters.forEach(function (ch) {
+      ch.scenes.forEach(function (sc) {
+        var htmlc = (sc.content || '').toLowerCase();
+        var plain = stripHtml(sc.content).toLowerCase();
+        if ((id && htmlc.indexOf('data-id="' + id + '"') >= 0) || (needle && plain.indexOf(needle) >= 0)) {
+          hits.push(ch.title + ' / ' + sc.title);
+        }
+      });
+    });
+    return hits;
+  }
+
+  // Soft continuity warnings
+  function runContinuityCheck() {
+    var bar = document.getElementById('sw-warn-bar');
+    if (!bar) return;
+    var warnings = [];
+    state.characters.forEach(function (c) {
+      if (!c.name) return;
+      // age mentioned differently in notes vs appearance
+      var ageNums = [];
+      [c.age, c.appearance, c.notes, c.background].forEach(function (t) {
+        if (!t) return;
+        var m = String(t).match(/\b(\d{1,3})\s*(years?\s*old|yo)\b/i) || String(t).match(/\bage\s*[:\s]*(\d{1,3})\b/i);
+        if (m) ageNums.push(m[1]);
+      });
+      ageNums = ageNums.filter(function (v, i, a) { return a.indexOf(v) === i; });
+      if (ageNums.length > 1) warnings.push(c.name + ': possible age mismatch (' + ageNums.join(' vs ') + ')');
+      var eyes = [];
+      [c.appearance, c.notes].forEach(function (t) {
+        if (!t) return;
+        var m = String(t).match(/\b(blue|green|brown|hazel|gray|grey|black|amber|violet)\s+eyes?\b/i);
+        if (m) eyes.push(m[1].toLowerCase());
+      });
+      eyes = eyes.filter(function (v, i, a) { return a.indexOf(v) === i; });
+      if (eyes.length > 1) warnings.push(c.name + ': eye color conflict (' + eyes.join(' vs ') + ')');
+      if (/dead|deceased|killed|died/i.test(c.notes || '') || /dead|deceased/i.test(c.role || '')) {
+        // speaking in later scenes?
+        var name = c.name.toLowerCase();
+        state.chapters.forEach(function (ch) {
+          ch.scenes.forEach(function (sc) {
+            var plain = stripHtml(sc.content);
+            if (new RegExp(c.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s+said', 'i').test(plain)) {
+              warnings.push(c.name + ' may be dead but still speaks in ' + ch.title + '/' + sc.title);
+            }
+          });
+        });
+      }
+    });
+    if (warnings.length) {
+      bar.textContent = 'Continuity: ' + warnings.slice(0, 3).join(' · ') + (warnings.length > 3 ? ' …' : '');
+      bar.classList.add('show');
+    } else {
+      bar.textContent = '';
+      bar.classList.remove('show');
+    }
+  }
+
+  // Timeline
+  function renderTimeline() {
+    var list = document.getElementById('sw-tl-list');
+    if (!list) return;
+    if (!state.timeline) state.timeline = [];
+    var items = state.timeline.slice().sort(function (a, b) { return (a.order || 0) - (b.order || 0); });
+    if (!items.length) {
+      list.innerHTML = '<p style="color:var(--sw-muted);font-style:italic">No timeline events yet. Add story-order beats here.</p>';
+      return;
+    }
+    list.innerHTML = items.map(function (ev, i) {
+      return '<div class="sw-tl-item" draggable="true" data-id="' + ev.id + '">' +
+        '<strong>' + escapeHtml(ev.title || 'Event') + '</strong>' +
+        (ev.when ? ' <span style="color:var(--sw-muted);font-size:0.8rem">(' + escapeHtml(ev.when) + ')</span>' : '') +
+        '<p style="margin:4px 0 0;font-size:0.86rem;color:var(--sw-muted)">' + escapeHtml(ev.notes || '') + '</p>' +
+        '<div style="margin-top:6px;display:flex;gap:6px">' +
+        '<button type="button" class="sw-btn sw-tl-edit" data-id="' + ev.id + '">Edit</button>' +
+        '<button type="button" class="sw-btn sw-tl-del" data-id="' + ev.id + '">Delete</button></div></div>';
+    }).join('');
+    list.querySelectorAll('.sw-tl-edit').forEach(function (btn) {
+      btn.onclick = function () { editTimelineEvent(btn.dataset.id); };
+    });
+    list.querySelectorAll('.sw-tl-del').forEach(function (btn) {
+      btn.onclick = async function () {
+        if (!(await swConfirm('Delete this event?'))) return;
+        state.timeline = state.timeline.filter(function (x) { return x.id !== btn.dataset.id; });
+        save(); renderTimeline();
+      };
+    });
+  }
+  async function editTimelineEvent(id) {
+    var ev = id ? state.timeline.find(function (x) { return x.id === id; }) : { title: '', when: '', notes: '', order: (state.timeline || []).length };
+    openModal('<h3>' + (id ? 'Edit' : 'New') + ' timeline event</h3>' +
+      field('Title', 'm-title', ev.title) +
+      field('When (story time)', 'm-when', ev.when) +
+      field('Notes', 'm-notes', ev.notes, 'textarea') +
+      field('Order (number)', 'm-order', String(ev.order != null ? ev.order : 0)) +
+      '<div class="sw-modal-actions"><button type="button" class="sw-btn" id="m-cancel">Cancel</button>' +
+      '<button type="button" class="sw-btn sw-btn-primary" id="m-save">Save</button></div>');
+    $('#m-cancel').onclick = closeModal;
+    $('#m-save').onclick = function () {
+      var obj = {
+        id: id || uid(),
+        title: $('#m-title').value.trim(),
+        when: $('#m-when').value.trim(),
+        notes: $('#m-notes').value.trim(),
+        order: parseInt($('#m-order').value, 10) || 0
+      };
+      if (!obj.title) { toast('Title required'); return; }
+      if (!state.timeline) state.timeline = [];
+      if (id) {
+        var i = state.timeline.findIndex(function (x) { return x.id === id; });
+        state.timeline[i] = obj;
+      } else state.timeline.push(obj);
+      save(); closeModal(); renderTimeline();
+    };
+  }
+
+  // Relationships
+  function renderRelations() {
+    var list = document.getElementById('sw-rel-list');
+    if (!list) return;
+    if (!state.relationships) state.relationships = [];
+    if (!state.relationships.length) {
+      list.innerHTML = '<p style="color:var(--sw-muted);font-style:italic;padding:12px">Link characters: ally, rival, family, etc.</p>';
+      return;
+    }
+    list.innerHTML = state.relationships.map(function (r) {
+      return '<div class="sw-rel-card"><strong>' + escapeHtml(r.from || '?') + '</strong>' +
+        ' <span style="color:var(--sw-muted)">→ ' + escapeHtml(r.kind || 'related') + ' →</span> ' +
+        '<strong>' + escapeHtml(r.to || '?') + '</strong>' +
+        (r.notes ? '<p style="margin:6px 0 0;font-size:0.82rem;color:var(--sw-muted)">' + escapeHtml(r.notes) + '</p>' : '') +
+        '<div style="margin-top:8px"><button type="button" class="sw-btn sw-rel-del" data-id="' + r.id + '">Delete</button></div></div>';
+    }).join('');
+    list.querySelectorAll('.sw-rel-del').forEach(function (btn) {
+      btn.onclick = async function () {
+        if (!(await swConfirm('Delete this link?'))) return;
+        state.relationships = state.relationships.filter(function (x) { return x.id !== btn.dataset.id; });
+        save(); renderRelations();
+      };
+    });
+  }
+  function editRelation() {
+    var names = state.characters.map(function (c) { return c.name; }).filter(Boolean);
+    openModal('<h3>Character link</h3>' +
+      field('From', 'm-from', names[0] || '') +
+      field('Relation (ally, rival, family…)', 'm-kind', 'ally') +
+      field('To', 'm-to', names[1] || '') +
+      field('Notes', 'm-notes', '', 'textarea') +
+      '<div class="sw-modal-actions"><button type="button" class="sw-btn" id="m-cancel">Cancel</button>' +
+      '<button type="button" class="sw-btn sw-btn-primary" id="m-save">Save</button></div>');
+    $('#m-cancel').onclick = closeModal;
+    $('#m-save').onclick = function () {
+      if (!state.relationships) state.relationships = [];
+      state.relationships.push({
+        id: uid(),
+        from: $('#m-from').value.trim(),
+        kind: $('#m-kind').value.trim() || 'related',
+        to: $('#m-to').value.trim(),
+        notes: $('#m-notes').value.trim()
+      });
+      save(); closeModal(); renderRelations();
+    };
+  }
+
+  // Series
+  function renderSeries() {
+    var list = document.getElementById('sw-series-list');
+    if (!list) return;
+    var htmlS = '<p style="margin:0 0 10px"><strong>Series:</strong> ' + escapeHtml(state.seriesName || '(not set)') + '</p>';
+    htmlS += '<p style="font-size:0.86rem;color:var(--sw-muted);margin:0 0 12px">Linked projects share this series label. Open them from Projects. Character/location bible stays per project unless you copy via JSON.</p>';
+    var ids = state.seriesProjectIds || [];
+    if (!ids.length) htmlS += '<p style="color:var(--sw-muted);font-style:italic">No linked project ids yet.</p>';
+    else htmlS += '<ul style="padding-left:1.2em">' + ids.map(function (id) {
+      return '<li style="margin-bottom:4px"><code style="font-size:0.8rem">' + escapeHtml(id) + '</code></li>';
+    }).join('') + '</ul>';
+    list.innerHTML = htmlS;
+  }
+
+  // Highlight passes
+  function clearHighlights() {
+    editor.querySelectorAll('.sw-hl-dialogue, .sw-hl-adverb, .sw-hl-filter').forEach(function (el) {
+      var p = el.parentNode;
+      while (el.firstChild) p.insertBefore(el.firstChild, el);
+      p.removeChild(el);
+    });
+  }
+  function applyHighlight(mode) {
+    saveCurrent();
+    clearHighlights();
+    state.highlightMode = mode || '';
+    if (!mode) { loadIntoEditor(); save(); return; }
+    var htmlc = editor.innerHTML;
+    if (mode === 'dialogue') {
+      htmlc = htmlc.replace(/(&quot;|")([^"&]{2,})(&quot;|")/g, function (m, a, mid, b) {
+        return a + '<span class="sw-hl-dialogue">' + mid + '</span>' + b;
+      });
+    } else if (mode === 'adverb') {
+      htmlc = stripHtml(htmlc).split(/(\s+)/).map(function (w) {
+        if (/ly$/i.test(w) && w.length > 3) return '<span class="sw-hl-adverb">' + escapeHtml(w) + '</span>';
+        return escapeHtml(w);
+      }).join('');
+      htmlc = htmlc.split('\n').map(function (l) { return '<p>' + l + '</p>'; }).join('');
+    } else if (mode === 'filter') {
+      var filters = ['just','really','very','quite','suddenly','somehow','began to','started to','felt','saw','heard','knew','realized'];
+      var plain = stripHtml(htmlc);
+      filters.forEach(function (f) {
+        var re = new RegExp('\\b(' + f.replace(/ /g, '\\s+') + ')\\b', 'gi');
+        plain = plain.replace(re, '§§$1§§');
+      });
+      htmlc = escapeHtml(plain).replace(/§§([^§]+)§§/g, '<span class="sw-hl-filter">$1</span>');
+      htmlc = htmlc.split('\n').map(function (l) { return '<p>' + l + '</p>'; }).join('');
+    }
+    editor.innerHTML = htmlc;
+    toast('Highlight: ' + (mode || 'off') + ' (save scene to keep text; toggle off before final export)');
+  }
+  function openHighlightMenu() {
+    openModal('<h3>Highlight pass</h3>' +
+      '<div class="sw-modal-actions" style="flex-direction:column;align-items:stretch">' +
+      '<button type="button" class="sw-btn" data-hl="dialogue">Dialogue</button>' +
+      '<button type="button" class="sw-btn" data-hl="adverb">Adverbs (-ly)</button>' +
+      '<button type="button" class="sw-btn" data-hl="filter">Filter words</button>' +
+      '<button type="button" class="sw-btn" data-hl="">Clear highlights</button>' +
+      '<button type="button" class="sw-btn" id="m-cancel">Close</button></div>');
+    $('#m-cancel').onclick = closeModal;
+    ROOT.querySelectorAll('#sw-modal [data-hl]').forEach(function (btn) {
+      btn.onclick = function () { closeModal(); applyHighlight(btn.getAttribute('data-hl')); };
+    });
+  }
+
+  // Snapshot compare
+  function openCompare() {
+    var sc = getActiveScene();
+    if (!sc || !sc.snapshots || !sc.snapshots.length) { toast('No snapshots on this scene'); return; }
+    openModal('<h3>Compare snapshot</h3>' +
+      sc.snapshots.map(function (sn) {
+        return '<button type="button" class="sw-btn" data-sid="' + sn.id + '" style="display:block;width:100%;margin-bottom:6px;text-align:left">' +
+          escapeHtml(sn.name) + '</button>';
+      }).join('') +
+      '<div class="sw-modal-actions"><button type="button" class="sw-btn" id="m-cancel">Close</button></div>');
+    $('#m-cancel').onclick = closeModal;
+    ROOT.querySelectorAll('#sw-modal [data-sid]').forEach(function (btn) {
+      btn.onclick = function () {
+        var sn = sc.snapshots.find(function (x) { return x.id === btn.dataset.sid; });
+        if (!sn) return;
+        closeModal();
+        ROOT.classList.add('sw-compare-on');
+        document.getElementById('sw-compare-a').textContent = stripHtml(sn.content) || '(empty)';
+        document.getElementById('sw-compare-b').textContent = stripHtml(sc.content) || '(empty)';
+        toast('Left: snapshot · Right: current');
+      };
+    });
+  }
+
+  // Revision mode A/B
+  function toggleRevision() {
+    var sc = getActiveScene();
+    if (!sc) return;
+    saveCurrent();
+    if (!sc.revisionMode) {
+      sc.contentB = sc.contentB || sc.content;
+      sc.revisionMode = true;
+      // load B into editor if B exists and differs - start by copying A to B once
+      if (!sc.contentB) sc.contentB = sc.content;
+      editor.innerHTML = sc.contentB || '';
+      toast('Revision mode: editing draft B (A locked in snapshot list — take Snapshot for A)');
+    } else {
+      sc.contentB = editor.innerHTML;
+      sc.revisionMode = false;
+      editor.innerHTML = sc.content || '';
+      toast('Back to draft A');
+    }
+    save();
+  }
+  // Patch saveCurrent to handle revision
+  var _saveCurrentOrig = saveCurrent;
+  saveCurrent = function () {
+    var ch = getActiveChapter();
+    var sc = getActiveScene();
+    if (!ch || !sc) return;
+    ch.title = chapterTitle.value.trim() || ch.title;
+    sc.title = sceneTitle.value.trim() || sc.title;
+    sc.synopsis = synopsisEl.value.trim();
+    sc.status = statusSel.value || sc.status;
+    if (sc.revisionMode) sc.contentB = editor.innerHTML;
+    else sc.content = editor.innerHTML;
+    ch.status = sc.status;
+  };
+
+  // Readability stats
+  function showStats() {
+    var text = stripHtml(editor.innerHTML);
+    var words = text.trim() ? text.trim().split(/\s+/).length : 0;
+    var sentences = (text.match(/[.!?]+/g) || []).length || (words ? 1 : 0);
+    var chars = text.replace(/\s/g, '').length;
+    var dialogue = (text.match(/["“][^"”]+["”]/g) || []).join(' ');
+    var dWords = dialogue.trim() ? dialogue.trim().split(/\s+/).length : 0;
+    var avg = sentences ? (words / sentences).toFixed(1) : '0';
+    var ratio = words ? Math.round((dWords / words) * 100) : 0;
+    openModal('<h3>Readability</h3><div class="sw-detail-grid">' +
+      detailRow('Words', String(words)) +
+      detailRow('Sentences', String(sentences)) +
+      detailRow('Avg words / sentence', String(avg)) +
+      detailRow('Characters (no spaces)', String(chars)) +
+      detailRow('Dialogue word ratio', ratio + '%') +
+      detailRow('Manuscript total', String(totalWords()) + ' words') +
+      '</div><div class="sw-modal-actions"><button type="button" class="sw-btn" id="m-cancel">Close</button></div>');
+    $('#m-cancel').onclick = closeModal;
+  }
+
+  // Enhance showHover with mention index
+  var _showHoverOrig = showHover;
+  showHover = function (mentionEl) {
+    _showHoverOrig(mentionEl);
+    var data = findEntity(mentionEl.dataset.type, mentionEl.dataset.id);
+    if (!data || !hoverEl.classList.contains('open')) return;
+    var hits = buildMentionIndex(mentionEl.dataset.type, mentionEl.dataset.id, data.name);
+    if (hits.length) {
+      var extra = document.createElement('div');
+      extra.style.cssText = 'margin-top:8px;font-size:0.75rem;color:var(--sw-muted)';
+      extra.innerHTML = '<strong style="color:var(--sw-ink)">Appears in</strong><br>' +
+        hits.slice(0, 8).map(function (h) { return escapeHtml(h); }).join('<br>') +
+        (hits.length > 8 ? '<br>…' : '');
+      hoverEl.appendChild(extra);
+    }
+  };
+
+  // Location hierarchy fields - extend editLocation via monkey patch after definition is hard;
+  // add parent field on save by patching render - skip deep patch; add hierarchy on character voice in editCharacter
+  // Character voice notes: add to showDetail already via notes; ensure editCharacter has voice field
+  // Patch switchTab for new panels
+  var _switchTab = switchTab;
+  switchTab = function (name) {
+    _switchTab(name);
+    if (name === 'timeline') renderTimeline();
+    if (name === 'relations') renderRelations();
+    if (name === 'series') renderSeries();
+  };
+
+  // Richer templates
+  var _applyTemplate = applyTemplate;
+  applyTemplate = function (tpl) {
+    if (tpl === 'mystery') {
+      state.chapters = [];
+      ['Setup', 'First body', 'Investigation', 'Midpoint twist', 'Dark turn', 'Reveal', 'Aftermath'].forEach(function (t, i) {
+        var ch = emptyChapter(t, i + 1);
+        ch.synopsis = 'Mystery beat: ' + t;
+        state.chapters.push(ch);
+      });
+      state.activeChapterId = state.chapters[0].id;
+      state.activeSceneId = state.chapters[0].scenes[0].id;
+      state.goals.sessionBase = 0;
+      renderChapters(); loadIntoEditor(); save(); toast('Mystery template');
+      return;
+    }
+    if (tpl === 'romance') {
+      state.chapters = [];
+      ['Meet cute', 'Tension', 'Deepening', 'Crisis', 'Grand gesture', 'Resolution'].forEach(function (t, i) {
+        var ch = emptyChapter(t, i + 1);
+        ch.synopsis = 'Romance beat: ' + t;
+        state.chapters.push(ch);
+      });
+      state.activeChapterId = state.chapters[0].id;
+      state.activeSceneId = state.chapters[0].scenes[0].id;
+      state.goals.sessionBase = 0;
+      renderChapters(); loadIntoEditor(); save(); toast('Romance template');
+      return;
+    }
+    _applyTemplate(tpl);
+  };
+
+  // Wire new UI (called after DOM ready - buttons exist)
+  function wireExtendedFeatures() {
+    var byId = function (id) { return document.getElementById(id); };
+    if (byId('sw-pomo-btn')) byId('sw-pomo-btn').onclick = togglePomodoro;
+    if (byId('sw-find-btn')) byId('sw-find-btn').onclick = openFindReplace;
+    if (byId('sw-hl-btn')) byId('sw-hl-btn').onclick = openHighlightMenu;
+    if (byId('sw-stats-btn')) byId('sw-stats-btn').onclick = showStats;
+    if (byId('sw-paste-plain-btn')) {
+      byId('sw-paste-plain-btn').onclick = togglePastePlain;
+      if (state.pastePlain) byId('sw-paste-plain-btn').style.outline = '2px solid var(--sw-ok)';
+    }
+    if (byId('sw-rev-btn')) byId('sw-rev-btn').onclick = toggleRevision;
+    if (byId('sw-compare-btn')) byId('sw-compare-btn').onclick = openCompare;
+    if (byId('sw-tl-add')) byId('sw-tl-add').onclick = function () { editTimelineEvent(null); };
+    if (byId('sw-rel-add')) byId('sw-rel-add').onclick = editRelation;
+    if (byId('sw-series-set')) byId('sw-series-set').onclick = async function () {
+      var n = await swPrompt('Series name', state.seriesName || '');
+      if (n === null) return;
+      state.seriesName = n.trim();
+      save(); renderSeries();
+    };
+    if (byId('sw-series-link')) byId('sw-series-link').onclick = async function () {
+      if (!state.seriesProjectIds) state.seriesProjectIds = [];
+      if (state.seriesProjectIds.indexOf(currentProjectId) === -1) {
+        state.seriesProjectIds.push(currentProjectId);
+        save(); renderSeries(); toast('This project linked to series');
+      } else toast('Already linked');
+    };
+    updateStreakDisplay();
+    updatePomoDisplay();
+  }
+
+  // Hook streak into onEditorInput
+  var _onEditorInput = onEditorInput;
+  onEditorInput = function () {
+    _onEditorInput();
+    recordStreakIfNeeded();
+    if (totalWords() % 50 === 0) runContinuityCheck();
+  };
+
+  // Location hierarchy: patch editLocation to add parent field - via string already done hard
+  // Onboarding tip for disk once
+  function maybeDiskTip() {
+    try {
+      if (localStorage.getItem('storywriter-disk-tip')) return;
+      localStorage.setItem('storywriter-disk-tip', '1');
+    } catch (e) { return; }
+    setTimeout(function () {
+      toast('Tip: Save disk / Open disk moves projects between devices');
+    }, 2500);
+  }
+
+
+
+  // ---- Feature safety net (ensure all tools are wired once) ----
+  (function wireExtraFeatures() {
+    function byId(id) { return document.getElementById(id); }
+    function on(id, fn) {
+      var el = byId(id);
+      if (el && !el.dataset.swWired) { el.dataset.swWired = '1'; el.addEventListener('click', fn); }
+    }
+    on('sw-find-btn', function () { if (typeof openFindReplace === 'function') openFindReplace(); });
+    on('sw-hl-btn', function () { if (typeof openHighlightMenu === 'function') openHighlightMenu(); });
+    on('sw-stats-btn', function () { if (typeof showStats === 'function') showStats(); });
+    on('sw-continuity-btn', function () { if (typeof runContinuityCheck === 'function') runContinuityCheck(); });
+    on('sw-rev-btn', function () { if (typeof toggleRevision === 'function') toggleRevision(); else if (typeof toggleRevisionMode === 'function') toggleRevisionMode(); });
+    on('sw-compare-btn', function () { if (typeof openCompare === 'function') openCompare(); });
+    on('sw-paste-plain', function () {
+      state.pastePlain = state.pastePlain === false;
+      save();
+      var b = byId('sw-paste-plain');
+      if (b) b.style.outline = state.pastePlain !== false ? '2px solid var(--sw-ok)' : '';
+      toast(state.pastePlain !== false ? 'Plain paste on' : 'Plain paste off');
+    });
+    on('sw-tl-add', function () { if (typeof editTimelineEvent === 'function') editTimelineEvent(null); else if (typeof addTimelineEvent === 'function') addTimelineEvent(); });
+    on('sw-relmap-add', function () { if (typeof editRelationship === 'function') editRelationship(null); });
+    on('sw-series-set', async function () {
+      var n = await swPrompt('Series name', state.seriesName || '');
+      if (n === null) return;
+      state.seriesName = n.trim();
+      save();
+      if (typeof renderSeries === 'function') renderSeries();
+      toast('Series name saved');
+    });
+    on('sw-series-link', async function () {
+      var n = await swPrompt('This book label (e.g. Book 1)', state.seriesBookLabel || 'Book 1');
+      if (n === null) return;
+      state.seriesBookLabel = n.trim();
+      save();
+      if (typeof renderSeries === 'function') renderSeries();
+      toast('Book linked in series');
+    });
+    on('sw-pomodoro', function () {
+      if (typeof togglePomodoro === 'function') togglePomodoro();
+    });
+    // Close compare
+    on('sw-view-write', function () {
+      ROOT.classList.remove('sw-compare-on');
+    });
+  })();
 
   // Wire project / disk buttons
   var projBtn = document.getElementById('sw-projects-btn');
