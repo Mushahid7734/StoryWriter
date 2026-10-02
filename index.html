@@ -720,6 +720,19 @@
     #sw-root .sw-ref-body {
       flex: 1; overflow-y: auto; padding: 10px; font-size: 0.84rem;
     }
+    #sw-root .sw-warn-bar {
+      display: none;
+      padding: 8px 14px;
+      font-size: 0.82rem;
+      line-height: 1.4;
+      color: var(--sw-ink);
+      background: color-mix(in srgb, var(--sw-danger) 12%, var(--sw-paper));
+      border-bottom: 1px solid color-mix(in srgb, var(--sw-danger) 35%, var(--sw-border));
+      flex-shrink: 0;
+    }
+    #sw-root .sw-warn-bar.show {
+      display: block;
+    }
     #sw-root .sw-threads-bar {
       display: none; flex-wrap: wrap; gap: 6px; padding: 6px 12px;
       border-bottom: 1px solid var(--sw-border); background: var(--sw-bg); align-items: center;
@@ -5587,47 +5600,70 @@ function exportTxt() {
     $('#m-cancel').onclick = closeModal;
   }
 
-  // ----- Continuity warnings -----
+  // ----- Continuity warnings (uses #sw-warn-bar under story toolbar) -----
+  function ensureWarnBar() {
+    var bar = document.getElementById('sw-warn-bar');
+    if (bar) return bar;
+    bar = document.createElement('div');
+    bar.className = 'sw-warn-bar';
+    bar.id = 'sw-warn-bar';
+    var toolbar = ROOT.querySelector('#sw-panel-story .sw-story-toolbar') || ROOT.querySelector('.sw-story-toolbar');
+    if (toolbar && toolbar.parentNode) toolbar.parentNode.insertBefore(bar, toolbar.nextSibling);
+    else {
+      var panel = document.getElementById('sw-panel-story');
+      if (panel) panel.insertBefore(bar, panel.firstChild);
+      else ROOT.appendChild(bar);
+    }
+    return bar;
+  }
+
   function runContinuityCheck() {
+    var bar = ensureWarnBar();
     var warnings = [];
-    state.characters.forEach(function (c) {
-      var ages = [];
+    (state.characters || []).forEach(function (c) {
+      if (!c || !c.name) return;
+      var fields = [c.age, c.appearance, c.notes, c.background, c.traits, c.role, c.eyeColor].join(' ');
       var eyes = [];
-      var fields = [c.age, c.appearance, c.notes, c.background, c.traits].join(' ');
+      if (c.eyeColor) eyes.push(String(c.eyeColor).toLowerCase());
       var eyeM = fields.match(/\b(blue|green|brown|hazel|grey|gray|black|amber|violet)\s+eyes?\b/i);
-      if (c.eyeColor) eyes.push(c.eyeColor);
       if (eyeM) eyes.push(eyeM[1].toLowerCase());
-      eyes = eyes.filter(Boolean);
-      if (eyes.length >= 2 && eyes[0].toLowerCase() !== eyes[1].toLowerCase()) {
+      eyes = eyes.filter(function (v, i, a) { return v && a.indexOf(v) === i; });
+      if (eyes.length >= 2) {
         warnings.push(c.name + ': possible eye-color mismatch (' + eyes.join(' vs ') + ')');
       }
-      if (c.status === 'dead' || /\\bdead\\b/i.test(c.notes || '') || /\\bdied\\b/i.test(c.notes || '')) {
+      var isDead = c.status === 'dead' || /\b(dead|deceased|killed|died)\b/i.test(c.notes || '') || /\b(dead|deceased)\b/i.test(c.role || '');
+      if (isDead) {
         state.chapters.forEach(function (ch) {
-          ch.scenes.forEach(function (sc) {
-            var plain = stripHtml(sc.content);
-            if (plain.indexOf(c.name) >= 0 && /\\b(said|says|asks|replied|whispered)\\b/i.test(plain)) {
+          (ch.scenes || []).forEach(function (sc) {
+            var plain = stripHtml(sc.content || '');
+            if (plain.indexOf(c.name) >= 0 && /\b(said|says|asks|replied|whispered|answered)\b/i.test(plain)) {
               warnings.push(c.name + ' may still be speaking in ' + ch.title + ' / ' + sc.title + ' (marked dead)');
             }
           });
         });
       }
-      // age number conflict crude
-      var ageNums = (fields.match(/\\b(\\d{1,3})\\s*(years?\\s*old|yrs?)\\b/gi) || []).map(function (x) {
-        return parseInt(x, 10);
-      }).filter(function (n) { return n > 0 && n < 130; });
-      if (c.age && /^\\d+$/.test(String(c.age).trim())) ageNums.push(parseInt(c.age, 10));
+      var ageNums = [];
+      if (c.age && /^\d+$/.test(String(c.age).trim())) ageNums.push(parseInt(c.age, 10));
+      var ageMatches = fields.match(/\b(\d{1,3})\s*(years?\s*old|yrs?|yo)\b/gi) || [];
+      ageMatches.forEach(function (x) {
+        var n = parseInt(x, 10);
+        if (n > 0 && n < 130) ageNums.push(n);
+      });
+      ageNums = ageNums.filter(function (v, i, a) { return a.indexOf(v) === i; });
       if (ageNums.length >= 2) {
         var min = Math.min.apply(null, ageNums), max = Math.max.apply(null, ageNums);
         if (max - min >= 3) warnings.push(c.name + ': age notes differ (' + min + '–' + max + ')');
       }
     });
-    var body = '<h3>Continuity check</h3>';
-    if (!warnings.length) body += '<p style="color:var(--sw-muted)">No soft warnings found. Checks are heuristic only.</p>';
-    else body += '<ul style="margin:0;padding-left:1.2em;font-size:0.9rem;line-height:1.5">' +
-      warnings.map(function (w) { return '<li>' + escapeHtml(w) + '</li>'; }).join('') + '</ul>';
-    body += '<div class="sw-modal-actions"><button type="button" class="sw-btn" id="m-cancel">Close</button></div>';
-    openModal(body);
-    $('#m-cancel').onclick = closeModal;
+    if (warnings.length) {
+      bar.textContent = 'Continuity: ' + warnings.slice(0, 4).join(' · ') + (warnings.length > 4 ? ' …' : '');
+      bar.classList.add('show');
+      toast(warnings.length + ' continuity warning' + (warnings.length > 1 ? 's' : ''));
+    } else {
+      bar.textContent = '';
+      bar.classList.remove('show');
+      toast('No continuity issues found');
+    }
   }
 
   // ----- Timeline -----
@@ -6173,54 +6209,6 @@ function exportTxt() {
       });
     });
     return hits;
-  }
-
-  // Soft continuity warnings
-  function runContinuityCheck() {
-    var bar = document.getElementById('sw-warn-bar');
-    if (!bar) return;
-    var warnings = [];
-    state.characters.forEach(function (c) {
-      if (!c.name) return;
-      // age mentioned differently in notes vs appearance
-      var ageNums = [];
-      [c.age, c.appearance, c.notes, c.background].forEach(function (t) {
-        if (!t) return;
-        var m = String(t).match(/\b(\d{1,3})\s*(years?\s*old|yo)\b/i) || String(t).match(/\bage\s*[:\s]*(\d{1,3})\b/i);
-        if (m) ageNums.push(m[1]);
-      });
-      ageNums = ageNums.filter(function (v, i, a) { return a.indexOf(v) === i; });
-      if (ageNums.length > 1) warnings.push(c.name + ': possible age mismatch (' + ageNums.join(' vs ') + ')');
-      var eyes = [];
-      [c.appearance, c.notes].forEach(function (t) {
-        if (!t) return;
-        var m = String(t).match(/\b(blue|green|brown|hazel|gray|grey|black|amber|violet)\s+eyes?\b/i);
-        if (m) eyes.push(m[1].toLowerCase());
-      });
-      eyes = eyes.filter(function (v, i, a) { return a.indexOf(v) === i; });
-      if (eyes.length > 1) warnings.push(c.name + ': eye color conflict (' + eyes.join(' vs ') + ')');
-      if (/dead|deceased|killed|died/i.test(c.notes || '') || /dead|deceased/i.test(c.role || '')) {
-        // speaking in later scenes?
-        var name = c.name.toLowerCase();
-        state.chapters.forEach(function (ch) {
-          ch.scenes.forEach(function (sc) {
-            var plain = stripHtml(sc.content);
-            if (new RegExp(c.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s+said', 'i').test(plain)) {
-              warnings.push(c.name + ' may be dead but still speaks in ' + ch.title + '/' + sc.title);
-            }
-          });
-        });
-      }
-    });
-    if (warnings.length) {
-      bar.textContent = 'Continuity: ' + warnings.slice(0, 3).join(' · ') + (warnings.length > 3 ? ' …' : '');
-      bar.classList.add('show');
-      toast(warnings.length + ' continuity warning' + (warnings.length > 1 ? 's' : ''));
-    } else {
-      bar.textContent = '';
-      bar.classList.remove('show');
-      toast('No continuity issues found');
-    }
   }
 
   // Timeline
