@@ -140,6 +140,132 @@
       --sw-danger: #d08070;
       --sw-ok: #7cbc94;
     }
+
+    body:has(#sw-root[data-theme="midnight"]) { background: #0d1117; }
+    #sw-root[data-theme="midnight"] {
+      --sw-bg: #0d1117;
+      --sw-paper: #161b22;
+      --sw-ink: #e6edf3;
+      --sw-muted: #8b949e;
+      --sw-accent: #58a6ff;
+      --sw-accent-soft: #388bfd;
+      --sw-border: #30363d;
+      --sw-panel: #1c2128;
+      --sw-hover: #262c36;
+      --sw-tag: #79c0ff;
+      --sw-tag-bg: #1a2a3a;
+      --sw-danger: #f85149;
+      --sw-ok: #3fb950;
+    }
+    body:has(#sw-root[data-theme="forest"]) { background: #1a241c; }
+    #sw-root[data-theme="forest"] {
+      --sw-bg: #1a241c;
+      --sw-paper: #243028;
+      --sw-ink: #e4ede6;
+      --sw-muted: #8fa396;
+      --sw-accent: #7cb87c;
+      --sw-accent-soft: #5a9a5a;
+      --sw-border: #3a4a3e;
+      --sw-panel: #2a3630;
+      --sw-hover: #344038;
+      --sw-tag: #9dcea0;
+      --sw-tag-bg: #2a3a2e;
+      --sw-danger: #d08070;
+      --sw-ok: #6bcf7a;
+    }
+    body:has(#sw-root[data-theme="ocean"]) { background: #0f1c24; }
+    #sw-root[data-theme="ocean"] {
+      --sw-bg: #0f1c24;
+      --sw-paper: #162a35;
+      --sw-ink: #e0eef5;
+      --sw-muted: #7a9aab;
+      --sw-accent: #4db8d9;
+      --sw-accent-soft: #3a9bb8;
+      --sw-border: #2a4450;
+      --sw-panel: #1a303c;
+      --sw-hover: #243844;
+      --sw-tag: #7ec8e0;
+      --sw-tag-bg: #1a3540;
+      --sw-danger: #e08080;
+      --sw-ok: #5cc4a0;
+    }
+    body:has(#sw-root[data-theme="rose"]) { background: #1f1618; }
+    #sw-root[data-theme="rose"] {
+      --sw-bg: #1f1618;
+      --sw-paper: #2a1e22;
+      --sw-ink: #f2e6ea;
+      --sw-muted: #b09098;
+      --sw-accent: #e090a8;
+      --sw-accent-soft: #c07088;
+      --sw-border: #4a343c;
+      --sw-panel: #322428;
+      --sw-hover: #3c2e32;
+      --sw-tag: #f0b0c0;
+      --sw-tag-bg: #3a2830;
+      --sw-danger: #e07070;
+      --sw-ok: #90c0a0;
+    }
+    #sw-root[data-theme="slate"] {
+      --sw-bg: #e8eaed;
+      --sw-paper: #f5f6f8;
+      --sw-ink: #1e2430;
+      --sw-muted: #5c6578;
+      --sw-accent: #3d5a80;
+      --sw-accent-soft: #5a7a9e;
+      --sw-border: #c8ced8;
+      --sw-panel: #dfe3ea;
+      --sw-hover: #d0d5de;
+      --sw-tag: #2a5a7a;
+      --sw-tag-bg: #e0e8f0;
+      --sw-danger: #a04040;
+      --sw-ok: #3d7a5a;
+    }
+    #sw-root[data-theme="lavender"] {
+      --sw-bg: #f0eaf6;
+      --sw-paper: #faf6fc;
+      --sw-ink: #2c2438;
+      --sw-muted: #6b5e7a;
+      --sw-accent: #7a5c9e;
+      --sw-accent-soft: #9a7cbe;
+      --sw-border: #d8d0e4;
+      --sw-panel: #e8e0f0;
+      --sw-hover: #ddd4ea;
+      --sw-tag: #6a4a8a;
+      --sw-tag-bg: #ebe4f4;
+      --sw-danger: #a04860;
+      --sw-ok: #4a8a6a;
+    }
+    #sw-root[data-theme="sand"] {
+      --sw-bg: #f2ebe0;
+      --sw-paper: #faf6ef;
+      --sw-ink: #3a3228;
+      --sw-muted: #7a6e5e;
+      --sw-accent: #a07848;
+      --sw-accent-soft: #c09860;
+      --sw-border: #ddd0bc;
+      --sw-panel: #ebe2d4;
+      --sw-hover: #e0d6c4;
+      --sw-tag: #7a5a30;
+      --sw-tag-bg: #f0e8d8;
+      --sw-danger: #9a4030;
+      --sw-ok: #5a7a48;
+    }
+    #sw-root[data-theme="ink"] {
+      --sw-bg: #12141a;
+      --sw-paper: #1a1e28;
+      --sw-ink: #f0ece4;
+      --sw-muted: #8a8e9a;
+      --sw-accent: #e8c87a;
+      --sw-accent-soft: #c4a860;
+      --sw-border: #2e3440;
+      --sw-panel: #222830;
+      --sw-hover: #2c323c;
+      --sw-tag: #90b0d0;
+      --sw-tag-bg: #243040;
+      --sw-danger: #e08070;
+      --sw-ok: #80c090;
+    }
+
     #sw-root *, #sw-root *::before, #sw-root *::after { box-sizing: border-box; }
 
     #sw-root .sw-topbar {
@@ -1055,33 +1181,58 @@
         <div class="sw-story-toolbar">
           <button type="button" class="sw-btn" id="sw-view-write">Write</button>
           <button type="button" class="sw-btn" id="sw-view-cork">Corkboard</button>
-          <button type="button" class="sw-btn sw-tool-secondary" id="sw-toggle-comments">Notes</button>
-          <button type="button" class="sw-btn sw-tool-secondary" id="sw-add-comment">+ Note</button>
-          <button type="button" class="sw-btn sw-tool-secondary" id="sw-snapshot-btn">Snapshot</button>
-          <button type="button" class="sw-btn sw-tool-secondary" id="sw-snapshots-list-btn">Snapshots</button>
           <label class="sw-lbl" style="margin:0 0 0 8px;">Status</label>
           <select class="sw-sel" id="sw-status-sel" style="width:auto;min-width:90px;">
             <option value="draft">Draft</option>
             <option value="revise">Revise</option>
             <option value="done">Done</option>
           </select>
-          <button type="button" class="sw-btn sw-tool-secondary" id="sw-goals-btn">Goals</button>
           <button type="button" class="sw-btn" id="sw-typewriter-btn" title="Focus Mode — distraction-free writing">Focus Mode</button>
-          <button type="button" class="sw-btn sw-tool-secondary" id="sw-read-btn" title="Read scene aloud">Read</button>
-          <button type="button" class="sw-btn sw-tool-secondary" id="sw-threads-btn" title="Open threads">Threads</button>
-          <button type="button" class="sw-btn sw-tool-secondary" id="sw-ref-btn" title="Pin reference">Pin ref</button>
-          <button type="button" class="sw-btn sw-tool-secondary" id="sw-find-btn" title="Find and replace">Find</button>
-          <button type="button" class="sw-btn sw-tool-secondary" id="sw-hl-btn" title="Highlight passes">Highlight</button>
-          <button type="button" class="sw-btn sw-tool-secondary" id="sw-stats-btn" title="Readability stats">Stats</button>
-          <button type="button" class="sw-btn sw-tool-secondary" id="sw-mentions-btn" title="Appearance report">Appearances</button>
-          <button type="button" class="sw-btn sw-tool-secondary" id="sw-continuity-btn" title="Continuity check">Continuity</button>
-          <button type="button" class="sw-btn sw-tool-secondary" id="sw-rev-btn" title="Revision mode">Revise</button>
-          <button type="button" class="sw-btn sw-tool-secondary" id="sw-compare-btn" title="Compare snapshots">Compare</button>
-          <button type="button" class="sw-btn sw-tool-secondary" id="sw-paste-plain" title="Paste as plain text">Plain paste</button>
           <button type="button" class="sw-btn" id="sw-print-btn" title="Design and print book">Design book</button>
-          <button type="button" class="sw-btn sw-tool-secondary" id="sw-footnote-btn" title="Insert footnote">Footnote</button>
-          <button type="button" class="sw-btn sw-tool-secondary" id="sw-scenebreak-btn" title="Custom scene break image">Scene break</button>
-          <button type="button" class="sw-btn sw-tool-secondary" id="sw-copyitem-btn" title="Copy item to another novel">Copy to…</button>
+          <div class="sw-dropdown" id="sw-tools-dd">
+            <button type="button" class="sw-btn" id="sw-tools-btn">Tools ▾</button>
+            <div class="sw-dropdown-menu" id="sw-tools-menu">
+              <button type="button" data-tool="find">Find &amp; replace</button>
+              <button type="button" data-tool="hl">Highlight pass</button>
+              <button type="button" data-tool="stats">Readability stats</button>
+              <button type="button" data-tool="mentions">Appearances</button>
+              <button type="button" data-tool="continuity">Continuity</button>
+              <button type="button" data-tool="rev">Revision A/B</button>
+              <button type="button" data-tool="compare">Compare snapshots</button>
+              <button type="button" data-tool="snapshot">Take snapshot</button>
+              <button type="button" data-tool="snapshots">List snapshots</button>
+              <button type="button" data-tool="notes">Notes panel</button>
+              <button type="button" data-tool="addnote">+ Note</button>
+              <button type="button" data-tool="read">Read aloud</button>
+              <button type="button" data-tool="threads">Threads</button>
+              <button type="button" data-tool="ref">Pin ref</button>
+              <button type="button" data-tool="goals">Word goals</button>
+              <button type="button" data-tool="paste">Plain paste toggle</button>
+              <button type="button" data-tool="footnote">Insert footnote</button>
+              <button type="button" data-tool="scenebreak">Scene break image</button>
+              <button type="button" data-tool="copyitem">Copy to…</button>
+            </div>
+          </div>
+          <!-- Kept for capsule / keyboard wiring; hidden on story toolbar via CSS -->
+          <button type="button" class="sw-btn sw-tool-secondary" id="sw-toggle-comments" style="display:none">Notes</button>
+          <button type="button" class="sw-btn sw-tool-secondary" id="sw-add-comment" style="display:none">+ Note</button>
+          <button type="button" class="sw-btn sw-tool-secondary" id="sw-snapshot-btn" style="display:none">Snapshot</button>
+          <button type="button" class="sw-btn sw-tool-secondary" id="sw-snapshots-list-btn" style="display:none">Snapshots</button>
+          <button type="button" class="sw-btn sw-tool-secondary" id="sw-goals-btn" style="display:none">Goals</button>
+          <button type="button" class="sw-btn sw-tool-secondary" id="sw-read-btn" style="display:none" title="Read scene aloud">Read</button>
+          <button type="button" class="sw-btn sw-tool-secondary" id="sw-threads-btn" style="display:none" title="Open threads">Threads</button>
+          <button type="button" class="sw-btn sw-tool-secondary" id="sw-ref-btn" style="display:none" title="Pin reference">Pin ref</button>
+          <button type="button" class="sw-btn sw-tool-secondary" id="sw-find-btn" style="display:none" title="Find and replace">Find</button>
+          <button type="button" class="sw-btn sw-tool-secondary" id="sw-hl-btn" style="display:none" title="Highlight passes">Highlight</button>
+          <button type="button" class="sw-btn sw-tool-secondary" id="sw-stats-btn" style="display:none" title="Readability stats">Stats</button>
+          <button type="button" class="sw-btn sw-tool-secondary" id="sw-mentions-btn" style="display:none" title="Appearance report">Appearances</button>
+          <button type="button" class="sw-btn sw-tool-secondary" id="sw-continuity-btn" style="display:none" title="Continuity check">Continuity</button>
+          <button type="button" class="sw-btn sw-tool-secondary" id="sw-rev-btn" style="display:none" title="Revision mode">Revise</button>
+          <button type="button" class="sw-btn sw-tool-secondary" id="sw-compare-btn" style="display:none" title="Compare snapshots">Compare</button>
+          <button type="button" class="sw-btn sw-tool-secondary" id="sw-paste-plain" style="display:none" title="Paste as plain text">Plain paste</button>
+          <button type="button" class="sw-btn sw-tool-secondary" id="sw-footnote-btn" style="display:none" title="Insert footnote">Footnote</button>
+          <button type="button" class="sw-btn sw-tool-secondary" id="sw-scenebreak-btn" style="display:none" title="Custom scene break image">Scene break</button>
+          <button type="button" class="sw-btn sw-tool-secondary" id="sw-copyitem-btn" style="display:none" title="Copy item to another novel">Copy to…</button>
         </div>
         <div class="sw-warn-bar" id="sw-warn-bar"></div>
         <div class="sw-threads-bar" id="sw-threads-bar">
@@ -1170,8 +1321,8 @@
         <div class="sw-wb-toolbar">
           <button type="button" class="sw-btn sw-btn-primary" id="sw-series-set">Set series name</button>
           <button type="button" class="sw-btn" id="sw-series-link">Mark as book in series</button>
-          <button type="button" class="sw-btn" id="sw-series-bridge">Link / copy bible</button>
-          <span style="font-size:0.78rem;color:var(--sw-muted)">Shared bible across linked projects</span>
+          <button type="button" class="sw-btn" id="sw-series-bridge">Import bible snapshot</button>
+          <span style="font-size:0.78rem;color:var(--sw-muted)">Snapshot copy only — not live sync</span>
         </div>
         <div class="sw-wb-list" id="sw-series-list"></div>
       </div>
@@ -1229,6 +1380,11 @@
           <h3>StoryWriter stays free</h3>
           <p style="margin:0 0 10px"><strong>Promise to be free forever.</strong> No pricing. No tiers. No accounts. Built by Mason Carter for indie authors who want a private offline desk.</p>
           <p style="margin:0 0 12px;color:var(--sw-muted);font-size:0.88rem">Projects stay in this browser unless you use Save disk / Open disk. Export DOCX, design print layouts, or export EPUB &amp; PDF from Designs.</p>
+          <div id="sw-storage-info" style="margin:0 0 14px;padding:10px 12px;border:1px solid var(--sw-border);border-radius:8px;background:var(--sw-bg);font-size:0.86rem">
+            <strong style="display:block;margin-bottom:4px">Browser storage (offline)</strong>
+            <span id="sw-storage-text" style="color:var(--sw-muted)">Checking…</span>
+            <p style="margin:8px 0 0;font-size:0.8rem;color:var(--sw-muted)">Large covers and design snapshots use the most space. Prefer Save disk for backups. This app has no server — data never leaves your device unless you export or save a file.</p>
+          </div>
           <p style="margin:0 0 8px">You can support development by buying my books:</p>
           <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px">
             <a class="sw-btn sw-btn-primary" href="https://www.authormasoncarter.com/p/books-series.html" target="_blank" rel="noopener noreferrer" style="text-decoration:none">Buy books to support development</a>
@@ -1256,7 +1412,7 @@
       <button type="button" class="sw-btn" id="sw-des-edit">Edit text</button>
       <button type="button" class="sw-btn" id="sw-des-refresh" title="Refresh from project">↻</button>
       <span style="flex:1"></span>
-      <button type="button" class="sw-btn" id="sw-des-preview">Preview</button>
+      <button type="button" class="sw-btn" id="sw-des-preview" title="CSS device frame only — not a real EPUB/PDF engine">Mock preview</button>
       <div class="sw-dropdown" id="sw-des-export-dd" style="position:relative">
         <button type="button" class="sw-btn sw-btn-primary" id="sw-des-export">Export ▾</button>
         <div class="sw-dropdown-menu" id="sw-des-export-menu" style="display:none;right:0;left:auto">
@@ -1300,6 +1456,7 @@
       </aside>
     </div>
     <div class="sw-des-preview-bar" id="sw-des-preview-bar">
+      <span style="font-size:0.72rem;color:var(--sw-muted);padding:0 6px">Mock preview</span>
       <select class="sw-sel" id="sw-des-device" style="width:auto;min-width:140px">
         <option value="kindle">Kindle Paperwhite</option>
         <option value="kobo">Kobo Clara</option>
@@ -1309,7 +1466,7 @@
       </select>
       <button type="button" class="sw-btn" data-pformat="epub">EPUB look</button>
       <button type="button" class="sw-btn" data-pformat="pdf">PDF look</button>
-      <button type="button" class="sw-btn" id="sw-des-preview-close">Close preview</button>
+      <button type="button" class="sw-btn" id="sw-des-preview-close">Close</button>
     </div>
   </div>
 
@@ -1318,7 +1475,6 @@
     <button type="button" class="sw-btn" id="sw-cap-home" title="Author home">Home</button>
     <button type="button" class="sw-btn" id="sw-cap-chapters" title="Toggle chapters">Chapters</button>
     <button type="button" class="sw-btn" id="sw-cap-focus" title="Focus Mode">Focus</button>
-    <button type="button" class="sw-btn sw-btn-primary sw-cap-desk-only" id="sw-cap-export" title="Export">Export</button>
     <button type="button" class="sw-btn" id="sw-cap-tools" title="Tools menu">Tools ▾</button>
     <div class="sw-capsule-menu" id="sw-capsule-menu">
       <div class="sw-cap-label">Write</div>
@@ -1481,7 +1637,7 @@
     relationships: [],
     glossary: [],
     sceneBreakImage: '',
-    autoCapitalize: true,
+    autoCapitalize: false,
     seriesName: '',
     highlightMode: '',
     streak: { days: {}, lastDate: '' }
@@ -1689,7 +1845,7 @@
     if (!state.relationships) state.relationships = [];
     if (!state.glossary) state.glossary = [];
     if (state.sceneBreakImage == null) state.sceneBreakImage = '';
-    if (state.autoCapitalize == null) state.autoCapitalize = true;
+    if (state.autoCapitalize == null) state.autoCapitalize = false;
     if (!state.seriesName) state.seriesName = '';
     if (!state.seriesBookLabel) state.seriesBookLabel = '';
     if (!state.genres) state.genres = [];
@@ -3146,6 +3302,41 @@
         });
       });
     });
+    // Collect footnotes from project for endnotes page (offline markers → export)
+    var fnList = [];
+    if (state.footnotes && state.footnotes.length) {
+      fnList = state.footnotes.slice().sort(function (a, b) { return (a.n || 0) - (b.n || 0); });
+    } else {
+      // Recover markers from HTML if array empty
+      state.chapters.forEach(function (ch) {
+        (ch.scenes || []).forEach(function (sc) {
+          var htmlc = sc.content || '';
+          var re = /<sup[^>]*class="[^"]*sw-footnote[^"]*"[^>]*data-fn="([^"]*)"[^>]*title="([^"]*)"[^>]*>\[(\d+)\]/gi;
+          var m;
+          while ((m = re.exec(htmlc))) {
+            fnList.push({ id: m[1], text: m[2], n: parseInt(m[3], 10) || 0 });
+          }
+        });
+      });
+      fnList.sort(function (a, b) { return (a.n || 0) - (b.n || 0); });
+    }
+    if (fnList.length) {
+      children.push(new Paragraph({ children: [new PageBreak()] }));
+      children.push(new Paragraph({
+        alignment: AlignmentType.CENTER,
+        spacing: { after: 300 },
+        children: [new TextRun({ text: 'Endnotes', bold: true, font: fontName, size: titleSize, color: color })]
+      }));
+      fnList.forEach(function (fn) {
+        children.push(new Paragraph({
+          spacing: { after: 120 },
+          children: [
+            new TextRun({ text: '[' + (fn.n || '') + '] ', bold: true, font: fontName, size: bodySize - 2, color: color }),
+            new TextRun({ text: fn.text || '', font: fontName, size: bodySize - 2, color: color })
+          ]
+        }));
+      });
+    }
     const doc = new Document({
       sections: [{
         properties: {
@@ -3245,10 +3436,14 @@ function exportTxt() {
   }
 
   function openGoals() {
-    openModal('<h3>Word goals</h3>' +
+    openModal('<h3>Word goals &amp; editor</h3>' +
       field('Session target', 'm-session', String(state.goals.sessionTarget || 500)) +
       field('Draft target (whole manuscript)', 'm-draft', String(state.goals.draftTarget || 80000)) +
-      '<p style="font-size:0.82rem;color:var(--sw-muted)">Session count starts from when you last reset or loaded the project.</p>' +
+      '<label style="display:flex;align-items:center;gap:8px;margin:10px 0;font-size:0.88rem">' +
+      '<input type="checkbox" id="m-autocap"' + (state.autoCapitalize ? ' checked' : '') + '> Auto-capitalize sentences (off by default; skips Mr., i.e., initials)</label>' +
+      '<label style="display:flex;align-items:center;gap:8px;margin:6px 0 10px;font-size:0.88rem">' +
+      '<input type="checkbox" id="m-pasteplain"' + (state.pastePlain !== false ? ' checked' : '') + '> Paste as plain text (recommended)</label>' +
+      '<p style="font-size:0.82rem;color:var(--sw-muted)">Session count starts from when you last reset or loaded the project. All data stays offline in this browser.</p>' +
       '<div class="sw-modal-actions">' +
       '<button type="button" class="sw-btn" id="m-reset-session">Reset session count</button>' +
       '<button type="button" class="sw-btn" id="m-cancel">Cancel</button>' +
@@ -3261,6 +3456,8 @@ function exportTxt() {
     $('#m-save').onclick = () => {
       state.goals.sessionTarget = parseInt($('#m-session').value, 10) || 500;
       state.goals.draftTarget = parseInt($('#m-draft').value, 10) || 80000;
+      state.autoCapitalize = !!document.getElementById('m-autocap').checked;
+      state.pastePlain = !!document.getElementById('m-pasteplain').checked;
       save(); updateWordcount(); closeModal(); toast('Goals saved');
     };
   }
@@ -3406,12 +3603,12 @@ function exportTxt() {
   }
 
   function cycleTheme() {
-    const order = ['parchment', 'sepia', 'dark'];
+    const order = ['parchment', 'sepia', 'sand', 'slate', 'lavender', 'dark', 'midnight', 'ink', 'forest', 'ocean', 'rose'];
     const i = order.indexOf(state.theme);
     state.theme = order[(i + 1) % order.length];
     applyTheme();
     save();
-    toast('Theme: ' + state.theme);
+    toast('Theme: ' + String(state.theme).replace(/^./, function(c){ return c.toUpperCase(); }));
   }
 
 
@@ -4349,13 +4546,6 @@ function exportTxt() {
     if (ch) ch.onclick = function () { ROOT.classList.toggle('sw-sidebar-collapsed'); };
     var foc = document.getElementById('sw-cap-focus');
     if (foc) foc.onclick = function () { toggleTypewriter(); };
-    var exp = document.getElementById('sw-cap-export');
-    if (exp) exp.onclick = function () {
-      var dd = document.getElementById('sw-export-dd');
-      if (dd) dd.classList.toggle('open');
-      var btn = document.getElementById('sw-export-btn');
-      if (btn) btn.click();
-    };
 
     document.querySelectorAll('#sw-capsule-menu [data-cap]').forEach(function (btn) {
       btn.onclick = function () {
@@ -5714,6 +5904,50 @@ function exportTxt() {
     on('sw-view-write', function () {
       ROOT.classList.remove('sw-compare-on');
     });
+    // Story toolbar Tools ▾ overflow (keeps Write surface calm)
+    var toolsBtn = byId('sw-tools-btn');
+    var toolsDd = byId('sw-tools-dd');
+    if (toolsBtn && toolsDd && !toolsBtn.dataset.swWired) {
+      toolsBtn.dataset.swWired = '1';
+      toolsBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        toolsDd.classList.toggle('open');
+      });
+      document.addEventListener('click', function () { toolsDd.classList.remove('open'); });
+      var toolMap = {
+        find: function () { if (typeof openFindReplace === 'function') openFindReplace(); },
+        hl: function () { if (typeof openHighlightMenu === 'function') openHighlightMenu(); },
+        stats: function () { if (typeof showStats === 'function') showStats(); },
+        mentions: function () { var b = byId('sw-mentions-btn'); if (b) b.click(); },
+        continuity: function () { if (typeof runContinuityCheck === 'function') runContinuityCheck(); },
+        rev: function () { if (typeof toggleRevision === 'function') toggleRevision(); },
+        compare: function () { if (typeof openCompare === 'function') openCompare(); },
+        snapshot: function () { var b = byId('sw-snapshot-btn'); if (b) b.click(); },
+        snapshots: function () { var b = byId('sw-snapshots-list-btn'); if (b) b.click(); },
+        notes: function () { var b = byId('sw-toggle-comments'); if (b) b.click(); },
+        addnote: function () { var b = byId('sw-add-comment'); if (b) b.click(); },
+        read: function () { var b = byId('sw-read-btn'); if (b) b.click(); },
+        threads: function () { var b = byId('sw-threads-btn'); if (b) b.click(); },
+        ref: function () { var b = byId('sw-ref-btn'); if (b) b.click(); },
+        goals: function () { var b = byId('sw-goals-btn'); if (b) b.click(); },
+        paste: function () {
+          state.pastePlain = state.pastePlain === false;
+          save();
+          toast(state.pastePlain !== false ? 'Plain paste on' : 'Plain paste off');
+        },
+        footnote: function () { if (typeof insertFootnote === 'function') insertFootnote(); },
+        scenebreak: function () { if (typeof setSceneBreakImage === 'function') setSceneBreakImage(); },
+        copyitem: function () { if (typeof openCopyPicker === 'function') openCopyPicker(); }
+      };
+      toolsDd.querySelectorAll('[data-tool]').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          toolsDd.classList.remove('open');
+          var fn = toolMap[btn.getAttribute('data-tool')];
+          if (fn) fn();
+        });
+      });
+    }
   })();
 
 
@@ -6131,8 +6365,8 @@ function exportTxt() {
     try { projects = await idbAll(); } catch (e) {}
     projects = projects.filter(function (p) { return p.id !== currentProjectId; });
     if (!projects.length) { toast('Need another project in this browser'); return; }
-    openModal('<h3>Link / copy bible</h3>' +
-      '<p style="font-size:0.88rem;color:var(--sw-muted);margin:0 0 10px">Pull characters, locations, glossary, and relationships from another project into this one (copies, not live links).</p>' +
+    openModal('<h3>Import bible snapshot</h3>' +
+      '<p style="font-size:0.88rem;color:var(--sw-muted);margin:0 0 10px"><strong>Import snapshot, not live sync.</strong> Copies characters, locations, glossary, and relationships from another project into this one. Later edits stay independent — there is no shared live bible across projects.</p>' +
       '<label class="sw-lbl">Source project</label><select class="sw-sel" id="m-bridge-src">' +
       projects.map(function (p) { return '<option value="' + p.id + '">' + escapeHtml(p.name || 'Untitled') + '</option>'; }).join('') +
       '</select>' +
@@ -6142,7 +6376,7 @@ function exportTxt() {
       '<label style="display:flex;gap:8px;margin:8px 0;font-size:0.88rem"><input type="checkbox" id="m-b-rel"> Relationships</label>' +
       '<label style="display:flex;gap:8px;margin:8px 0;font-size:0.88rem"><input type="checkbox" id="m-b-notes"> Append brainstorm notes</label>' +
       '<div class="sw-modal-actions"><button type="button" class="sw-btn" id="m-cancel">Cancel</button>' +
-      '<button type="button" class="sw-btn sw-btn-primary" id="m-bridge-go">Import into this novel</button></div>');
+      '<button type="button" class="sw-btn sw-btn-primary" id="m-bridge-go">Import snapshot</button></div>');
     $('#m-cancel').onclick = closeModal;
     $('#m-bridge-go').onclick = async function () {
       var rec = await idbGet($('#m-bridge-src').value);
@@ -6183,6 +6417,8 @@ function exportTxt() {
   function applyAutoCapitalize(e) {
     if (state.autoCapitalize === false) return;
     if (!e || e.inputType === 'deleteContentBackward' || e.inputType === 'deleteContentForward') return;
+    // Avoid interfering with composition (mobile IME) and non-insert inputs
+    if (e.isComposing || e.inputType === 'insertCompositionText') return;
     var sel = window.getSelection();
     if (!sel.rangeCount || !editor.contains(sel.anchorNode)) return;
     var node = sel.anchorNode;
@@ -6190,11 +6426,20 @@ function exportTxt() {
     var offset = sel.anchorOffset;
     if (offset < 1) return;
     var text = node.textContent || '';
-    // Capitalize after . ! ? + space/nbsp
+    // Common abbreviations / initials that end with . — do not capitalize after these
+    var ABBREV = /\b(?:Mr|Mrs|Ms|Dr|Prof|Sr|Jr|vs|etc|i\.e|e\.g|a\.m|p\.m|U\.S|U\.K|No|Vol|Fig|St|Ave|Inc|Ltd|Co)\.\s*$/i;
+    // Capitalize after . ! ? + space/nbsp (sentence start)
     if (offset >= 2) {
       var a = text.charAt(offset - 2);
       var b = text.charAt(offset - 1);
       if (/[.!?]/.test(a) && /[\s\u00a0]/.test(b) && offset < text.length) {
+        // Check preceding word for abbreviation when the trigger was a period
+        if (a === '.') {
+          var before = text.slice(0, offset - 1);
+          if (ABBREV.test(before)) return;
+          // Single capital + period (e.g. "J. " or "A. ") — likely initial
+          if (/\b[A-Z]\.\s*$/.test(before)) return;
+        }
         var c = text.charAt(offset);
         if (c && /[a-z]/.test(c)) {
           node.textContent = text.slice(0, offset) + c.toUpperCase() + text.slice(offset + 1);
@@ -6206,10 +6451,11 @@ function exportTxt() {
         }
       }
     }
-    // Start of text node / paragraph: first letter
+    // Start of text node / paragraph: first letter only when at true paragraph start
     if (offset === 1 && /[a-z]/.test(text.charAt(0))) {
-      var prevOk = true;
-      // if previous sibling is empty or block start
+      var prev = node.previousSibling;
+      var atBlockStart = !prev || (prev.nodeType === 1 && /^(P|DIV|BR|H[1-6])$/i.test(prev.nodeName));
+      if (!atBlockStart && prev && prev.nodeType === 3 && (prev.textContent || '').trim()) return;
       node.textContent = text.charAt(0).toUpperCase() + text.slice(1);
       var r2 = document.createRange();
       r2.setStart(node, 1);
@@ -6293,6 +6539,7 @@ function exportTxt() {
             p.hidden = !on;
           }
         });
+        if (btn.dataset.dtab === 'about') refreshStorageInfo();
       };
     });
     var nd = document.getElementById('sw-dash-new-design');
@@ -6300,6 +6547,39 @@ function exportTxt() {
       nd.dataset.wired = '1';
       nd.onclick = function () { openDesignWizard(); };
     }
+  }
+
+  function formatBytes(n) {
+    if (n == null || isNaN(n)) return '—';
+    if (n < 1024) return n + ' B';
+    if (n < 1024 * 1024) return (n / 1024).toFixed(1) + ' KB';
+    return (n / (1024 * 1024)).toFixed(1) + ' MB';
+  }
+
+  async function refreshStorageInfo() {
+    var el = document.getElementById('sw-storage-text');
+    if (!el) return;
+    var parts = [];
+    try {
+      if (navigator.storage && navigator.storage.estimate) {
+        var est = await navigator.storage.estimate();
+        var used = est.usage || 0;
+        var quota = est.quota || 0;
+        var pct = quota ? Math.round((used / quota) * 100) : 0;
+        parts.push('Used ~' + formatBytes(used) + (quota ? ' of ~' + formatBytes(quota) + ' (' + pct + '%)' : ''));
+        if (pct >= 80) parts.push('⚠ Storage is getting full — export or delete unused designs/covers.');
+        else if (pct >= 60) parts.push('Consider Save disk backups and smaller cover images.');
+      } else {
+        parts.push('Storage estimate not available in this browser.');
+      }
+    } catch (e) {
+      parts.push('Could not read storage estimate.');
+    }
+    try {
+      var designs = readDesigns();
+      parts.push(designs.length + ' book design(s) in localStorage');
+    } catch (e) {}
+    el.textContent = parts.join(' · ');
   }
 
   function monthKey() {
@@ -6779,6 +7059,43 @@ function exportTxt() {
       saveDesign(design);
       openDesignStudio(activeDesignId);
       toast('Styles applied');
+    };
+    var editBtn = document.getElementById('sw-des-edit');
+    if (editBtn) editBtn.onclick = function () {
+      var page = designerPages[designerPageIndex];
+      if (!page) { toast('No page selected'); return; }
+      if (page.type === 'cover') { toast('Cover is an image — use Cover button'); return; }
+      var plain = stripHtml(page.html || '').replace(/\n{3,}/g, '\n\n');
+      openModal(
+        '<h3>Edit page text</h3>' +
+        '<p style="font-size:0.85rem;color:var(--sw-muted);margin:0 0 8px">Edits this design page only (does not change the novel manuscript). Export still uses project chapters unless you refresh.</p>' +
+        '<textarea class="sw-ta" id="m-des-edit" style="min-height:220px;font-family:Georgia,serif">' + escapeHtml(plain) + '</textarea>' +
+        '<div class="sw-modal-actions">' +
+        '<button type="button" class="sw-btn" id="m-cancel">Cancel</button>' +
+        '<button type="button" class="sw-btn sw-btn-primary" id="m-des-apply-text">Apply to page</button></div>'
+      );
+      $('#m-cancel').onclick = closeModal;
+      $('#m-des-apply-text').onclick = function () {
+        var t = ($('#m-des-edit') && $('#m-des-edit').value) || '';
+        var blocks = t.split(/\n\n+/).map(function (para) {
+          para = para.trim();
+          if (!para) return '';
+          var lines = para.split('\n').map(function (l) { return l.trim(); }).filter(Boolean);
+          return lines.map(function (line, li) {
+            return '<p class="' + (li === 0 ? 'no-indent' : '') + '">' + escapeHtml(line) + '</p>';
+          }).join('');
+        }).filter(Boolean);
+        if (page.type === 'title' || page.type === 'chapter') {
+          // keep first h1 if present in original
+          var h1 = (page.html || '').match(/<h1[^>]*>[\s\S]*?<\/h1>/i);
+          page.html = (h1 ? h1[0] : '') + blocks.join('');
+        } else {
+          page.html = blocks.join('');
+        }
+        closeModal();
+        renderDesignerPage();
+        toast('Page text updated in design');
+      };
     };
     var snapBtn = document.getElementById('sw-des-snapshot');
     if (snapBtn) snapBtn.onclick = function () {
