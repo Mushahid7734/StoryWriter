@@ -1620,13 +1620,18 @@
   let diskAutoSaveTimer = null;
   var DISK_AUTOSAVE_MS = 45000; // auto-save to linked file after idle when dirty
 
+  var IDB_HANDLES = 'handles'; // FileSystemFileHandle per project (Chromium)
+
   function openIdb() {
     return new Promise(function (resolve, reject) {
-      const req = indexedDB.open(IDB_NAME, 1);
-      req.onupgradeneeded = function () {
+      const req = indexedDB.open(IDB_NAME, 2);
+      req.onupgradeneeded = function (ev) {
         const db = req.result;
         if (!db.objectStoreNames.contains(IDB_STORE)) {
           db.createObjectStore(IDB_STORE, { keyPath: 'id' });
+        }
+        if (!db.objectStoreNames.contains(IDB_HANDLES)) {
+          db.createObjectStore(IDB_HANDLES, { keyPath: 'projectId' });
         }
       };
       req.onsuccess = function () { resolve(req.result); };
@@ -1676,6 +1681,108 @@
         req.onerror = function () { reject(req.error); };
       });
     });
+  }
+
+  /** Persist FileSystemFileHandle so reopen can restore the link (Chrome/Edge). */
+  function idbPutHandle(projectId, handle) {
+    if (!projectId || !handle) return Promise.resolve();
+    return openIdb().then(function (db) {
+      if (!db.objectStoreNames.contains(IDB_HANDLES)) return;
+      return new Promise(function (resolve, reject) {
+        try {
+          const tx = db.transaction(IDB_HANDLES, 'readwrite');
+          tx.objectStore(IDB_HANDLES).put({
+            projectId: projectId,
+            handle: handle,
+            name: handle.name || diskFileName || '',
+            savedAt: new Date().toISOString()
+          });
+          tx.oncomplete = function () { resolve(); };
+          tx.onerror = function () { reject(tx.error); };
+        } catch (e) { resolve(); }
+      });
+    }).catch(function () {});
+  }
+
+  function idbGetHandle(projectId) {
+    if (!projectId) return Promise.resolve(null);
+    return openIdb().then(function (db) {
+      if (!db.objectStoreNames.contains(IDB_HANDLES)) return null;
+      return new Promise(function (resolve, reject) {
+        const tx = db.transaction(IDB_HANDLES, 'readonly');
+        const req = tx.objectStore(IDB_HANDLES).get(projectId);
+        req.onsuccess = function () { resolve(req.result || null); };
+        req.onerror = function () { resolve(null); };
+      });
+    }).catch(function () { return null; });
+  }
+
+  function idbDeleteHandle(projectId) {
+    if (!projectId) return Promise.resolve();
+    return openIdb().then(function (db) {
+      if (!db.objectStoreNames.contains(IDB_HANDLES)) return;
+      return new Promise(function (resolve) {
+        const tx = db.transaction(IDB_HANDLES, 'readwrite');
+        tx.objectStore(IDB_HANDLES).delete(projectId);
+        tx.oncomplete = function () { resolve(); };
+        tx.onerror = function () { resolve(); };
+      });
+    }).catch(function () {});
+  }
+
+  /**
+   * Restore linked file after reload. Chromium can keep the handle in IDB;
+   * permission may be 'granted' still, or 'prompt' (one click on Save re-authorizes — no file picker).
+   */
+  async function restoreFileHandleForProject(projectId) {
+    fileHandle = null;
+    if (!projectId || typeof window.showSaveFilePicker !== 'function') return false;
+    try {
+      var rec = await idbGetHandle(projectId);
+      if (!rec || !rec.handle) return false;
+      var handle = rec.handle;
+      if (rec.name) diskFileName = rec.name;
+      else if (handle.name) diskFileName = handle.name;
+      var perm = 'granted';
+      if (handle.queryPermission) {
+        perm = await handle.queryPermission({ mode: 'readwrite' });
+      }
+      if (perm === 'granted') {
+        fileHandle = handle;
+        updateDiskSaveLabel();
+        return true;
+      }
+      // Keep handle so Save / Ctrl+S can requestPermission under a user gesture
+      if (perm === 'prompt') {
+        fileHandle = handle;
+        updateDiskSaveLabel();
+        return 'prompt';
+      }
+      // denied — drop stored handle
+      await idbDeleteHandle(projectId);
+      fileHandle = null;
+      return false;
+    } catch (e) {
+      fileHandle = null;
+      return false;
+    }
+  }
+
+  async function ensureFileHandlePermission() {
+    if (!fileHandle) return false;
+    try {
+      var perm = 'granted';
+      if (fileHandle.queryPermission) {
+        perm = await fileHandle.queryPermission({ mode: 'readwrite' });
+      }
+      if (perm === 'granted') return true;
+      if (perm === 'prompt' && fileHandle.requestPermission) {
+        perm = await fileHandle.requestPermission({ mode: 'readwrite' });
+      }
+      return perm === 'granted';
+    } catch (e) {
+      return false;
+    }
   }
 
   function readMeta() {
@@ -1763,14 +1870,14 @@
   function maybeRelinkTip() {
     try {
       if (typeof window.showSaveFilePicker !== 'function') return;
-      if (fileHandle) return;
+      if (fileHandle) return; // restored from IndexedDB — may only need permission on first Save
       if (!(diskFileName || lastDiskSavedAt)) return;
       var key = 'storywriter-relink-tip';
       var day = new Date().toISOString().slice(0, 10);
       if (sessionStorage.getItem(key) === day) return;
       sessionStorage.setItem(key, day);
-      toast('File link dropped after reload — Save disk to re-link “' +
-        (diskFileName || 'your project') + '”');
+      toast('No file linked — Save disk once to link “' +
+        (diskFileName || 'your project') + '” for Ctrl/Cmd+S');
     } catch (e) {}
   }
 
@@ -2112,8 +2219,6 @@
     meta.currentId = id;
     writeMeta(meta);
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
-    // Switching projects clears linked handle (handle is per session/file)
-    fileHandle = null;
     if (meta.lastDiskProjectId === id && meta.lastDiskSavedAt) {
       lastDiskSavedAt = meta.lastDiskSavedAt;
       diskFileName = meta.lastDiskFileName || '';
@@ -2122,6 +2227,11 @@
       diskFileName = '';
     }
     projectDirty = false;
+    // Restore disk link from IndexedDB (Chrome/Edge) — may need one Save click to re-authorize
+    var restored = await restoreFileHandleForProject(id);
+    if (restored === true && meta.lastDiskSavedAt) {
+      lastDiskSavedAt = meta.lastDiskSavedAt;
+    }
     updateProjectLabel();
     updateDiskSaveLabel();
     return true;
@@ -2226,7 +2336,7 @@
         await persistToIdbPromise();
         var ok = await loadProjectById(btn.dataset.id);
         closeModal();
-        if (ok) { fileHandle = null; updateDiskSaveLabel(); refreshUI(); toast('Opened project'); }
+        if (ok) { refreshUI(); updateDiskSaveLabel(); toast('Opened project'); }
         else toast('Could not open');
       };
     });
@@ -2290,6 +2400,9 @@
       meta.lastDiskProjectId = currentProjectId;
       writeMeta(meta);
     } catch (e) {}
+    if (fileHandle && currentProjectId) {
+      idbPutHandle(currentProjectId, fileHandle);
+    }
     updateDiskSaveLabel();
     updateProjectLabel();
   }
@@ -2330,28 +2443,20 @@
     await persistToIdbPromise();
     var blob = new Blob([buildProjectPayload()], { type: 'application/json' });
 
-    // Word-style: reuse existing file handle when possible
+    // Word-style: reuse existing / restored file handle when possible
     if (!forcePicker && fileHandle && window.showSaveFilePicker) {
       try {
-        var ok = true;
-        if (fileHandle.queryPermission) {
-          var perm = await fileHandle.queryPermission({ mode: 'readwrite' });
-          if (perm !== 'granted') {
-            if (fileHandle.requestPermission) {
-              perm = await fileHandle.requestPermission({ mode: 'readwrite' });
-            }
-            ok = perm === 'granted';
-          }
-        }
+        var ok = await ensureFileHandlePermission();
         if (ok) {
           await writeToFileHandle(fileHandle);
           noteDiskSaveSuccess(fileHandle.name || diskFileName);
           if (!quiet) toast('Saved' + (fileHandle.name ? ' · ' + fileHandle.name : ''));
           return;
         }
+        // Permission denied — fall through to picker
+        if (!quiet) toast('Permission needed — pick the file once more');
       } catch (e) {
-        fileHandle = null;
-        if (!quiet) toast('Could not write linked file — choose Save again');
+        if (!quiet) toast('Could not write linked file — choose the file again');
       }
     }
 
@@ -2399,6 +2504,7 @@
         var text = await file.text();
         await importProjectJson(text, file.name, { fromDiskHandle: true, fileLastModified: file.lastModified });
         diskFileName = fileHandle.name || file.name || '';
+        if (currentProjectId) idbPutHandle(currentProjectId, fileHandle);
         updateDiskSaveLabel();
         toast('Opened · ' + diskFileName + ' — Ctrl/Cmd+S updates this file');
         return;
@@ -6114,7 +6220,7 @@ function exportTxt() {
   function togglePastePlain() {
     state.pastePlain = !state.pastePlain;
     save();
-    var btn = document.getElementById('sw-paste-plain-btn');
+    var btn = document.getElementById('sw-paste-plain') || document.getElementById('sw-paste-plain-btn');
     if (btn) btn.style.outline = state.pastePlain ? '2px solid var(--sw-ok)' : '';
     toast(state.pastePlain ? 'Paste as plain text on' : 'Paste as plain text off');
   }
@@ -6498,9 +6604,10 @@ function exportTxt() {
     if (byId('sw-find-btn')) byId('sw-find-btn').onclick = openFindReplace;
     if (byId('sw-hl-btn')) byId('sw-hl-btn').onclick = openHighlightMenu;
     if (byId('sw-stats-btn')) byId('sw-stats-btn').onclick = showStats;
-    if (byId('sw-paste-plain-btn')) {
-      byId('sw-paste-plain-btn').onclick = togglePastePlain;
-      if (state.pastePlain) byId('sw-paste-plain-btn').style.outline = '2px solid var(--sw-ok)';
+    var pasteBtn = byId('sw-paste-plain') || byId('sw-paste-plain-btn');
+    if (pasteBtn) {
+      pasteBtn.onclick = togglePastePlain;
+      if (state.pastePlain !== false) pasteBtn.style.outline = '2px solid var(--sw-ok)';
     }
     if (byId('sw-rev-btn')) byId('sw-rev-btn').onclick = toggleRevision;
     if (byId('sw-compare-btn')) byId('sw-compare-btn').onclick = openCompare;
