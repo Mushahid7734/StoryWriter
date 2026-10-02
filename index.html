@@ -1101,7 +1101,6 @@
   <button type="button" class="sw-btn sw-typewriter-exit" id="sw-typewriter-exit" title="Exit Focus Mode">✕ Exit Focus Mode</button>
   <div class="sw-topbar">
     <span class="sw-logo">StoryWriter</span>
-    <button type="button" class="sw-btn sw-btn-icon" id="sw-toggle-sidebar" title="Toggle sidebar (Ctrl+B)">☰</button>
     <div class="sw-top-sep"></div>
     <button type="button" class="sw-btn sw-btn-icon" id="sw-bold" title="Bold (Ctrl+B)"><b>B</b></button>
     <button type="button" class="sw-btn sw-btn-icon" id="sw-italic" title="Italic (Ctrl+I)"><i>I</i></button>
@@ -1110,18 +1109,7 @@
     <button type="button" class="sw-btn sw-btn-icon" id="sw-font-down" title="Smaller">A−</button>
     <button type="button" class="sw-btn sw-btn-icon" id="sw-font-up" title="Larger">A+</button>
     <div class="sw-top-sep"></div>
-    <button type="button" class="sw-btn" id="sw-theme-btn" title="Theme">Theme</button>
-    <button type="button" class="sw-btn" id="sw-search-btn" title="Search (Ctrl+K)">Search</button>
-    <button type="button" class="sw-btn" id="sw-shortcuts-btn" title="Keyboard shortcuts">Keys</button>
-    <div class="sw-top-sep"></div>
-    <button type="button" class="sw-btn sw-btn-icon" id="sw-fullscreen" title="Fullscreen">⛶</button>
-    <button type="button" class="sw-btn" id="sw-projects-btn" title="Author home">Home</button>
     <button type="button" class="sw-btn" id="sw-disk-save" title="Save to linked file (Ctrl/Cmd+S). First time chooses a file.">Save disk</button>
-    <button type="button" class="sw-btn" id="sw-disk-save-as" title="Save as… choose a new file">Save as</button>
-    <button type="button" class="sw-btn" id="sw-disk-open" title="Open a project JSON from another device or backup">Open disk</button>
-    <button type="button" class="sw-btn" id="sw-install-btn" title="Install as app" style="display:none">Install app</button>
-    <span id="sw-project-label" style="font-size:0.75rem;color:var(--sw-muted);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
-    <div class="sw-top-sep"></div>
     <div class="sw-dropdown" id="sw-export-dd">
       <button type="button" class="sw-btn sw-btn-primary" id="sw-export-btn">Export ▾</button>
       <div class="sw-dropdown-menu">
@@ -1131,19 +1119,31 @@
         <button type="button" data-export="json">Full project JSON</button>
       </div>
     </div>
-    <button type="button" class="sw-btn" id="sw-restore-btn">Restore</button>
-    <button type="button" class="sw-btn" id="sw-template-btn">Template</button>
-    <button type="button" class="sw-btn" id="sw-clear-data">Clear</button>
-    <input type="file" id="sw-restore-file" accept=".json,application/json" style="display:none">
-    <div class="sw-goal-wrap" title="Session goal">
+    <button type="button" class="sw-btn" id="sw-install-btn" title="Install as app" style="display:none">Install app</button>
+    <span id="sw-project-label" style="font-size:0.75rem;color:var(--sw-muted);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="Current project"></span>
+    <span id="sw-disk-status" style="font-size:0.68rem;color:var(--sw-muted);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="Disk save status"></span>
+    <div class="sw-goal-wrap" title="Session goal" style="margin-left:auto">
       <span id="sw-goal-label">0/500</span>
       <div class="sw-goal-bar"><div class="sw-goal-fill" id="sw-goal-fill"></div></div>
     </div>
-    <span class="sw-timer" id="sw-timer" title="Focus timer">25:00</span>
-    <button type="button" class="sw-btn" id="sw-timer-btn" title="Pomodoro focus timer">Timer</button>
-    <button type="button" class="sw-btn" id="sw-pomodoro" title="Focus timer">25:00</button>
-    <span class="sw-streak" id="sw-streak" title="Writing streak">Streak: <strong>0</strong></span>
     <span class="sw-wordcount" id="sw-wordcount">0 words</span>
+    <span class="sw-streak" id="sw-streak" title="Writing streak">🔥 <strong>0</strong></span>
+    <!-- Hidden controls: still present for JS wiring; use Capsule → Tools / Home / Chapters / Focus -->
+    <button type="button" class="sw-btn" id="sw-toggle-sidebar" style="display:none" title="Toggle sidebar">☰</button>
+    <button type="button" class="sw-btn" id="sw-theme-btn" style="display:none">Theme</button>
+    <button type="button" class="sw-btn" id="sw-search-btn" style="display:none">Search</button>
+    <button type="button" class="sw-btn" id="sw-shortcuts-btn" style="display:none">Keys</button>
+    <button type="button" class="sw-btn" id="sw-fullscreen" style="display:none">Fullscreen</button>
+    <button type="button" class="sw-btn" id="sw-projects-btn" style="display:none">Home</button>
+    <button type="button" class="sw-btn" id="sw-disk-save-as" style="display:none">Save as</button>
+    <button type="button" class="sw-btn" id="sw-disk-open" style="display:none">Open disk</button>
+    <button type="button" class="sw-btn" id="sw-restore-btn" style="display:none">Restore</button>
+    <button type="button" class="sw-btn" id="sw-template-btn" style="display:none">Template</button>
+    <button type="button" class="sw-btn" id="sw-clear-data" style="display:none">Clear</button>
+    <input type="file" id="sw-restore-file" accept=".json,application/json" style="display:none">
+    <span class="sw-timer" id="sw-timer" style="display:none" title="Focus timer">25:00</span>
+    <button type="button" class="sw-btn" id="sw-timer-btn" style="display:none">Timer</button>
+    <button type="button" class="sw-btn" id="sw-pomodoro" style="display:none">25:00</button>
   </div>
   <div class="sw-body">
     <aside class="sw-sidebar" id="sw-sidebar">
@@ -1187,33 +1187,10 @@
             <option value="revise">Revise</option>
             <option value="done">Done</option>
           </select>
-          <button type="button" class="sw-btn" id="sw-typewriter-btn" title="Focus Mode — distraction-free writing">Focus Mode</button>
           <button type="button" class="sw-btn" id="sw-print-btn" title="Design and print book">Design book</button>
-          <div class="sw-dropdown" id="sw-tools-dd">
-            <button type="button" class="sw-btn" id="sw-tools-btn">Tools ▾</button>
-            <div class="sw-dropdown-menu" id="sw-tools-menu">
-              <button type="button" data-tool="find">Find &amp; replace</button>
-              <button type="button" data-tool="hl">Highlight pass</button>
-              <button type="button" data-tool="stats">Readability stats</button>
-              <button type="button" data-tool="mentions">Appearances</button>
-              <button type="button" data-tool="continuity">Continuity</button>
-              <button type="button" data-tool="rev">Revision A/B</button>
-              <button type="button" data-tool="compare">Compare snapshots</button>
-              <button type="button" data-tool="snapshot">Take snapshot</button>
-              <button type="button" data-tool="snapshots">List snapshots</button>
-              <button type="button" data-tool="notes">Notes panel</button>
-              <button type="button" data-tool="addnote">+ Note</button>
-              <button type="button" data-tool="read">Read aloud</button>
-              <button type="button" data-tool="threads">Threads</button>
-              <button type="button" data-tool="ref">Pin ref</button>
-              <button type="button" data-tool="goals">Word goals</button>
-              <button type="button" data-tool="paste">Plain paste toggle</button>
-              <button type="button" data-tool="footnote">Insert footnote</button>
-              <button type="button" data-tool="scenebreak">Scene break image</button>
-              <button type="button" data-tool="copyitem">Copy to…</button>
-            </div>
-          </div>
-          <!-- Kept for capsule / keyboard wiring; hidden on story toolbar via CSS -->
+          <!-- Focus + Tools live on floating capsule only -->
+          <button type="button" class="sw-btn" id="sw-typewriter-btn" style="display:none" title="Focus Mode">Focus Mode</button>
+          <!-- Kept for capsule / keyboard wiring -->
           <button type="button" class="sw-btn sw-tool-secondary" id="sw-toggle-comments" style="display:none">Notes</button>
           <button type="button" class="sw-btn sw-tool-secondary" id="sw-add-comment" style="display:none">+ Note</button>
           <button type="button" class="sw-btn sw-tool-secondary" id="sw-snapshot-btn" style="display:none">Snapshot</button>
@@ -1506,11 +1483,16 @@
       <button type="button" data-cap="save">Save disk</button>
       <button type="button" data-cap="saveas">Save as…</button>
       <button type="button" data-cap="opendisk">Open disk</button>
+      <button type="button" data-cap="restore">Restore JSON…</button>
+      <button type="button" data-cap="template">Template</button>
       <button type="button" data-cap="meta">Cover, genre &amp; status</button>
       <button type="button" data-cap="goals">Word goals</button>
       <button type="button" data-cap="theme">Theme</button>
+      <button type="button" data-cap="timer">Focus timer</button>
       <button type="button" data-cap="search">Search manuscript</button>
       <button type="button" data-cap="keys">Keyboard shortcuts</button>
+      <button type="button" data-cap="fullscreen">Fullscreen</button>
+      <button type="button" data-cap="clear">Clear project data…</button>
     </div>
   </div>
 
@@ -1536,6 +1518,11 @@
   let currentProjectName = 'Untitled';
   let idbSaveTimer = null;
   let fileHandle = null; // File System Access handle when available
+  let projectDirty = false; // true when changes not yet written to linked disk file (or last disk download)
+  let lastDiskSavedAt = null; // ISO string of last successful disk save
+  let diskFileName = ''; // linked file name when known
+  let diskAutoSaveTimer = null;
+  var DISK_AUTOSAVE_MS = 45000; // auto-save to linked file after idle when dirty
 
   function openIdb() {
     return new Promise(function (resolve, reject) {
@@ -1605,7 +1592,80 @@
   }
   function updateProjectLabel() {
     const el = document.getElementById('sw-project-label');
-    if (el) el.textContent = currentProjectName || 'Untitled';
+    if (!el) return;
+    var name = currentProjectName || 'Untitled';
+    if (projectDirty) name = '● ' + name;
+    el.textContent = name;
+    el.title = (projectDirty ? 'Unsaved changes — ' : '') + (currentProjectName || 'Untitled') +
+      (diskFileName ? ' · file: ' + diskFileName : '');
+    el.style.color = projectDirty ? 'var(--sw-accent)' : 'var(--sw-muted)';
+    updateDiskStatusLine();
+  }
+
+  function formatSavedAgo(iso) {
+    if (!iso) return '';
+    var t = new Date(iso).getTime();
+    if (isNaN(t)) return '';
+    var sec = Math.round((Date.now() - t) / 1000);
+    if (sec < 10) return 'just now';
+    if (sec < 60) return sec + 's ago';
+    if (sec < 3600) return Math.floor(sec / 60) + ' min ago';
+    if (sec < 86400) return Math.floor(sec / 3600) + 'h ago';
+    return new Date(iso).toLocaleString();
+  }
+
+  function updateDiskStatusLine() {
+    var el = document.getElementById('sw-disk-status');
+    if (!el) return;
+    var hasFSA = typeof window.showSaveFilePicker === 'function';
+    if (fileHandle || diskFileName) {
+      var fn = diskFileName || (fileHandle && fileHandle.name) || 'linked file';
+      if (projectDirty) {
+        el.textContent = 'Unsaved · ' + fn;
+        el.style.color = 'var(--sw-danger)';
+      } else if (lastDiskSavedAt) {
+        el.textContent = 'Saved ' + formatSavedAgo(lastDiskSavedAt) + ' · ' + fn;
+        el.style.color = 'var(--sw-ok)';
+      } else {
+        el.textContent = 'Linked · ' + fn;
+        el.style.color = 'var(--sw-muted)';
+      }
+      el.title = hasFSA
+        ? 'Linked file — Ctrl/Cmd+S updates this file on disk'
+        : 'Last export name — this browser downloads a new copy each Save';
+    } else {
+      el.textContent = hasFSA ? 'No file linked' : 'Save downloads JSON';
+      el.style.color = 'var(--sw-muted)';
+      el.title = hasFSA
+        ? 'Use Save disk once to choose a file; then Ctrl/Cmd+S updates it (Word-style)'
+        : 'This browser cannot update a linked file in place — each Save downloads a new JSON copy';
+    }
+  }
+
+  function markDirty() {
+    if (!projectDirty) {
+      projectDirty = true;
+      updateProjectLabel();
+      updateDiskSaveLabel();
+    }
+    scheduleDiskAutoSave();
+  }
+
+  function clearDirty() {
+    projectDirty = false;
+    updateProjectLabel();
+    updateDiskSaveLabel();
+  }
+
+  function scheduleDiskAutoSave() {
+    if (diskAutoSaveTimer) clearTimeout(diskAutoSaveTimer);
+    diskAutoSaveTimer = null;
+    if (!fileHandle || !projectDirty) return;
+    diskAutoSaveTimer = setTimeout(function () {
+      diskAutoSaveTimer = null;
+      if (!fileHandle || !projectDirty) return;
+      saveToDisk({ quiet: true }).catch(function () {});
+    }, DISK_AUTOSAVE_MS);
   }
 
   function emptyScene(title) {
@@ -1920,7 +1980,18 @@
     meta.currentId = id;
     writeMeta(meta);
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+    // Switching projects clears linked handle (handle is per session/file)
+    fileHandle = null;
+    if (meta.lastDiskProjectId === id && meta.lastDiskSavedAt) {
+      lastDiskSavedAt = meta.lastDiskSavedAt;
+      diskFileName = meta.lastDiskFileName || '';
+    } else {
+      lastDiskSavedAt = null;
+      diskFileName = '';
+    }
+    projectDirty = false;
     updateProjectLabel();
+    updateDiskSaveLabel();
     return true;
   }
 
@@ -1960,10 +2031,14 @@
     state.activeChapterId = state.chapters[0].id;
     state.activeSceneId = state.chapters[0].scenes[0].id;
     fileHandle = null;
+    lastDiskSavedAt = null;
+    diskFileName = '';
+    projectDirty = false;
     updateDiskSaveLabel();
+    updateProjectLabel();
     await persistToIdbPromise();
     refreshUI();
-    toast('New project');
+    toast('New project — use Save disk to create a file on disk');
   }
 
   function refreshUI() {
@@ -2065,20 +2140,43 @@
       id: currentProjectId,
       name: currentProjectName,
       updatedAt: new Date().toISOString(),
+      lastDiskSavedAt: lastDiskSavedAt || null,
+      diskFileName: diskFileName || (fileHandle && fileHandle.name) || '',
       state: state
     }, null, 2);
+  }
+
+  function noteDiskSaveSuccess(name) {
+    lastDiskSavedAt = new Date().toISOString();
+    if (name) diskFileName = name;
+    else if (fileHandle && fileHandle.name) diskFileName = fileHandle.name;
+    clearDirty();
+    try {
+      var meta = readMeta();
+      meta.lastDiskSavedAt = lastDiskSavedAt;
+      meta.lastDiskFileName = diskFileName;
+      meta.lastDiskProjectId = currentProjectId;
+      writeMeta(meta);
+    } catch (e) {}
+    updateDiskSaveLabel();
+    updateProjectLabel();
   }
 
   function updateDiskSaveLabel() {
     var btn = document.getElementById('sw-disk-save');
     if (!btn) return;
+    var hasFSA = typeof window.showSaveFilePicker === 'function';
     if (fileHandle) {
-      btn.textContent = 'Save';
-      btn.title = 'Save to linked file (Ctrl/Cmd+S)';
+      btn.textContent = projectDirty ? 'Save●' : 'Save';
+      btn.title = 'Save to linked file' + (diskFileName ? ' (' + diskFileName + ')' : '') + ' — Ctrl/Cmd+S';
+    } else if (hasFSA) {
+      btn.textContent = projectDirty ? 'Save disk●' : 'Save disk';
+      btn.title = 'Choose a file on disk; then Ctrl/Cmd+S updates that file (Word-style)';
     } else {
-      btn.textContent = 'Save disk';
-      btn.title = 'Choose a file on disk, then Ctrl/Cmd+S updates it';
+      btn.textContent = projectDirty ? 'Save disk●' : 'Save disk';
+      btn.title = 'Download project JSON (this browser cannot update a linked file in place)';
     }
+    updateDiskStatusLine();
   }
 
   async function writeToFileHandle(handle) {
@@ -2091,6 +2189,7 @@
   async function saveToDisk(opts) {
     opts = opts || {};
     var forcePicker = !!opts.forcePicker;
+    var quiet = !!opts.quiet;
     saveCurrent();
     await persistToIdbPromise();
     var blob = new Blob([buildProjectPayload()], { type: 'application/json' });
@@ -2098,7 +2197,6 @@
     // Word-style: reuse existing file handle when possible
     if (!forcePicker && fileHandle && window.showSaveFilePicker) {
       try {
-        // Verify permission
         var ok = true;
         if (fileHandle.queryPermission) {
           var perm = await fileHandle.queryPermission({ mode: 'readwrite' });
@@ -2111,13 +2209,13 @@
         }
         if (ok) {
           await writeToFileHandle(fileHandle);
-          toast('Saved' + (fileHandle.name ? ' · ' + fileHandle.name : ''));
-          updateDiskSaveLabel();
+          noteDiskSaveSuccess(fileHandle.name || diskFileName);
+          if (!quiet) toast('Saved' + (fileHandle.name ? ' · ' + fileHandle.name : ''));
           return;
         }
       } catch (e) {
-        // fall through to picker / download
         fileHandle = null;
+        if (!quiet) toast('Could not write linked file — choose Save again');
       }
     }
 
@@ -2128,8 +2226,8 @@
           types: [{ description: 'StoryWriter project', accept: { 'application/json': ['.json'] } }]
         });
         await writeToFileHandle(fileHandle);
-        updateDiskSaveLabel();
-        toast('Saved' + (fileHandle.name ? ' · ' + fileHandle.name : ' to disk'));
+        noteDiskSaveSuccess(fileHandle.name || '');
+        if (!quiet) toast('Saved' + (fileHandle.name ? ' · ' + fileHandle.name : ' to disk'));
         return;
       } catch (e) {
         if (e && e.name === 'AbortError') return;
@@ -2139,10 +2237,12 @@
 
     // Fallback browsers: download each time (no persistent handle API)
     if (typeof saveAs === 'function') {
-      saveAs(blob, (currentProjectName || 'storywriter') + '.json');
-      toast('Downloaded project JSON');
+      var dlName = (currentProjectName || 'storywriter').replace(/[^a-z0-9-_]+/gi, '_') + '.json';
+      saveAs(blob, dlName);
+      noteDiskSaveSuccess(dlName);
+      if (!quiet) toast('Downloaded · ' + dlName + ' (re-open + Save disk to keep working)');
     } else {
-      toast('Save not supported in this browser');
+      if (!quiet) toast('Save not supported in this browser');
     }
     updateDiskSaveLabel();
   }
@@ -2161,9 +2261,10 @@
         fileHandle = handles[0];
         var file = await fileHandle.getFile();
         var text = await file.text();
-        await importProjectJson(text, file.name);
+        await importProjectJson(text, file.name, { fromDiskHandle: true, fileLastModified: file.lastModified });
+        diskFileName = fileHandle.name || file.name || '';
         updateDiskSaveLabel();
-        toast('Opened · ' + (fileHandle.name || file.name) + ' — Ctrl+S will update this file');
+        toast('Opened · ' + diskFileName + ' — Ctrl/Cmd+S updates this file');
         return;
       } catch (e) {
         if (e && e.name === 'AbortError') return;
@@ -2178,30 +2279,93 @@
       if (!f) return;
       fileHandle = null; // input files cannot be re-written in place
       var text = await f.text();
-      await importProjectJson(text, f.name);
+      await importProjectJson(text, f.name, { fromDiskHandle: false, fileLastModified: f.lastModified });
+      diskFileName = f.name || '';
       updateDiskSaveLabel();
-      toast('Imported — use Save disk once to link a file for Ctrl+S');
+      var hasFSA = typeof window.showSaveFilePicker === 'function';
+      toast(hasFSA
+        ? 'Imported — use Save disk once to link a file for Ctrl/Cmd+S'
+        : 'Imported — Save disk downloads a new JSON copy (no in-place link in this browser)');
     };
     input.click();
   }
 
-  async function importProjectJson(text, filename) {
+  async function importProjectJson(text, filename, opts) {
+    opts = opts || {};
     try {
       var data = JSON.parse(text);
       var st = data.state || data;
       if (!st.chapters && data.chapters) st = data;
-      if (!(await swConfirm('Replace the current project with this file?'))) return;
+      var fileUpdated = data.updatedAt || data.lastDiskSavedAt || null;
+      var fileDiskAt = data.lastDiskSavedAt || null;
+      // Recovery: browser draft newer than file?
+      var browserNewer = false;
+      try {
+        var existing = currentProjectId ? await idbGet(currentProjectId) : null;
+        if (existing && existing.updatedAt && fileUpdated) {
+          if (new Date(existing.updatedAt).getTime() > new Date(fileUpdated).getTime() + 2000) {
+            browserNewer = true;
+          }
+        }
+        // Also check meta last disk vs IDB for same-named project
+        var meta = readMeta();
+        if (!browserNewer && meta.lastDiskProjectId && existing && existing.id === meta.lastDiskProjectId) {
+          if (existing.updatedAt && meta.lastDiskSavedAt &&
+              new Date(existing.updatedAt).getTime() > new Date(meta.lastDiskSavedAt).getTime() + 2000) {
+            browserNewer = true;
+          }
+        }
+      } catch (e) {}
+      var msg = 'Replace the current project with this file?';
+      if (browserNewer) {
+        msg = 'Your browser has a newer draft than this file (unsaved work may exist).\n\n' +
+          'OK = open the file from disk (discard newer browser draft for this project).\n' +
+          'Cancel = keep working and use Save disk to update the file.';
+      }
+      if (!(await swConfirm(msg))) return;
       saveCurrent();
       await persistToIdbPromise();
-      currentProjectId = uid();
+      currentProjectId = data.id || uid();
       currentProjectName = data.name || (filename || 'Imported').replace(/\.json$/i, '');
       normalizeState(st);
+      lastDiskSavedAt = fileDiskAt || fileUpdated || null;
+      diskFileName = data.diskFileName || filename || diskFileName || '';
+      projectDirty = false;
       await persistToIdbPromise();
       refreshUI();
-      toast('Project imported');
+      updateProjectLabel();
+      updateDiskSaveLabel();
+      toast('Project opened' + (diskFileName ? ' · ' + diskFileName : ''));
     } catch (e) {
       toast('Invalid project file');
     }
+  }
+
+  async function maybeOfferCrashRecovery() {
+    try {
+      var meta = readMeta();
+      if (!meta.lastDiskSavedAt || !meta.lastDiskProjectId) return;
+      var rec = await idbGet(meta.lastDiskProjectId);
+      if (!rec || !rec.updatedAt) return;
+      var idbT = new Date(rec.updatedAt).getTime();
+      var diskT = new Date(meta.lastDiskSavedAt).getTime();
+      if (isNaN(idbT) || isNaN(diskT)) return;
+      if (idbT <= diskT + 3000) return;
+      if (currentProjectId !== meta.lastDiskProjectId) return;
+      var ok = await swConfirm(
+        'Recover unsaved changes?\n\n' +
+        'This browser draft is newer than the last disk save' +
+        (meta.lastDiskFileName ? ' (' + meta.lastDiskFileName + ')' : '') + '.\n\n' +
+        'OK = keep browser draft (then Save disk to update the file).\n' +
+        'Cancel = leave as-is.'
+      );
+      if (ok) {
+        projectDirty = true;
+        updateProjectLabel();
+        updateDiskSaveLabel();
+        toast('Recovered draft — Save disk to write the file');
+      }
+    } catch (e) {}
   }
 
   function applyTheme() {
@@ -2373,6 +2537,7 @@
       renderChapters();
       loadIntoEditor();
       save();
+      markDirty();
       closeModal();
       toast(kind.charAt(0).toUpperCase() + kind.slice(1) + ' added');
     };
@@ -2386,6 +2551,7 @@
     renderChapters();
     loadIntoEditor();
     save();
+    markDirty();
     toast('Scene added');
   }
   async function deleteChapter(id) {
@@ -2399,6 +2565,7 @@
     }
     renderChapters();
     save();
+    markDirty();
   }
   async function deleteScene(cid, sid) {
     const ch = state.chapters.find(c => c.id === cid);
@@ -2411,6 +2578,7 @@
     }
     renderChapters();
     save();
+    markDirty();
   }
 
   // ----- Corkboard -----
@@ -2808,7 +2976,7 @@
     $$('.sw-ac-item').forEach((el, i) => el.classList.toggle('active', i === acIndex));
   });
   [chapterTitle, sceneTitle, synopsisEl].forEach(el => {
-    el.addEventListener('input', () => { saveCurrent(); renderChapters(); save(); });
+    el.addEventListener('input', () => { saveCurrent(); renderChapters(); save(); markDirty(); });
   });
   statusSel.addEventListener('change', () => { saveCurrent(); renderChapters(); save(); });
 
@@ -3421,14 +3589,18 @@ function exportTxt() {
   }
 
   function openShortcuts() {
+    var hasFSA = typeof window.showSaveFilePicker === 'function';
     openModal('<h3>Keyboard shortcuts</h3>' +
       '<div class="sw-detail-grid">' +
       detailRow('Bold', 'Ctrl/Cmd + B') +
       detailRow('Italic', 'Ctrl/Cmd + I') +
-      detailRow('Save to disk', 'Ctrl/Cmd + S') +
+      detailRow('Save to disk', 'Ctrl/Cmd + S' + (hasFSA ? ' (updates linked file)' : ' (downloads JSON)')) +
       detailRow('Search', 'Ctrl/Cmd + K') +
       detailRow('Toggle sidebar', 'Ctrl/Cmd + \\') +
-      detailRow('Save reminder', 'Export often  -  browser storage is not a vault') +
+      detailRow('Disk file', hasFSA
+        ? 'Save disk once to link a file; then Ctrl+S overwrites it (Word-style). Auto-saves ~45s after edits when linked.'
+        : 'This browser downloads a new JSON on Save (no in-place linked file). Prefer Chrome/Edge for Word-style Save.') +
+      detailRow('Browser copy', 'Also auto-saves in this browser — use disk as the real backup') +
       detailRow('Insert entity', 'Type @ then a name') +
       detailRow('Dictionary', 'Double-click a word') +
       '</div><div class="sw-modal-actions"><button type="button" class="sw-btn" id="m-cancel">Close</button></div>');
@@ -4571,11 +4743,39 @@ function exportTxt() {
           save: function () { saveToDisk(); },
           saveas: function () { saveAsToDisk(); },
           opendisk: function () { openFromDisk(); },
+          restore: function () {
+            var r = document.getElementById('sw-restore-btn');
+            if (r) r.click();
+            else {
+              var f = document.getElementById('sw-restore-file');
+              if (f) f.click();
+            }
+          },
+          template: function () {
+            var t = document.getElementById('sw-template-btn');
+            if (t) t.click();
+            else if (typeof openTemplates === 'function') openTemplates();
+          },
           meta: function () { editProjectMeta(currentProjectId); },
           goals: function () { if (typeof openGoals === 'function') openGoals(); },
           theme: function () { if (typeof cycleTheme === 'function') cycleTheme(); },
+          timer: function () {
+            if (typeof togglePomodoro === 'function') togglePomodoro();
+            else {
+              var p = document.getElementById('sw-pomodoro') || document.getElementById('sw-timer-btn');
+              if (p) p.click();
+            }
+          },
           search: function () { if (typeof openSearch === 'function') openSearch(); },
           keys: function () { if (typeof openShortcuts === 'function') openShortcuts(); },
+          fullscreen: function () {
+            if (!document.fullscreenElement) ROOT.requestFullscreen?.() || ROOT.webkitRequestFullscreen?.();
+            else document.exitFullscreen?.() || document.webkitExitFullscreen?.();
+          },
+          clear: function () {
+            var c = document.getElementById('sw-clear-data');
+            if (c) c.click();
+          },
           footnote: function () { insertFootnote(); },
           scenebreak: function () { setSceneBreakImage(); },
           copyitem: function () { openCopyPicker(); }
@@ -5837,10 +6037,11 @@ function exportTxt() {
     updatePomoDisplay();
   }
 
-  // Hook streak into onEditorInput
+  // Hook streak + dirty into onEditorInput
   var _onEditorInput = onEditorInput;
   onEditorInput = function () {
     _onEditorInput();
+    markDirty();
     recordStreakIfNeeded();
     if (totalWords() % 50 === 0) runContinuityCheck();
   };
@@ -7269,6 +7470,8 @@ function exportTxt() {
     if (!state.goals.sessionBase && state.goals.sessionBase !== 0) state.goals.sessionBase = totalWords();
     if (!state.openThreads) state.openThreads = [];
     refreshUI();
+    updateProjectLabel();
+    updateDiskSaveLabel();
 
   // Mobile: collapse sidebar by default
   try {
@@ -7280,9 +7483,14 @@ function exportTxt() {
     try { wireCapsule(); } catch (e) { console.warn(e); }
 
     setTimeout(async function () {
+      try { await maybeOfferCrashRecovery(); } catch (e) {}
       try { await maybePenNameOnboarding(); } catch (e) {}
       try { showDashboard(); } catch (e) {}
     }, 300);
+    // Refresh "Saved X ago" occasionally
+    setInterval(function () {
+      if (lastDiskSavedAt && !projectDirty) updateDiskStatusLine();
+    }, 30000);
 
     // PWA shortcuts: ?action=new-scene | new-project
     try {
@@ -7298,7 +7506,15 @@ function exportTxt() {
       }
     } catch (e) {}
 
-    window.addEventListener('beforeunload', function () { saveCurrent(); save(); });
+    window.addEventListener('beforeunload', function (e) {
+      saveCurrent();
+      save();
+      if (projectDirty && fileHandle) {
+        // Prompt when linked file may be out of date (browser may ignore custom text)
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    });
   })();
 
   // PWA: service worker + update toast + install
