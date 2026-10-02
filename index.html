@@ -3292,8 +3292,7 @@
     const l = id ? state.locations.find(x => x.id === id) : {};
     openModal('<h3>' + (id ? 'Edit' : 'New') + ' location</h3>' +
       field('Name', 'm-name', l.name) + field('Type (planet / region / city…)', 'm-kind', l.kind) +
-      field('Parent location', 'm-parent', l.parent) +
-      field('Parent location (region / planet)', 'm-parent', l.parentName || '') +
+      field('Parent location (region / planet)', 'm-parent', l.parentName || l.parent || '') +
       '<div class="sw-chips" id="m-chips"></div>' +
       field('Description', 'm-desc', l.description, 'textarea') +
       field('Notes', 'm-notes', l.notes, 'textarea') +
@@ -4062,6 +4061,7 @@ function exportTxt() {
     ROOT.classList.add('sw-ref-open');
     renderPinnedRef();
     save();
+    toast('Pinned · ' + (data.name || data.term || 'reference'));
   }
   function renderPinnedRef() {
     const body = $('#sw-ref-body');
@@ -4113,7 +4113,8 @@ function exportTxt() {
     if (!state.openThreads) state.openThreads = [];
     state.openThreads.push(t.trim());
     ROOT.classList.add('sw-threads-open');
-    save(); renderThreads();
+    save(); markDirty(); renderThreads();
+    toast('Thread added');
   }
 
   function scrollCaretToCenter() {
@@ -5711,7 +5712,10 @@ function exportTxt() {
       b.onclick = async function () {
         if (!(await swConfirm('Delete relationship?'))) return;
         state.relationships = state.relationships.filter(function (x) { return x.id !== b.dataset.id; });
-        save(); renderRelations();
+        save(); markDirty(); renderRelations();
+        var gp = document.getElementById('sw-rel-graph-panel');
+        if (gp && gp.style.display !== 'none' && typeof drawRelationGraph === 'function') drawRelationGraph();
+        toast('Relationship deleted');
       };
     });
   }
@@ -5751,11 +5755,20 @@ function exportTxt() {
       if (!state.relationships) state.relationships = [];
       if (id) {
         var i = state.relationships.findIndex(function (x) { return x.id === id; });
-        state.relationships[i] = obj;
+        if (i >= 0) state.relationships[i] = obj;
+        else state.relationships.push(obj);
       } else state.relationships.push(obj);
-      save(); closeModal(); renderRelations();
+      save();
+      markDirty();
+      closeModal();
+      renderRelations();
+      var gp = document.getElementById('sw-rel-graph-panel');
+      if (gp && gp.style.display !== 'none' && typeof drawRelationGraph === 'function') drawRelationGraph();
+      toast(id ? 'Relationship updated' : 'Relationship added');
     };
   }
+  // Public alias used by toolbar wiring
+  var editRelationship = editRelation;
 
   // ----- Highlight passes -----
   var ADVERBS = /\\b\\w+ly\\b/gi;
@@ -6202,15 +6215,18 @@ function exportTxt() {
     if (warnings.length) {
       bar.textContent = 'Continuity: ' + warnings.slice(0, 3).join(' · ') + (warnings.length > 3 ? ' …' : '');
       bar.classList.add('show');
+      toast(warnings.length + ' continuity warning' + (warnings.length > 1 ? 's' : ''));
     } else {
       bar.textContent = '';
       bar.classList.remove('show');
+      toast('No continuity issues found');
     }
   }
 
   // Timeline
   function renderTimeline() {
-    var list = document.getElementById('sw-tl-list');
+    // HTML id is sw-timeline-list (not sw-tl-list)
+    var list = document.getElementById('sw-timeline-list') || document.getElementById('sw-tl-list');
     if (!list) return;
     if (!state.timeline) state.timeline = [];
     var items = state.timeline.slice().sort(function (a, b) { return (a.order || 0) - (b.order || 0); });
@@ -6218,8 +6234,8 @@ function exportTxt() {
       list.innerHTML = '<p style="color:var(--sw-muted);font-style:italic">No timeline events yet. Add story-order beats here.</p>';
       return;
     }
-    list.innerHTML = items.map(function (ev, i) {
-      return '<div class="sw-tl-item" draggable="true" data-id="' + ev.id + '">' +
+    list.innerHTML = items.map(function (ev) {
+      return '<div class="sw-tl-item" data-id="' + ev.id + '">' +
         '<strong>' + escapeHtml(ev.title || 'Event') + '</strong>' +
         (ev.when ? ' <span style="color:var(--sw-muted);font-size:0.8rem">(' + escapeHtml(ev.when) + ')</span>' : '') +
         '<p style="margin:4px 0 0;font-size:0.86rem;color:var(--sw-muted)">' + escapeHtml(ev.notes || '') + '</p>' +
@@ -6234,16 +6250,18 @@ function exportTxt() {
       btn.onclick = async function () {
         if (!(await swConfirm('Delete this event?'))) return;
         state.timeline = state.timeline.filter(function (x) { return x.id !== btn.dataset.id; });
-        save(); renderTimeline();
+        save(); markDirty(); renderTimeline(); toast('Event deleted');
       };
     });
   }
   async function editTimelineEvent(id) {
+    if (!state.timeline) state.timeline = [];
     var ev = id ? state.timeline.find(function (x) { return x.id === id; }) : { title: '', when: '', notes: '', order: (state.timeline || []).length };
+    if (!ev) ev = { title: '', when: '', notes: '', order: 0 };
     openModal('<h3>' + (id ? 'Edit' : 'New') + ' timeline event</h3>' +
       field('Title', 'm-title', ev.title) +
-      field('When (story time)', 'm-when', ev.when) +
-      field('Notes', 'm-notes', ev.notes, 'textarea') +
+      field('When (story time)', 'm-when', ev.when || '') +
+      field('Notes', 'm-notes', ev.notes || ev.note || '', 'textarea') +
       field('Order (number)', 'm-order', String(ev.order != null ? ev.order : 0)) +
       '<div class="sw-modal-actions"><button type="button" class="sw-btn" id="m-cancel">Cancel</button>' +
       '<button type="button" class="sw-btn sw-btn-primary" id="m-save">Save</button></div>');
@@ -6254,64 +6272,24 @@ function exportTxt() {
         title: $('#m-title').value.trim(),
         when: $('#m-when').value.trim(),
         notes: $('#m-notes').value.trim(),
+        note: $('#m-notes').value.trim(),
         order: parseInt($('#m-order').value, 10) || 0
       };
       if (!obj.title) { toast('Title required'); return; }
       if (!state.timeline) state.timeline = [];
       if (id) {
         var i = state.timeline.findIndex(function (x) { return x.id === id; });
-        state.timeline[i] = obj;
+        if (i >= 0) state.timeline[i] = obj;
+        else state.timeline.push(obj);
       } else state.timeline.push(obj);
-      save(); closeModal(); renderTimeline();
+      save(); markDirty(); closeModal(); renderTimeline();
+      toast(id ? 'Event updated' : 'Event added');
     };
   }
 
   // Relationships
-  function renderRelations() {
-    var list = document.getElementById('sw-rel-list');
-    if (!list) return;
-    if (!state.relationships) state.relationships = [];
-    if (!state.relationships.length) {
-      list.innerHTML = '<p style="color:var(--sw-muted);font-style:italic;padding:12px">Link characters: ally, rival, family, etc.</p>';
-      return;
-    }
-    list.innerHTML = state.relationships.map(function (r) {
-      return '<div class="sw-rel-card"><strong>' + escapeHtml(r.from || '?') + '</strong>' +
-        ' <span style="color:var(--sw-muted)">→ ' + escapeHtml(r.kind || 'related') + ' →</span> ' +
-        '<strong>' + escapeHtml(r.to || '?') + '</strong>' +
-        (r.notes ? '<p style="margin:6px 0 0;font-size:0.82rem;color:var(--sw-muted)">' + escapeHtml(r.notes) + '</p>' : '') +
-        '<div style="margin-top:8px"><button type="button" class="sw-btn sw-rel-del" data-id="' + r.id + '">Delete</button></div></div>';
-    }).join('');
-    list.querySelectorAll('.sw-rel-del').forEach(function (btn) {
-      btn.onclick = async function () {
-        if (!(await swConfirm('Delete this link?'))) return;
-        state.relationships = state.relationships.filter(function (x) { return x.id !== btn.dataset.id; });
-        save(); renderRelations();
-      };
-    });
-  }
-  function editRelation() {
-    var names = state.characters.map(function (c) { return c.name; }).filter(Boolean);
-    openModal('<h3>Character link</h3>' +
-      field('From', 'm-from', names[0] || '') +
-      field('Relation (ally, rival, family…)', 'm-kind', 'ally') +
-      field('To', 'm-to', names[1] || '') +
-      field('Notes', 'm-notes', '', 'textarea') +
-      '<div class="sw-modal-actions"><button type="button" class="sw-btn" id="m-cancel">Cancel</button>' +
-      '<button type="button" class="sw-btn sw-btn-primary" id="m-save">Save</button></div>');
-    $('#m-cancel').onclick = closeModal;
-    $('#m-save').onclick = function () {
-      if (!state.relationships) state.relationships = [];
-      state.relationships.push({
-        id: uid(),
-        from: $('#m-from').value.trim(),
-        kind: $('#m-kind').value.trim() || 'related',
-        to: $('#m-to').value.trim(),
-        notes: $('#m-notes').value.trim()
-      });
-      save(); closeModal(); renderRelations();
-    };
-  }
+  // NOTE: earlier renderRelations / editRelation (with meters + sw-rel-grid) are the real ones.
+  // Do not redeclare them here — a second definition used to wipe the working handlers.
 
   // Series
   function renderSeries() {
@@ -6601,7 +6579,11 @@ function exportTxt() {
       toast(state.pastePlain !== false ? 'Plain paste on' : 'Plain paste off');
     });
     on('sw-tl-add', function () { if (typeof editTimelineEvent === 'function') editTimelineEvent(null); else if (typeof addTimelineEvent === 'function') addTimelineEvent(); });
-    on('sw-relmap-add', function () { if (typeof editRelationship === 'function') editRelationship(null); });
+    on('sw-relmap-add', function () {
+      if (typeof editRelationship === 'function') editRelationship(null);
+      else if (typeof editRelation === 'function') editRelation(null);
+      else toast('Relationship editor unavailable');
+    });
     on('sw-series-set', async function () {
       var n = await swPrompt('Series name', state.seriesName || '');
       if (n === null) return;
