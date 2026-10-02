@@ -71,29 +71,31 @@
       width: 100%;
       height: 100%;
       overflow: hidden;
-      background: #f4f0e8;
+      background: #f0ebe3;
     }
+    /* All themes tuned for long writing sessions: no pure black/white,
+       warmer paper, softer contrast, reduced blue glare on dark modes */
     #sw-root {
-      --sw-bg: #f4f0e8;
-      --sw-paper: #faf7f0;
-      --sw-ink: #2c2416;
-      --sw-muted: #6b5e4a;
-      --sw-accent: #5c4a32;
-      --sw-accent-soft: #8b7355;
-      --sw-border: #ddd4c4;
-      --sw-panel: #ebe4d6;
-      --sw-hover: #e0d6c4;
-      --sw-tag: #2a5a7a;
-      --sw-tag-bg: #e8f0f6;
-      --sw-danger: #8b3a2a;
-      --sw-ok: #3d6b4f;
+      --sw-bg: #f0ebe3;
+      --sw-paper: #f6f1e8;
+      --sw-ink: #3a342c;
+      --sw-muted: #7a7060;
+      --sw-accent: #6a5a42;
+      --sw-accent-soft: #8a7a5e;
+      --sw-border: #d8cfc0;
+      --sw-panel: #e8e0d2;
+      --sw-hover: #ddd4c4;
+      --sw-tag: #4a6a7a;
+      --sw-tag-bg: #e4ebe8;
+      --sw-danger: #9a5040;
+      --sw-ok: #4a7a5a;
       --sw-sidebar-w: 240px;
       --sw-font-size: 16px;
       --sw-radius: 8px;
       font-family: "Source Sans 3", system-ui, sans-serif;
       color: var(--sw-ink);
       background: var(--sw-bg);
-      line-height: 1.5;
+      line-height: 1.55;
       box-sizing: border-box;
       width: 100%;
       max-width: none;
@@ -112,158 +114,166 @@
       isolation: isolate;
     }
     #sw-root[data-theme="sepia"] {
-      --sw-bg: #f0e6d2;
-      --sw-paper: #f7efdc;
-      --sw-ink: #3d2f1a;
-      --sw-muted: #7a6548;
-      --sw-accent: #6b4e2e;
-      --sw-accent-soft: #9a7b52;
-      --sw-border: #d4c4a8;
-      --sw-panel: #e8dcc4;
-      --sw-hover: #ddd0b4;
-      --sw-tag: #5a4a28;
-      --sw-tag-bg: #efe6d0;
+      --sw-bg: #ebe2d0;
+      --sw-paper: #f3ead8;
+      --sw-ink: #3f3424;
+      --sw-muted: #7a6a52;
+      --sw-accent: #6e5640;
+      --sw-accent-soft: #92785a;
+      --sw-border: #d0c2a8;
+      --sw-panel: #e4d8c0;
+      --sw-hover: #d8ccb4;
+      --sw-tag: #5a4a30;
+      --sw-tag-bg: #ebe2ce;
+      --sw-danger: #9a5040;
+      --sw-ok: #5a7a50;
     }
-    body:has(#sw-root[data-theme="dark"]) { background: #1a1c1e; }
+    body:has(#sw-root[data-theme="dark"]) { background: #1e201c; }
     #sw-root[data-theme="dark"] {
-      --sw-bg: #1a1c1e;
-      --sw-paper: #232628;
-      --sw-ink: #e4e0d8;
-      --sw-muted: #9a958c;
-      --sw-accent: #c4a574;
-      --sw-accent-soft: #a88b5c;
-      --sw-border: #3a3e42;
-      --sw-panel: #2a2e32;
-      --sw-hover: #34383c;
-      --sw-tag: #7eb0d4;
-      --sw-tag-bg: #2a3a48;
-      --sw-danger: #d08070;
-      --sw-ok: #7cbc94;
+      --sw-bg: #1e201c;
+      --sw-paper: #282a26;
+      --sw-ink: #ddd8ce;
+      --sw-muted: #9a948a;
+      --sw-accent: #b8a078;
+      --sw-accent-soft: #9a8660;
+      --sw-border: #3c403a;
+      --sw-panel: #2e322c;
+      --sw-hover: #383c36;
+      --sw-tag: #8aacc0;
+      --sw-tag-bg: #2c3840;
+      --sw-danger: #c89080;
+      --sw-ok: #7aaa88;
     }
 
-    body:has(#sw-root[data-theme="midnight"]) { background: #0d1117; }
+    body:has(#sw-root[data-theme="midnight"]) { background: #181c22; }
     #sw-root[data-theme="midnight"] {
-      --sw-bg: #0d1117;
-      --sw-paper: #161b22;
-      --sw-ink: #e6edf3;
-      --sw-muted: #8b949e;
-      --sw-accent: #58a6ff;
-      --sw-accent-soft: #388bfd;
-      --sw-border: #30363d;
-      --sw-panel: #1c2128;
-      --sw-hover: #262c36;
-      --sw-tag: #79c0ff;
-      --sw-tag-bg: #1a2a3a;
-      --sw-danger: #f85149;
-      --sw-ok: #3fb950;
+      --sw-bg: #181c22;
+      --sw-paper: #222830;
+      --sw-ink: #d8dde4;
+      --sw-muted: #8e96a0;
+      --sw-accent: #7aa8d4;
+      --sw-accent-soft: #5e8eb8;
+      --sw-border: #343a44;
+      --sw-panel: #282e38;
+      --sw-hover: #323844;
+      --sw-tag: #8ab4d8;
+      --sw-tag-bg: #243040;
+      --sw-danger: #d08078;
+      --sw-ok: #70b888;
     }
-    body:has(#sw-root[data-theme="forest"]) { background: #1a241c; }
+    body:has(#sw-root[data-theme="forest"]) { background: #1c2420; }
     #sw-root[data-theme="forest"] {
-      --sw-bg: #1a241c;
-      --sw-paper: #243028;
-      --sw-ink: #e4ede6;
-      --sw-muted: #8fa396;
-      --sw-accent: #7cb87c;
-      --sw-accent-soft: #5a9a5a;
-      --sw-border: #3a4a3e;
-      --sw-panel: #2a3630;
-      --sw-hover: #344038;
-      --sw-tag: #9dcea0;
-      --sw-tag-bg: #2a3a2e;
-      --sw-danger: #d08070;
-      --sw-ok: #6bcf7a;
+      --sw-bg: #1c2420;
+      --sw-paper: #262e2a;
+      --sw-ink: #d8e0da;
+      --sw-muted: #8e9a92;
+      --sw-accent: #7aaa80;
+      --sw-accent-soft: #5e8e68;
+      --sw-border: #3a4640;
+      --sw-panel: #2c342e;
+      --sw-hover: #364038;
+      --sw-tag: #90b898;
+      --sw-tag-bg: #2a362e;
+      --sw-danger: #c89080;
+      --sw-ok: #78b888;
     }
-    body:has(#sw-root[data-theme="ocean"]) { background: #0f1c24; }
+    body:has(#sw-root[data-theme="ocean"]) { background: #1a242a; }
     #sw-root[data-theme="ocean"] {
-      --sw-bg: #0f1c24;
-      --sw-paper: #162a35;
-      --sw-ink: #e0eef5;
-      --sw-muted: #7a9aab;
-      --sw-accent: #4db8d9;
-      --sw-accent-soft: #3a9bb8;
-      --sw-border: #2a4450;
-      --sw-panel: #1a303c;
-      --sw-hover: #243844;
-      --sw-tag: #7ec8e0;
-      --sw-tag-bg: #1a3540;
-      --sw-danger: #e08080;
-      --sw-ok: #5cc4a0;
+      --sw-bg: #1a242a;
+      --sw-paper: #243038;
+      --sw-ink: #d6e2e8;
+      --sw-muted: #849aa6;
+      --sw-accent: #6aa8bc;
+      --sw-accent-soft: #528e9e;
+      --sw-border: #364850;
+      --sw-panel: #2a3840;
+      --sw-hover: #34444c;
+      --sw-tag: #88b8c8;
+      --sw-tag-bg: #283840;
+      --sw-danger: #c89088;
+      --sw-ok: #70b8a0;
     }
-    body:has(#sw-root[data-theme="rose"]) { background: #1f1618; }
+    body:has(#sw-root[data-theme="rose"]) { background: #24201f; }
     #sw-root[data-theme="rose"] {
-      --sw-bg: #1f1618;
-      --sw-paper: #2a1e22;
-      --sw-ink: #f2e6ea;
-      --sw-muted: #b09098;
-      --sw-accent: #e090a8;
-      --sw-accent-soft: #c07088;
-      --sw-border: #4a343c;
-      --sw-panel: #322428;
-      --sw-hover: #3c2e32;
-      --sw-tag: #f0b0c0;
-      --sw-tag-bg: #3a2830;
-      --sw-danger: #e07070;
-      --sw-ok: #90c0a0;
+      --sw-bg: #24201f;
+      --sw-paper: #2e2828;
+      --sw-ink: #e6ddd8;
+      --sw-muted: #a89898;
+      --sw-accent: #c898a8;
+      --sw-accent-soft: #a87888;
+      --sw-border: #443c3e;
+      --sw-panel: #342e30;
+      --sw-hover: #3e3638;
+      --sw-tag: #d0a8b4;
+      --sw-tag-bg: #3a3034;
+      --sw-danger: #c88880;
+      --sw-ok: #90b898;
     }
     #sw-root[data-theme="slate"] {
-      --sw-bg: #e8eaed;
-      --sw-paper: #f5f6f8;
-      --sw-ink: #1e2430;
-      --sw-muted: #5c6578;
-      --sw-accent: #3d5a80;
-      --sw-accent-soft: #5a7a9e;
-      --sw-border: #c8ced8;
-      --sw-panel: #dfe3ea;
-      --sw-hover: #d0d5de;
-      --sw-tag: #2a5a7a;
-      --sw-tag-bg: #e0e8f0;
-      --sw-danger: #a04040;
-      --sw-ok: #3d7a5a;
+      --sw-bg: #e6e8eb;
+      --sw-paper: #f0f2f4;
+      --sw-ink: #2e343c;
+      --sw-muted: #6a7280;
+      --sw-accent: #4a6580;
+      --sw-accent-soft: #6884a0;
+      --sw-border: #c8ced6;
+      --sw-panel: #dce0e6;
+      --sw-hover: #d0d4dc;
+      --sw-tag: #3a5a72;
+      --sw-tag-bg: #e0e6ec;
+      --sw-danger: #9a5048;
+      --sw-ok: #4a7a60;
     }
     #sw-root[data-theme="lavender"] {
-      --sw-bg: #f0eaf6;
-      --sw-paper: #faf6fc;
-      --sw-ink: #2c2438;
-      --sw-muted: #6b5e7a;
-      --sw-accent: #7a5c9e;
-      --sw-accent-soft: #9a7cbe;
-      --sw-border: #d8d0e4;
-      --sw-panel: #e8e0f0;
-      --sw-hover: #ddd4ea;
-      --sw-tag: #6a4a8a;
-      --sw-tag-bg: #ebe4f4;
-      --sw-danger: #a04860;
-      --sw-ok: #4a8a6a;
+      --sw-bg: #ebe6f0;
+      --sw-paper: #f4f0f8;
+      --sw-ink: #342e3c;
+      --sw-muted: #726a80;
+      --sw-accent: #726090;
+      --sw-accent-soft: #8e7aaa;
+      --sw-border: #d4cce0;
+      --sw-panel: #e4dcec;
+      --sw-hover: #d8d0e4;
+      --sw-tag: #645080;
+      --sw-tag-bg: #e8e2f0;
+      --sw-danger: #9a5060;
+      --sw-ok: #508a68;
     }
     #sw-root[data-theme="sand"] {
-      --sw-bg: #f2ebe0;
-      --sw-paper: #faf6ef;
-      --sw-ink: #3a3228;
-      --sw-muted: #7a6e5e;
-      --sw-accent: #a07848;
-      --sw-accent-soft: #c09860;
-      --sw-border: #ddd0bc;
-      --sw-panel: #ebe2d4;
-      --sw-hover: #e0d6c4;
-      --sw-tag: #7a5a30;
-      --sw-tag-bg: #f0e8d8;
-      --sw-danger: #9a4030;
-      --sw-ok: #5a7a48;
+      --sw-bg: #efe8dc;
+      --sw-paper: #f5f0e6;
+      --sw-ink: #3c342c;
+      --sw-muted: #7a7064;
+      --sw-accent: #967850;
+      --sw-accent-soft: #b09068;
+      --sw-border: #d8cec0;
+      --sw-panel: #e6ddd0;
+      --sw-hover: #dcd2c4;
+      --sw-tag: #6e5a38;
+      --sw-tag-bg: #ebe4d6;
+      --sw-danger: #9a5040;
+      --sw-ok: #5a7a50;
     }
     #sw-root[data-theme="ink"] {
-      --sw-bg: #12141a;
-      --sw-paper: #1a1e28;
-      --sw-ink: #f0ece4;
-      --sw-muted: #8a8e9a;
-      --sw-accent: #e8c87a;
-      --sw-accent-soft: #c4a860;
-      --sw-border: #2e3440;
-      --sw-panel: #222830;
-      --sw-hover: #2c323c;
-      --sw-tag: #90b0d0;
-      --sw-tag-bg: #243040;
-      --sw-danger: #e08070;
-      --sw-ok: #80c090;
+      --sw-bg: #1a1c22;
+      --sw-paper: #242830;
+      --sw-ink: #e0dcd4;
+      --sw-muted: #8e929a;
+      --sw-accent: #d0b878;
+      --sw-accent-soft: #b09a60;
+      --sw-border: #363a44;
+      --sw-panel: #2a2e38;
+      --sw-hover: #343844;
+      --sw-tag: #90a8c0;
+      --sw-tag-bg: #2a3440;
+      --sw-danger: #c89080;
+      --sw-ok: #80b090;
+    }
+
+    /* Editor comfort: slightly taller line height for long sessions */
+    #sw-root .sw-editor {
+      line-height: 1.7 !important;
+      letter-spacing: 0.01em;
     }
 
     #sw-root *, #sw-root *::before, #sw-root *::after { box-sizing: border-box; }
@@ -828,14 +838,44 @@
 
     /* Relationship graph */
     #sw-rel-graph-wrap {
-      width: 100%; height: 320px; border: 1px solid var(--sw-border);
-      border-radius: 10px; background: var(--sw-bg); position: relative; overflow: hidden;
+      width: 100%;
+      height: min(52vh, 420px);
+      min-height: 260px;
+      border: 1px solid var(--sw-border);
+      border-radius: 14px;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% 40%, color-mix(in srgb, var(--sw-accent) 10%, transparent), transparent 70%),
+        var(--sw-bg);
+      position: relative;
+      overflow: hidden;
       margin-bottom: 12px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
     }
-    #sw-rel-graph-wrap canvas { width: 100%; height: 100%; display: block; }
+    #sw-rel-graph-wrap canvas { width: 100%; height: 100%; display: block; cursor: grab; touch-action: none; }
     #sw-rel-graph-wrap .sw-graph-empty {
       position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
       color: var(--sw-muted); font-size: 0.88rem; pointer-events: none;
+    }
+    #sw-rel-graph-toolbar {
+      display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+      margin-bottom: 8px;
+    }
+    #sw-rel-graph-toolbar .sw-graph-chip {
+      font-size: 0.72rem; padding: 3px 10px; border-radius: 999px;
+      border: 1px solid var(--sw-border); background: var(--sw-paper);
+      color: var(--sw-muted); cursor: pointer; user-select: none;
+    }
+    #sw-rel-graph-toolbar .sw-graph-chip.active {
+      background: color-mix(in srgb, var(--sw-accent) 18%, var(--sw-paper));
+      border-color: var(--sw-accent); color: var(--sw-ink); font-weight: 600;
+    }
+    #sw-rel-graph-legend {
+      display: flex; flex-wrap: wrap; gap: 10px; margin: 6px 0 0;
+      font-size: 0.7rem; color: var(--sw-muted);
+    }
+    #sw-rel-graph-legend span { display: inline-flex; align-items: center; gap: 4px; }
+    #sw-rel-graph-legend i {
+      width: 14px; height: 3px; border-radius: 2px; display: inline-block;
     }
 
     /* Appearance report list */
@@ -845,15 +885,35 @@
     }
     .sw-appear-block h4 { margin: 0 0 6px; font-family: "EB Garamond", Georgia, serif; }
     .sw-appear-hit {
-      font-size: 0.82rem; color: var(--sw-muted); padding: 3px 0;
+      font-size: 0.82rem; color: var(--sw-muted); padding: 6px 8px;
       display: flex; justify-content: space-between; gap: 8px; cursor: pointer;
+      border-radius: 6px; margin: 2px 0;
     }
-    .sw-appear-hit:hover { color: var(--sw-accent); }
+    .sw-appear-hit:hover { color: var(--sw-accent); background: var(--sw-hover); }
+    #sw-root .sw-editor .sw-jump-hl {
+      background: color-mix(in srgb, var(--sw-accent) 35%, transparent);
+      border-radius: 2px;
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--sw-accent) 25%, transparent);
+    }
 
-    /* Mobile bottom nav hint padding for editor */
+    /* Overall responsiveness */
     @media (max-width: 899px) {
-      #sw-root .sw-main { padding-bottom: 56px; }
-      #sw-root .sw-capsule { bottom: 10px; }
+      #sw-root .sw-main { padding-bottom: 64px; }
+      #sw-root .sw-capsule { bottom: 10px; max-width: calc(100vw - 16px); }
+      #sw-root .sw-topbar { flex-wrap: wrap; row-gap: 4px; padding: 6px 8px; }
+      #sw-root .sw-topbar .sw-logo { font-size: 0.95rem; }
+      #sw-root #sw-project-label, #sw-root #sw-disk-status {
+        max-width: 42vw !important; font-size: 0.68rem !important;
+      }
+      #sw-root .sw-goal-wrap { margin-left: 0 !important; }
+      #sw-rel-graph-wrap { height: min(48vh, 360px); min-height: 220px; }
+      #sw-root .sw-modal { width: min(96vw, 520px); max-height: 88vh; }
+      #sw-root .sw-wb-toolbar { flex-wrap: wrap; }
+    }
+    @media (max-width: 480px) {
+      #sw-root .sw-topbar .sw-btn-icon { padding: 4px 6px; }
+      #sw-root .sw-wordcount, #sw-root .sw-streak { font-size: 0.68rem; }
+      #sw-rel-graph-wrap { height: 240px; min-height: 200px; }
     }
 
 
@@ -1288,9 +1348,13 @@
           <button type="button" class="sw-btn" id="sw-rel-graph-toggle">Graph view</button>
           <span style="font-size:0.78rem;color:var(--sw-muted)">Ally, rival, family, and other ties</span>
         </div>
-        <div id="sw-rel-graph-wrap" style="display:none">
-          <canvas id="sw-rel-canvas" width="800" height="320"></canvas>
-          <div class="sw-graph-empty" id="sw-rel-graph-empty">Add relationships to see the graph</div>
+        <div id="sw-rel-graph-panel" style="display:none">
+          <div id="sw-rel-graph-toolbar"></div>
+          <div id="sw-rel-graph-wrap">
+            <canvas id="sw-rel-canvas" width="800" height="360"></canvas>
+            <div class="sw-graph-empty" id="sw-rel-graph-empty">Add relationships to see the graph</div>
+          </div>
+          <div id="sw-rel-graph-legend"></div>
         </div>
         <div class="sw-rel-grid" id="sw-rel-grid"></div>
       </div>
@@ -1360,7 +1424,8 @@
           <div id="sw-storage-info" style="margin:0 0 14px;padding:10px 12px;border:1px solid var(--sw-border);border-radius:8px;background:var(--sw-bg);font-size:0.86rem">
             <strong style="display:block;margin-bottom:4px">Browser storage (offline)</strong>
             <span id="sw-storage-text" style="color:var(--sw-muted)">Checking…</span>
-            <p style="margin:8px 0 0;font-size:0.8rem;color:var(--sw-muted)">Large covers and design snapshots use the most space. Prefer Save disk for backups. This app has no server — data never leaves your device unless you export or save a file.</p>
+            <p style="margin:8px 0 8px;font-size:0.8rem;color:var(--sw-muted)">Large covers and design snapshots use the most space. Prefer Save disk for backups. This app has no server — data never leaves your device unless you export or save a file.</p>
+            <button type="button" class="sw-btn" id="sw-compact-storage">Compact storage</button>
           </div>
           <p style="margin:0 0 8px">You can support development by buying my books:</p>
           <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px">
@@ -1618,8 +1683,32 @@
     var el = document.getElementById('sw-disk-status');
     if (!el) return;
     var hasFSA = typeof window.showSaveFilePicker === 'function';
-    if (fileHandle || diskFileName) {
-      var fn = diskFileName || (fileHandle && fileHandle.name) || 'linked file';
+    var fn = diskFileName || (fileHandle && fileHandle.name) || '';
+    // After refresh Chrome drops the write handle — tip user to re-link
+    var needsRelink = hasFSA && !fileHandle && !!(fn || lastDiskSavedAt);
+
+    if (fileHandle) {
+      if (projectDirty) {
+        el.textContent = 'Unsaved · ' + (fn || 'linked file');
+        el.style.color = 'var(--sw-danger)';
+      } else if (lastDiskSavedAt) {
+        el.textContent = 'Saved ' + formatSavedAgo(lastDiskSavedAt) + ' · ' + (fn || 'file');
+        el.style.color = 'var(--sw-ok)';
+      } else {
+        el.textContent = 'Linked · ' + (fn || 'file');
+        el.style.color = 'var(--sw-muted)';
+      }
+      el.title = 'Linked file — Ctrl/Cmd+S updates this file on disk';
+    } else if (needsRelink) {
+      if (projectDirty) {
+        el.textContent = 'Re-link to save · ' + (fn || 'file');
+        el.style.color = 'var(--sw-danger)';
+      } else {
+        el.textContent = 'Re-link file · ' + (fn || '');
+        el.style.color = 'var(--sw-accent)';
+      }
+      el.title = 'Browser dropped the file link after reload. Click Save disk (or Ctrl/Cmd+S) and choose the same file to write updates again.';
+    } else if (fn && !hasFSA) {
       if (projectDirty) {
         el.textContent = 'Unsaved · ' + fn;
         el.style.color = 'var(--sw-danger)';
@@ -1627,12 +1716,10 @@
         el.textContent = 'Saved ' + formatSavedAgo(lastDiskSavedAt) + ' · ' + fn;
         el.style.color = 'var(--sw-ok)';
       } else {
-        el.textContent = 'Linked · ' + fn;
+        el.textContent = fn;
         el.style.color = 'var(--sw-muted)';
       }
-      el.title = hasFSA
-        ? 'Linked file — Ctrl/Cmd+S updates this file on disk'
-        : 'Last export name — this browser downloads a new copy each Save';
+      el.title = 'Last export name — this browser downloads a new copy each Save';
     } else {
       el.textContent = hasFSA ? 'No file linked' : 'Save downloads JSON';
       el.style.color = 'var(--sw-muted)';
@@ -1640,6 +1727,20 @@
         ? 'Use Save disk once to choose a file; then Ctrl/Cmd+S updates it (Word-style)'
         : 'This browser cannot update a linked file in place — each Save downloads a new JSON copy';
     }
+  }
+
+  function maybeRelinkTip() {
+    try {
+      if (typeof window.showSaveFilePicker !== 'function') return;
+      if (fileHandle) return;
+      if (!(diskFileName || lastDiskSavedAt)) return;
+      var key = 'storywriter-relink-tip';
+      var day = new Date().toISOString().slice(0, 10);
+      if (sessionStorage.getItem(key) === day) return;
+      sessionStorage.setItem(key, day);
+      toast('File link dropped after reload — Save disk to re-link “' +
+        (diskFileName || 'your project') + '”');
+    } catch (e) {}
   }
 
   function markDirty() {
@@ -2166,9 +2267,13 @@
     var btn = document.getElementById('sw-disk-save');
     if (!btn) return;
     var hasFSA = typeof window.showSaveFilePicker === 'function';
+    var needsRelink = hasFSA && !fileHandle && !!(diskFileName || lastDiskSavedAt);
     if (fileHandle) {
       btn.textContent = projectDirty ? 'Save●' : 'Save';
       btn.title = 'Save to linked file' + (diskFileName ? ' (' + diskFileName + ')' : '') + ' — Ctrl/Cmd+S';
+    } else if (needsRelink) {
+      btn.textContent = projectDirty ? 'Re-link●' : 'Re-link';
+      btn.title = 'File link was dropped after reload. Choose the same file again to resume in-place Save (Ctrl/Cmd+S).';
     } else if (hasFSA) {
       btn.textContent = projectDirty ? 'Save disk●' : 'Save disk';
       btn.title = 'Choose a file on disk; then Ctrl/Cmd+S updates that file (Word-style)';
@@ -2222,7 +2327,7 @@
     if (window.showSaveFilePicker) {
       try {
         fileHandle = await window.showSaveFilePicker({
-          suggestedName: (currentProjectName || 'storywriter').replace(/[^a-z0-9-_]+/gi, '_') + '.json',
+          suggestedName: (diskFileName || ((currentProjectName || 'storywriter').replace(/[^a-z0-9-_]+/gi, '_') + '.json')),
           types: [{ description: 'StoryWriter project', accept: { 'application/json': ['.json'] } }]
         });
         await writeToFileHandle(fileHandle);
@@ -2800,20 +2905,39 @@
     return null;
   }
 
+  function positionHoverNear(rect) {
+    const rootR = ROOT.getBoundingClientRect();
+    hoverEl.classList.add('open');
+    let left = rect.left - rootR.left;
+    let top = rect.bottom - rootR.top + 6;
+    if (left + 300 > rootR.width) left = rootR.width - 310;
+    if (top + 160 > rootR.height) top = Math.max(4, rect.top - rootR.top - 120);
+    hoverEl.style.left = Math.max(4, left) + 'px';
+    hoverEl.style.top = Math.max(4, top) + 'px';
+  }
+
   function showHover(mentionEl) {
     const data = findEntity(mentionEl.dataset.type, mentionEl.dataset.id);
     if (!data) { hoverEl.classList.remove('open'); return; }
-    const last = findLastSeen(mentionEl.dataset.type, mentionEl.dataset.id, data.name);
-    let body = '<div class="sw-hp-type">' + escapeHtml(mentionEl.dataset.type) + '</div><h4>' + escapeHtml(data.name) + '</h4>';
-    if (last) body += '<p style="font-size:0.75rem;color:var(--sw-muted)">Last seen: ' + escapeHtml(last) + '</p>';
-    if (data.role) body += '<p style="color:var(--sw-muted)">' + escapeHtml(data.role) + '</p>';
-    if (data.traits) body += '<p>' + escapeHtml(data.traits) + '</p>';
-    if (data.wants) body += '<p><em>Wants:</em> ' + escapeHtml(data.wants) + '</p>';
-    if (data.fears) body += '<p><em>Fears:</em> ' + escapeHtml(data.fears) + '</p>';
-    if (data.kind) body += '<p>' + escapeHtml(data.kind) + '</p>';
-    if (data.description) body += '<p>' + escapeHtml(data.description) + '</p>';
-    if (data.summary) body += '<p>' + escapeHtml(data.summary) + '</p>';
-    body += '<div style="margin-top:8px"><button type="button" class="sw-btn" id="sw-pin-from-hover">Pin ref</button></div>';
+    const last = findLastSeen(mentionEl.dataset.type, mentionEl.dataset.id, data.name || data.term);
+    let body = '<div class="sw-hp-type">' + escapeHtml(mentionEl.dataset.type) + '</div><h4>' +
+      escapeHtml(data.name || data.term || '') + '</h4>';
+    if (mentionEl.dataset.type === 'glossary') {
+      if (data.definition || data.meaning) {
+        body += '<p>' + escapeHtml(data.definition || data.meaning) + '</p>';
+      }
+      if (data.notes) body += '<p style="color:var(--sw-muted)">' + escapeHtml(data.notes) + '</p>';
+    } else {
+      if (last) body += '<p style="font-size:0.75rem;color:var(--sw-muted)">Last seen: ' + escapeHtml(last) + '</p>';
+      if (data.role) body += '<p style="color:var(--sw-muted)">' + escapeHtml(data.role) + '</p>';
+      if (data.traits) body += '<p>' + escapeHtml(data.traits) + '</p>';
+      if (data.wants) body += '<p><em>Wants:</em> ' + escapeHtml(data.wants) + '</p>';
+      if (data.fears) body += '<p><em>Fears:</em> ' + escapeHtml(data.fears) + '</p>';
+      if (data.kind) body += '<p>' + escapeHtml(data.kind) + '</p>';
+      if (data.description) body += '<p>' + escapeHtml(data.description) + '</p>';
+      if (data.summary) body += '<p>' + escapeHtml(data.summary) + '</p>';
+      body += '<div style="margin-top:8px"><button type="button" class="sw-btn" id="sw-pin-from-hover">Pin ref</button></div>';
+    }
     hoverEl.innerHTML = body;
     const pinBtn = hoverEl.querySelector('#sw-pin-from-hover');
     if (pinBtn) {
@@ -2823,24 +2947,81 @@
         hoverEl.classList.remove('open');
       });
     }
-    const r = mentionEl.getBoundingClientRect();
-    const rootR = ROOT.getBoundingClientRect();
-    hoverEl.classList.add('open');
-    let left = r.left - rootR.left;
-    let top = r.bottom - rootR.top + 6;
-    if (left + 300 > rootR.width) left = rootR.width - 310;
-    hoverEl.style.left = Math.max(4, left) + 'px';
-    hoverEl.style.top = Math.max(4, top) + 'px';
+    positionHoverNear(mentionEl.getBoundingClientRect());
   }
+
+  function showGlossaryHover(termObj, rect) {
+    var body = '<div class="sw-hp-type">glossary</div><h4>' + escapeHtml(termObj.term || '') + '</h4>';
+    if (termObj.definition || termObj.meaning) {
+      body += '<p>' + escapeHtml(termObj.definition || termObj.meaning) + '</p>';
+    } else {
+      body += '<p style="color:var(--sw-muted)">No definition yet</p>';
+    }
+    if (termObj.notes) body += '<p style="color:var(--sw-muted)">' + escapeHtml(termObj.notes) + '</p>';
+    hoverEl.innerHTML = body;
+    positionHoverNear(rect);
+  }
+
+  function glossaryTermAtPoint(x, y) {
+    var list = state.glossary || [];
+    if (!list.length) return null;
+    var caret = null;
+    if (document.caretRangeFromPoint) caret = document.caretRangeFromPoint(x, y);
+    else if (document.caretPositionFromPoint) {
+      var cp = document.caretPositionFromPoint(x, y);
+      if (cp && cp.offsetNode) {
+        caret = document.createRange();
+        caret.setStart(cp.offsetNode, cp.offset);
+        caret.collapse(true);
+      }
+    }
+    if (!caret || !caret.startContainer || caret.startContainer.nodeType !== 3) return null;
+    if (!editor.contains(caret.startContainer)) return null;
+    var text = caret.startContainer.textContent || '';
+    var offset = caret.startOffset;
+    // expand to word
+    var start = offset, end = offset;
+    while (start > 0 && /[\w''\-’]/.test(text[start - 1])) start--;
+    while (end < text.length && /[\w''\-’]/.test(text[end])) end++;
+    var word = text.slice(start, end);
+    if (!word || word.length < 2) return null;
+    var lower = word.toLowerCase();
+    for (var i = 0; i < list.length; i++) {
+      var t = (list[i].term || '').toLowerCase();
+      if (t && t === lower) {
+        var range = document.createRange();
+        range.setStart(caret.startContainer, start);
+        range.setEnd(caret.startContainer, end);
+        return { term: list[i], rect: range.getBoundingClientRect() };
+      }
+    }
+    return null;
+  }
+
   editor.addEventListener('mouseover', (e) => {
     const m = e.target.closest('.sw-mention');
-    if (!m) return;
+    if (m) {
+      clearTimeout(hoverTimer);
+      hoverTimer = setTimeout(() => showHover(m), 220);
+      return;
+    }
+  });
+  editor.addEventListener('mousemove', (e) => {
+    if (e.target.closest('.sw-mention')) return;
     clearTimeout(hoverTimer);
-    hoverTimer = setTimeout(() => showHover(m), 250);
+    hoverTimer = setTimeout(function () {
+      var hit = glossaryTermAtPoint(e.clientX, e.clientY);
+      if (hit) showGlossaryHover(hit.term, hit.rect);
+      else if (!e.target.closest('.sw-hover-panel')) hoverEl.classList.remove('open');
+    }, 280);
   });
   editor.addEventListener('mouseout', () => {
     clearTimeout(hoverTimer);
-    hoverTimer = setTimeout(() => hoverEl.classList.remove('open'), 200);
+    hoverTimer = setTimeout(() => hoverEl.classList.remove('open'), 220);
+  });
+  hoverEl.addEventListener('mouseenter', () => clearTimeout(hoverTimer));
+  hoverEl.addEventListener('mouseleave', () => {
+    hoverTimer = setTimeout(() => hoverEl.classList.remove('open'), 150);
   });
 
   let dictRange = null;
@@ -3379,9 +3560,60 @@
     });
     return h + '</body></html>';
   }
+
+  function collectFootnotes() {
+    var fnList = [];
+    if (state.footnotes && state.footnotes.length) {
+      fnList = state.footnotes.slice().sort(function (a, b) { return (a.n || 0) - (b.n || 0); });
+      return fnList;
+    }
+    state.chapters.forEach(function (ch) {
+      (ch.scenes || []).forEach(function (sc) {
+        var htmlc = sc.content || '';
+        var re = /<sup[^>]*class="[^"]*sw-footnote[^"]*"[^>]*(?:data-fn="([^"]*)")?[^>]*(?:title="([^"]*)")?[^>]*>\[(\d+)\]/gi;
+        var m;
+        while ((m = re.exec(htmlc))) {
+          fnList.push({ id: m[1] || '', text: (m[2] || '').replace(/&quot;/g, '"'), n: parseInt(m[3], 10) || 0 });
+        }
+        // Also title-first attribute order
+        re = /<sup[^>]*class="[^"]*sw-footnote[^"]*"[^>]*title="([^"]*)"[^>]*>\[(\d+)\]/gi;
+        while ((m = re.exec(htmlc))) {
+          var n = parseInt(m[2], 10) || 0;
+          if (!fnList.some(function (x) { return x.n === n; })) {
+            fnList.push({ id: '', text: m[1].replace(/&quot;/g, '"'), n: n });
+          }
+        }
+      });
+    });
+    fnList.sort(function (a, b) { return (a.n || 0) - (b.n || 0); });
+    return fnList;
+  }
+
+  function dataUrlToUint8Array(dataUrl) {
+    try {
+      var parts = String(dataUrl).split(',');
+      var b64 = parts[1];
+      if (!b64) return null;
+      var bin = atob(b64);
+      var arr = new Uint8Array(bin.length);
+      for (var i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+      return arr;
+    } catch (e) { return null; }
+  }
+
+  function sceneBreakHtml(design) {
+    var text = (design && design.sceneBreak) || '* * *';
+    if (state.sceneBreakImage) {
+      return '<p class="no-indent" style="text-align:center;margin:1.2em 0"><img src="' +
+        state.sceneBreakImage.replace(/"/g, '&quot;') + '" alt="' + escapeHtml(text) +
+        '" style="max-width:120px;max-height:48px;display:inline-block"/></p>';
+    }
+    return '<p class="no-indent" style="text-align:center;margin:1.2em 0">' + escapeHtml(text) + '</p>';
+  }
+
     async function exportDocx(designOpts) {
     if (!window.docx) { toast('DOCX library not loaded'); return; }
-    const { Document, Packer, Paragraph, TextRun, PageBreak, AlignmentType } = window.docx;
+    const { Document, Packer, Paragraph, TextRun, PageBreak, AlignmentType, ImageRun } = window.docx;
     var design = designOpts || null;
     if (!design && typeof readDesigns === 'function') {
       var designs = readDesigns();
@@ -3454,10 +3686,31 @@
       (ch.scenes || []).forEach(function (sc, si) {
         if (si > 0) {
           var br = (design && design.sceneBreak) || '* * *';
+          var breakChildren = [];
+          if (state.sceneBreakImage && ImageRun) {
+            var imgBytes = dataUrlToUint8Array(state.sceneBreakImage);
+            if (imgBytes) {
+              var isPng = String(state.sceneBreakImage).indexOf('image/png') >= 0;
+              try {
+                breakChildren.push(new ImageRun({
+                  type: isPng ? 'png' : 'jpg',
+                  data: imgBytes,
+                  transformation: { width: 80, height: 32 },
+                  altText: { title: br, description: br, name: br }
+                }));
+              } catch (eImg) {
+                breakChildren.push(new TextRun({ text: br, font: fontName, size: bodySize, color: color }));
+              }
+            } else {
+              breakChildren.push(new TextRun({ text: br, font: fontName, size: bodySize, color: color }));
+            }
+          } else {
+            breakChildren.push(new TextRun({ text: br, font: fontName, size: bodySize, color: color }));
+          }
           children.push(new Paragraph({
             alignment: AlignmentType.CENTER,
             spacing: { before: 200, after: 200 },
-            children: [new TextRun({ text: br, font: fontName, size: bodySize, color: color })]
+            children: breakChildren
           }));
         }
         var plain = (typeof htmlToPlain === 'function' ? htmlToPlain(sc.content) : stripHtml(sc.content));
@@ -3470,24 +3723,7 @@
         });
       });
     });
-    // Collect footnotes from project for endnotes page (offline markers → export)
-    var fnList = [];
-    if (state.footnotes && state.footnotes.length) {
-      fnList = state.footnotes.slice().sort(function (a, b) { return (a.n || 0) - (b.n || 0); });
-    } else {
-      // Recover markers from HTML if array empty
-      state.chapters.forEach(function (ch) {
-        (ch.scenes || []).forEach(function (sc) {
-          var htmlc = sc.content || '';
-          var re = /<sup[^>]*class="[^"]*sw-footnote[^"]*"[^>]*data-fn="([^"]*)"[^>]*title="([^"]*)"[^>]*>\[(\d+)\]/gi;
-          var m;
-          while ((m = re.exec(htmlc))) {
-            fnList.push({ id: m[1], text: m[2], n: parseInt(m[3], 10) || 0 });
-          }
-        });
-      });
-      fnList.sort(function (a, b) { return (a.n || 0) - (b.n || 0); });
-    }
+    var fnList = collectFootnotes();
     if (fnList.length) {
       children.push(new Paragraph({ children: [new PageBreak()] }));
       children.push(new Paragraph({
@@ -4448,9 +4684,56 @@ function exportTxt() {
         hideDashboard();
         switchScene(h.ch.id, h.sc.id);
         switchTab('story');
+        setTimeout(function () {
+          jumpHighlightInEditor(r.item.name, r.item.id);
+        }, 80);
         toast('Jumped to ' + h.label);
       };
     });
+  }
+
+  function clearJumpHighlights() {
+    if (!editor) return;
+    editor.querySelectorAll('.sw-jump-hl').forEach(function (el) {
+      var parent = el.parentNode;
+      while (el.firstChild) parent.insertBefore(el.firstChild, el);
+      parent.removeChild(el);
+      parent.normalize();
+    });
+  }
+
+  function jumpHighlightInEditor(name, entityId) {
+    clearJumpHighlights();
+    if (!editor || !name) return;
+    // Prefer @mention span with matching data-id
+    if (entityId) {
+      var mention = editor.querySelector('.sw-mention[data-id="' + entityId + '"]');
+      if (mention) {
+        mention.classList.add('sw-jump-hl');
+        mention.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        setTimeout(clearJumpHighlights, 3500);
+        return;
+      }
+    }
+    // Fallback: first text match (case-insensitive word boundary-ish)
+    var needle = String(name);
+    var walker = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT, null);
+    var node;
+    while ((node = walker.nextNode())) {
+      var idx = node.nodeValue.toLowerCase().indexOf(needle.toLowerCase());
+      if (idx < 0) continue;
+      try {
+        var range = document.createRange();
+        range.setStart(node, idx);
+        range.setEnd(node, idx + needle.length);
+        var mark = document.createElement('mark');
+        mark.className = 'sw-jump-hl';
+        range.surroundContents(mark);
+        mark.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        setTimeout(clearJumpHighlights, 3500);
+        return;
+      } catch (e) { /* split nodes — skip */ }
+    }
   }
 
 
@@ -4609,91 +4892,271 @@ function exportTxt() {
     try { w.document.title = '\u200b'; } catch (e) {}
   }
 
-  // Relationship graph (simple force-ish layout)
+  // Relationship graph — responsive, type-colored, soft layout
+  var _relGraphFilter = 'all';
+  var _relGraphNodes = [];
+  var _relGraphDrag = null;
+  var _relGraphRO = null;
+
+  function relKindColor(kind) {
+    var k = String(kind || 'link').toLowerCase();
+    if (/love|romance|married|spouse|partner|crush/.test(k)) return '#c45c7a';
+    if (/family|parent|sibling|child|kin|blood/.test(k)) return '#6b8f71';
+    if (/ally|friend|mentor|trust/.test(k)) return '#5b8fb9';
+    if (/rival|enemy|hate|foe|antagon/.test(k)) return '#c45c4a';
+    if (/work|boss|colleague|guild/.test(k)) return '#9a7b4f';
+    return getComputedStyle(ROOT).getPropertyValue('--sw-muted').trim() || '#6b5e4a';
+  }
+
+  function normalizeRelEndpoints(r) {
+    return { a: r.a || r.from || '', b: r.b || r.to || '', kind: r.kind || r.type || 'link' };
+  }
+
+  function ensureRelGraphToolbar() {
+    var tb = document.getElementById('sw-rel-graph-toolbar');
+    if (!tb || tb.dataset.wired) return;
+    tb.dataset.wired = '1';
+    var kinds = ['all', 'love', 'family', 'ally', 'rival', 'other'];
+    kinds.forEach(function (k) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'sw-graph-chip' + (k === _relGraphFilter ? ' active' : '');
+      btn.textContent = k === 'all' ? 'All' : k.charAt(0).toUpperCase() + k.slice(1);
+      btn.dataset.filter = k;
+      btn.onclick = function () {
+        _relGraphFilter = k;
+        tb.querySelectorAll('.sw-graph-chip').forEach(function (c) {
+          c.classList.toggle('active', c.dataset.filter === k);
+        });
+        drawRelationGraph();
+      };
+      tb.appendChild(btn);
+    });
+  }
+
+  function relMatchesFilter(kind) {
+    if (_relGraphFilter === 'all') return true;
+    var k = String(kind || '').toLowerCase();
+    if (_relGraphFilter === 'love') return /love|romance|married|spouse|partner|crush/.test(k);
+    if (_relGraphFilter === 'family') return /family|parent|sibling|child|kin|blood/.test(k);
+    if (_relGraphFilter === 'ally') return /ally|friend|mentor|trust/.test(k);
+    if (_relGraphFilter === 'rival') return /rival|enemy|hate|foe|antagon/.test(k);
+    if (_relGraphFilter === 'other') {
+      return !/love|romance|married|spouse|partner|crush|family|parent|sibling|child|kin|blood|ally|friend|mentor|trust|rival|enemy|hate|foe|antagon/.test(k);
+    }
+    return true;
+  }
+
   function drawRelationGraph() {
     var wrap = document.getElementById('sw-rel-graph-wrap');
     var canvas = document.getElementById('sw-rel-canvas');
     var empty = document.getElementById('sw-rel-graph-empty');
+    var legend = document.getElementById('sw-rel-graph-legend');
     if (!canvas || !wrap) return;
-    var rels = state.relationships || [];
+    ensureRelGraphToolbar();
+    var allRels = (state.relationships || []).map(normalizeRelEndpoints);
+    var rels = allRels.filter(function (r) { return relMatchesFilter(r.kind); });
     if (!rels.length) {
-      if (empty) empty.style.display = 'flex';
+      if (empty) {
+        empty.style.display = 'flex';
+        empty.textContent = allRels.length ? 'No ties match this filter' : 'Add relationships to see the graph';
+      }
       var ctx0 = canvas.getContext('2d');
+      ctx0.setTransform(1, 0, 0, 1, 0, 0);
       ctx0.clearRect(0, 0, canvas.width, canvas.height);
+      if (legend) legend.innerHTML = '';
       return;
     }
     if (empty) empty.style.display = 'none';
+
     var names = {};
     rels.forEach(function (r) {
       if (r.a) names[r.a] = true;
       if (r.b) names[r.b] = true;
-      if (r.from) names[r.from] = true;
-      if (r.to) names[r.to] = true;
     });
-    var nodes = Object.keys(names).map(function (n, i, arr) {
-      var angle = (i / arr.length) * Math.PI * 2 - Math.PI / 2;
-      var cx = canvas.width / 2, cy = canvas.height / 2, rad = Math.min(cx, cy) - 50;
-      return { name: n, x: cx + Math.cos(angle) * rad, y: cy + Math.sin(angle) * rad };
-    });
-    var byName = {};
-    nodes.forEach(function (n) { byName[n.name] = n; });
-    var ctx = canvas.getContext('2d');
     var w = wrap.clientWidth || 800;
-    var h = 320;
-    canvas.width = w * (window.devicePixelRatio || 1);
-    canvas.height = h * (window.devicePixelRatio || 1);
+    var h = wrap.clientHeight || 320;
+    var dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.max(1, Math.floor(w * dpr));
+    canvas.height = Math.max(1, Math.floor(h * dpr));
     canvas.style.width = w + 'px';
     canvas.style.height = h + 'px';
-    ctx.setTransform(window.devicePixelRatio || 1, 0, 0, window.devicePixelRatio || 1, 0, 0);
-    // recompute positions for actual size
-    nodes.forEach(function (n, i, arr) {
+    var ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    // Preserve drag positions when possible
+    var prev = {};
+    _relGraphNodes.forEach(function (n) { prev[n.name] = n; });
+    var nameList = Object.keys(names);
+    var nodes = nameList.map(function (n, i, arr) {
+      if (prev[n] && prev[n].x != null) {
+        return { name: n, x: prev[n].x, y: prev[n].y, r: Math.max(16, Math.min(22, 28 - arr.length)) };
+      }
       var angle = (i / arr.length) * Math.PI * 2 - Math.PI / 2;
-      var cx = w / 2, cy = h / 2, rad = Math.min(cx, cy) - 48;
-      n.x = cx + Math.cos(angle) * rad;
-      n.y = cy + Math.sin(angle) * rad;
+      var cx = w / 2, cy = h / 2, rad = Math.min(cx, cy) - 56;
+      return {
+        name: n,
+        x: cx + Math.cos(angle) * rad,
+        y: cy + Math.sin(angle) * rad,
+        r: Math.max(16, Math.min(22, 28 - arr.length))
+      };
     });
-    ctx.clearRect(0, 0, w, h);
+    _relGraphNodes = nodes;
+    var byName = {};
+    nodes.forEach(function (n) { byName[n.name] = n; });
+
     var ink = getComputedStyle(ROOT).getPropertyValue('--sw-ink').trim() || '#2c2416';
     var muted = getComputedStyle(ROOT).getPropertyValue('--sw-muted').trim() || '#6b5e4a';
     var accent = getComputedStyle(ROOT).getPropertyValue('--sw-accent').trim() || '#5c4a32';
     var paper = getComputedStyle(ROOT).getPropertyValue('--sw-paper').trim() || '#faf7f0';
+
+    ctx.clearRect(0, 0, w, h);
+
+    // Soft edges with color by kind
     rels.forEach(function (r) {
-      var a = byName[r.a || r.from], b = byName[r.b || r.to];
+      var a = byName[r.a], b = byName[r.b];
       if (!a || !b) return;
+      var col = relKindColor(r.kind);
+      var mx = (a.x + b.x) / 2;
+      var my = (a.y + b.y) / 2;
+      // slight curve
+      var dx = b.x - a.x, dy = b.y - a.y;
+      var cx1 = mx - dy * 0.12, cy1 = my + dx * 0.12;
       ctx.beginPath();
       ctx.moveTo(a.x, a.y);
-      ctx.lineTo(b.x, b.y);
-      ctx.strokeStyle = muted;
-      ctx.lineWidth = 1.5;
+      ctx.quadraticCurveTo(cx1, cy1, b.x, b.y);
+      ctx.strokeStyle = col;
+      ctx.globalAlpha = 0.85;
+      ctx.lineWidth = 2.2;
+      ctx.lineCap = 'round';
       ctx.stroke();
-      var mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
-      ctx.fillStyle = muted;
-      ctx.font = '10px system-ui,sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText(r.kind || r.type || 'link', mx, my - 4);
-    });
-    nodes.forEach(function (n) {
-      ctx.beginPath();
-      ctx.arc(n.x, n.y, 18, 0, Math.PI * 2);
+      ctx.globalAlpha = 1;
+      // label chip
+      var label = (r.kind || 'link').slice(0, 14);
+      ctx.font = '600 10px system-ui,sans-serif';
+      var tw = ctx.measureText(label).width;
+      var lx = cx1, ly = cy1 - 6;
       ctx.fillStyle = paper;
+      ctx.strokeStyle = col;
+      ctx.lineWidth = 1;
+      roundRect(ctx, lx - tw / 2 - 5, ly - 9, tw + 10, 16, 8);
       ctx.fill();
-      ctx.strokeStyle = accent;
-      ctx.lineWidth = 2;
       ctx.stroke();
       ctx.fillStyle = ink;
-      ctx.font = '600 11px system-ui,sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      var label = n.name.length > 10 ? n.name.slice(0, 9) + '…' : n.name;
-      ctx.fillText(label, n.x, n.y);
+      ctx.fillText(label, lx, ly);
     });
+
+    // Nodes
+    nodes.forEach(function (n) {
+      // soft shadow
+      ctx.beginPath();
+      ctx.arc(n.x, n.y + 2, n.r + 2, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(0,0,0,0.08)';
+      ctx.fill();
+      // fill
+      var grad = ctx.createRadialGradient(n.x - 4, n.y - 4, 2, n.x, n.y, n.r);
+      grad.addColorStop(0, paper);
+      grad.addColorStop(1, paper);
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+      ctx.fillStyle = grad;
+      ctx.fill();
+      ctx.strokeStyle = accent;
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+      // initial
+      ctx.fillStyle = accent;
+      ctx.font = '700 12px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText((n.name || '?').charAt(0).toUpperCase(), n.x, n.y);
+      // name under node
+      ctx.fillStyle = ink;
+      ctx.font = '600 11px system-ui,sans-serif';
+      var label = n.name.length > 14 ? n.name.slice(0, 13) + '…' : n.name;
+      ctx.fillText(label, n.x, n.y + n.r + 12);
+    });
+
+    if (legend) {
+      legend.innerHTML =
+        '<span><i style="background:#c45c7a"></i>Love</span>' +
+        '<span><i style="background:#6b8f71"></i>Family</span>' +
+        '<span><i style="background:#5b8fb9"></i>Ally</span>' +
+        '<span><i style="background:#c45c4a"></i>Rival</span>' +
+        '<span><i style="background:#9a7b4f"></i>Work</span>';
+    }
+
+    wireRelGraphInteraction(canvas, wrap);
+    if (!_relGraphRO && typeof ResizeObserver !== 'undefined') {
+      _relGraphRO = new ResizeObserver(function () {
+        var panel = document.getElementById('sw-rel-graph-panel');
+        if (panel && panel.style.display !== 'none') drawRelationGraph();
+      });
+      _relGraphRO.observe(wrap);
+    }
+  }
+
+  function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  function wireRelGraphInteraction(canvas, wrap) {
+    if (canvas.dataset.interact) return;
+    canvas.dataset.interact = '1';
+    function pos(e) {
+      var rect = canvas.getBoundingClientRect();
+      var t = e.touches ? e.touches[0] : e;
+      return { x: t.clientX - rect.left, y: t.clientY - rect.top };
+    }
+    function hit(p) {
+      for (var i = _relGraphNodes.length - 1; i >= 0; i--) {
+        var n = _relGraphNodes[i];
+        var dx = p.x - n.x, dy = p.y - n.y;
+        if (dx * dx + dy * dy <= (n.r + 6) * (n.r + 6)) return n;
+      }
+      return null;
+    }
+    function down(e) {
+      var p = pos(e);
+      var n = hit(p);
+      if (!n) return;
+      _relGraphDrag = n;
+      canvas.style.cursor = 'grabbing';
+      e.preventDefault();
+    }
+    function move(e) {
+      if (!_relGraphDrag) return;
+      var p = pos(e);
+      _relGraphDrag.x = Math.max(24, Math.min((wrap.clientWidth || 400) - 24, p.x));
+      _relGraphDrag.y = Math.max(24, Math.min((wrap.clientHeight || 300) - 28, p.y));
+      drawRelationGraph();
+      e.preventDefault();
+    }
+    function up() {
+      _relGraphDrag = null;
+      canvas.style.cursor = 'grab';
+    }
+    canvas.addEventListener('mousedown', down);
+    window.addEventListener('mousemove', move);
+    window.addEventListener('mouseup', up);
+    canvas.addEventListener('touchstart', down, { passive: false });
+    canvas.addEventListener('touchmove', move, { passive: false });
+    canvas.addEventListener('touchend', up);
   }
 
   function toggleRelGraph() {
-    var wrap = document.getElementById('sw-rel-graph-wrap');
-    if (!wrap) return;
-    var show = wrap.style.display === 'none' || !wrap.style.display;
-    wrap.style.display = show ? 'block' : 'none';
+    var panel = document.getElementById('sw-rel-graph-panel');
+    if (!panel) return;
+    var show = panel.style.display === 'none' || !panel.style.display;
+    panel.style.display = show ? 'block' : 'none';
     if (show) drawRelationGraph();
   }
 
@@ -5945,7 +6408,8 @@ function exportTxt() {
     _showHoverOrig(mentionEl);
     var data = findEntity(mentionEl.dataset.type, mentionEl.dataset.id);
     if (!data || !hoverEl.classList.contains('open')) return;
-    var hits = buildMentionIndex(mentionEl.dataset.type, mentionEl.dataset.id, data.name);
+    if (mentionEl.dataset.type === 'glossary') return; // definition already shown
+    var hits = buildMentionIndex(mentionEl.dataset.type, mentionEl.dataset.id, data.name || data.term);
     if (hits.length) {
       var extra = document.createElement('div');
       extra.style.cssText = 'margin-top:8px;font-size:0.75rem;color:var(--sw-muted)';
@@ -5966,8 +6430,8 @@ function exportTxt() {
     if (name === 'timeline') renderTimeline();
     if (name === 'relations') {
       renderRelations();
-      var gw = document.getElementById('sw-rel-graph-wrap');
-      if (gw && gw.style.display !== 'none') drawRelationGraph();
+      var gp = document.getElementById('sw-rel-graph-panel');
+      if (gp && gp.style.display !== 'none') drawRelationGraph();
     }
     if (name === 'series') renderSeries();
     if (name === 'glossary') renderGlossary();
@@ -6206,24 +6670,39 @@ function exportTxt() {
     }
     var parts = [];
     state.chapters.forEach(function (ch, ci) {
-      var paras = [];
-      ch.scenes.forEach(function (sc) {
+      var htmlc = '<section class="chapter' + (ci ? ' break' : '') + '">';
+      htmlc += '<h1>' + escapeHtml(ch.title || ('Chapter ' + (ci + 1))) + '</h1>';
+      var paraIndex = 0;
+      (ch.scenes || []).forEach(function (sc, si) {
+        if (si > 0) {
+          if (state.sceneBreakImage) {
+            htmlc += '<p class="scene-break"><img src="' + state.sceneBreakImage.replace(/"/g, '&quot;') + '" alt="* * *"/></p>';
+          } else {
+            htmlc += '<p class="scene-break">* * *</p>';
+          }
+        }
         var plain = stripHtml(sc.content || '');
         plain.split(/\n+/).forEach(function (line) {
           line = line.trim();
-          if (line) paras.push(line);
+          if (!line) return;
+          var cls = (paraIndex === 0 && tpl !== 'modern') ? ' class="drop"' : '';
+          htmlc += '<p' + cls + '>' + escapeHtml(line) + '</p>';
+          paraIndex++;
         });
       });
-      if (!paras.length) paras = [''];
-      var htmlc = '<section class="chapter' + (ci ? ' break' : '') + '">';
-      htmlc += '<h1>' + escapeHtml(ch.title || ('Chapter ' + (ci + 1))) + '</h1>';
-      paras.forEach(function (p, pi) {
-        var cls = (pi === 0 && tpl !== 'modern') ? ' class="drop"' : '';
-        htmlc += '<p' + cls + '>' + escapeHtml(p) + '</p>';
-      });
+      if (paraIndex === 0) htmlc += '<p></p>';
       htmlc += '</section>';
       parts.push(htmlc);
     });
+    var fnList = collectFootnotes();
+    if (fnList.length) {
+      var endHtml = '<section class="chapter break endnotes"><h1>Endnotes</h1>';
+      fnList.forEach(function (fn) {
+        endHtml += '<p class="endnote"><strong>[' + (fn.n || '') + ']</strong> ' + escapeHtml(fn.text || '') + '</p>';
+      });
+      endHtml += '</section>';
+      parts.push(endHtml);
+    }
     var doc = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title></title><style>' +
       '@page{size:' + s.w + ' ' + s.h + ';margin:0}' +
       'html,body{margin:0;padding:0;background:#fff}' +
@@ -6234,6 +6713,9 @@ function exportTxt() {
       'h1{text-align:center;font-size:1.35em;font-weight:600;margin:2.5em 0 1.75em;' +
       'page-break-after:avoid;letter-spacing:0.02em}' +
       '.chapter p{margin:0;text-indent:1.5em;orphans:3;widows:3;text-align:justify}' +
+      '.chapter p.scene-break{text-indent:0;text-align:center;margin:1.2em 0}' +
+      '.chapter p.scene-break img{max-width:120px;max-height:48px;display:inline-block}' +
+      '.chapter p.endnote{text-indent:0;margin:0 0 0.6em}' +
       '.chapter p.drop{text-indent:0}' +
       '.chapter p.drop::first-letter{float:left;font-size:3.2em;line-height:0.85;padding:0.05em 0.08em 0 0;font-weight:600}' +
       bodyCss +
@@ -6768,8 +7250,8 @@ function exportTxt() {
         var quota = est.quota || 0;
         var pct = quota ? Math.round((used / quota) * 100) : 0;
         parts.push('Used ~' + formatBytes(used) + (quota ? ' of ~' + formatBytes(quota) + ' (' + pct + '%)' : ''));
-        if (pct >= 80) parts.push('⚠ Storage is getting full — export or delete unused designs/covers.');
-        else if (pct >= 60) parts.push('Consider Save disk backups and smaller cover images.');
+        if (pct >= 80) parts.push('⚠ Storage is getting full — Compact or Save disk.');
+        else if (pct >= 60) parts.push('Consider Compact storage and smaller cover images.');
       } else {
         parts.push('Storage estimate not available in this browser.');
       }
@@ -6778,9 +7260,76 @@ function exportTxt() {
     }
     try {
       var designs = readDesigns();
-      parts.push(designs.length + ' book design(s) in localStorage');
+      parts.push(designs.length + ' book design(s)');
     } catch (e) {}
     el.textContent = parts.join(' · ');
+    var btn = document.getElementById('sw-compact-storage');
+    if (btn && !btn.dataset.wired) {
+      btn.dataset.wired = '1';
+      btn.onclick = function () { compactStorage(); };
+    }
+  }
+
+  async function compactStorage() {
+    var ok = await swConfirm(
+      'Compact browser storage?\n\n' +
+      '• Trims design version history (keeps latest styles)\n' +
+      '• Keeps only the last 3 snapshots per scene\n' +
+      '• Does not delete your manuscript or linked disk file\n\n' +
+      'Save disk first if you want a full backup.'
+    );
+    if (!ok) return;
+    var removedSnaps = 0;
+    var trimmedDesigns = 0;
+    try {
+      // Current project scenes
+      (state.chapters || []).forEach(function (ch) {
+        (ch.scenes || []).forEach(function (sc) {
+          if (sc.snapshots && sc.snapshots.length > 3) {
+            removedSnaps += sc.snapshots.length - 3;
+            sc.snapshots = sc.snapshots.slice(0, 3);
+          }
+        });
+      });
+      saveCurrent();
+      await persistToIdbPromise();
+      // All projects in IDB
+      var all = await idbAll();
+      for (var i = 0; i < all.length; i++) {
+        var rec = all[i];
+        var st = rec.state || {};
+        var changed = false;
+        (st.chapters || []).forEach(function (ch) {
+          (ch.scenes || []).forEach(function (sc) {
+            if (sc.snapshots && sc.snapshots.length > 3) {
+              removedSnaps += sc.snapshots.length - 3;
+              sc.snapshots = sc.snapshots.slice(0, 3);
+              changed = true;
+            }
+          });
+        });
+        if (changed) {
+          rec.state = st;
+          rec.updatedAt = new Date().toISOString();
+          await idbPut(rec);
+        }
+      }
+      // Design history
+      var designs = readDesigns();
+      designs.forEach(function (d) {
+        if (d.history && d.history.length > 3) {
+          trimmedDesigns += d.history.length - 3;
+          d.history = d.history.slice(0, 3);
+        }
+      });
+      writeDesigns(designs);
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+      toast('Compacted · snapshots −' + removedSnaps + ', design history −' + trimmedDesigns);
+      refreshStorageInfo();
+    } catch (e) {
+      toast('Compact failed');
+      console.error(e);
+    }
   }
 
   function monthKey() {
@@ -7123,13 +7672,31 @@ function exportTxt() {
       var blocks = [];
       blocks.push('<h1>' + escapeHtml(ch.title) + '</h1>');
       (ch.scenes || []).forEach(function (sc, si) {
-        if (si > 0) blocks.push('<p class="no-indent" style="text-align:center;margin:1.2em 0">' + escapeHtml(design.sceneBreak || '* * *') + '</p>');
+        if (si > 0) {
+          // Prefer project custom scene-break image; fall back to design text ornament
+          if (st.sceneBreakImage || state.sceneBreakImage) {
+            var imgSrc = (st.sceneBreakImage || state.sceneBreakImage).replace(/"/g, '&quot;');
+            blocks.push('<p class="no-indent" style="text-align:center;margin:1.2em 0"><img src="' + imgSrc + '" alt="' +
+              escapeHtml(design.sceneBreak || '* * *') + '" style="max-width:120px;max-height:48px"/></p>');
+          } else {
+            blocks.push('<p class="no-indent" style="text-align:center;margin:1.2em 0">' + escapeHtml(design.sceneBreak || '* * *') + '</p>');
+          }
+        }
         stripToParas(sc.content).forEach(function (line, li) {
           blocks.push('<p class="' + (li === 0 ? 'no-indent' : '') + '">' + escapeHtml(line) + '</p>');
         });
       });
       pages.push({ type: 'chapter', title: ch.title, chapterId: id, html: blocks.join('') });
     });
+    // Endnotes page from manuscript footnotes
+    var fnList = collectFootnotes();
+    if (fnList.length) {
+      var fnBlocks = ['<h1>Endnotes</h1>'];
+      fnList.forEach(function (fn) {
+        fnBlocks.push('<p class="no-indent"><strong>[' + (fn.n || '') + ']</strong> ' + escapeHtml(fn.text || '') + '</p>');
+      });
+      pages.push({ type: 'endnotes', title: 'Endnotes', html: fnBlocks.join('') });
+    }
     return pages;
   }
 
@@ -7484,6 +8051,7 @@ function exportTxt() {
 
     setTimeout(async function () {
       try { await maybeOfferCrashRecovery(); } catch (e) {}
+      try { maybeRelinkTip(); } catch (e) {}
       try { await maybePenNameOnboarding(); } catch (e) {}
       try { showDashboard(); } catch (e) {}
     }, 300);
