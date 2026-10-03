@@ -1563,6 +1563,7 @@
         <div class="sw-drive-box" id="sw-drive-box">
           <h3>Google Drive sync</h3>
           <p>Optional cloud backup for this browser. Files are stored in your Drive as StoryWriter JSON (only files this app creates). Local IndexedDB remains the working copy.
+            Long-lived reconnect uses a small Cloudflare helper on this domain (refresh tokens are not stored in the browser).
             By connecting, you agree to our
             <a href="https://www.authormasoncarter.com/p/terms-of-service-for-storywriter.html" target="_blank" rel="noopener noreferrer">Terms of Service</a>
             and
@@ -3004,12 +3005,18 @@
 
 
   // ----- Google Drive sync (optional) -----
+  // Long-lived Drive sessions via Cloudflare Worker: /api/drive/exchange|refresh|revoke
   var GDRIVE_CLIENT_ID = '412518703025-cqcgf3dpu0v9hms0subhfpu9024hnptd.apps.googleusercontent.com';
   var GDRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.file';
   var GDRIVE_META_KEY = 'sw-gdrive-meta-v1';
+  var GDRIVE_API_BASE = '/api/drive';
   var gdriveToken = null;
-  var gdriveTokenClient = null;
+  var gdriveCodeClient = null;
   var gdriveReady = false;
+  var gdriveSilentAuth = false;
+  var gdriveSyncAfterDisk = false;
+  var gdriveRefreshTimer = null;
+  var gdriveRefreshInFlight = null;
 
   function readDriveMeta() {
     try { return JSON.parse(localStorage.getItem(GDRIVE_META_KEY) || '{}') || {}; }
@@ -3019,37 +3026,40 @@
     try { localStorage.setItem(GDRIVE_META_KEY, JSON.stringify(m)); } catch (e) {}
   }
 
-  /** Persist short-lived Google access token so refresh / new tab keeps Drive connected until expiry (~1h). */
-  function persistDriveToken(resp) {
-    if (!resp || !resp.access_token) return;
-    var expiresIn = parseInt(resp.expires_in, 10);
-    if (!expiresIn || expiresIn < 60) expiresIn = 3600;
-    // refresh a minute early
-    var expiresAt = Date.now() + (expiresIn - 60) * 1000;
+  function persistDriveSession(data) {
+    if (!data || !data.access_token) return;
+    var expiresIn = parseInt(data.expires_in, 10);
+    if (!expiresIn || isNaN(expiresIn) || expiresIn < 60) expiresIn = 3600;
+    var expiresAt = data.expires_at || (Date.now() + (expiresIn - 30) * 1000);
     gdriveToken = {
-      access_token: resp.access_token,
+      access_token: data.access_token,
       expires_in: expiresIn,
       expires_at: expiresAt,
-      token_type: resp.token_type || 'Bearer',
-      scope: resp.scope || GDRIVE_SCOPE
+      token_type: 'Bearer',
+      scope: GDRIVE_SCOPE
     };
     gdriveReady = true;
     try {
       var meta = readDriveMeta();
       meta.preferDrive = true;
+      if (data.sessionId) meta.sessionId = data.sessionId;
+      meta.hasRefresh = !!meta.sessionId;
       meta.token = {
         access_token: gdriveToken.access_token,
         expires_at: expiresAt,
-        token_type: gdriveToken.token_type,
-        scope: gdriveToken.scope
+        token_type: 'Bearer',
+        scope: GDRIVE_SCOPE
       };
-      meta.connectedAt = new Date().toISOString();
+      meta.connectedAt = meta.connectedAt || new Date().toISOString();
       writeDriveMeta(meta);
-      // sessionStorage backup for same-tab refresh
-      sessionStorage.setItem(GDRIVE_META_KEY + '-token', JSON.stringify(meta.token));
+      try {
+        sessionStorage.setItem(GDRIVE_META_KEY + '-token', JSON.stringify(meta.token));
+        localStorage.setItem(GDRIVE_META_KEY + '-token', JSON.stringify(meta.token));
+      } catch (e2) {}
     } catch (e) {}
     try { scheduleDriveTokenRefresh(); } catch (e) {}
   }
+  function persistDriveToken(resp) { persistDriveSession(resp); }
 
   function clearPersistedDriveToken() {
     try {
@@ -3057,22 +3067,53 @@
       delete meta.token;
       writeDriveMeta(meta);
       sessionStorage.removeItem(GDRIVE_META_KEY + '-token');
+      localStorage.removeItem(GDRIVE_META_KEY + '-token');
+    } catch (e) {}
+  }
+
+  function clearDriveSessionLocal() {
+    gdriveToken = null;
+    gdriveReady = false;
+    try {
+      if (gdriveRefreshTimer) { clearTimeout(gdriveRefreshTimer); gdriveRefreshTimer = null; }
+    } catch (e) {}
+    try {
+      var meta = readDriveMeta();
+      meta.preferDrive = false;
+      delete meta.token;
+      delete meta.sessionId;
+      delete meta.hasRefresh;
+      writeDriveMeta(meta);
+      sessionStorage.removeItem(GDRIVE_META_KEY + '-token');
+      localStorage.removeItem(GDRIVE_META_KEY + '-token');
     } catch (e) {}
   }
 
   function restoreDriveTokenFromStorage() {
     try {
       var token = null;
+      var candidates = [];
+      try { candidates.push(JSON.parse(sessionStorage.getItem(GDRIVE_META_KEY + '-token') || 'null')); } catch (e1) {}
+      try { candidates.push(JSON.parse(localStorage.getItem(GDRIVE_META_KEY + '-token') || 'null')); } catch (e2) {}
       try {
-        token = JSON.parse(sessionStorage.getItem(GDRIVE_META_KEY + '-token') || 'null');
-      } catch (e1) { token = null; }
-      if (!token || !token.access_token) {
         var meta = readDriveMeta();
-        token = meta.token || null;
+        if (meta && meta.token) candidates.push(meta.token);
+      } catch (e3) {}
+      for (var i = 0; i < candidates.length; i++) {
+        var c = candidates[i];
+        if (c && c.access_token && c.expires_at && Date.now() < c.expires_at) {
+          if (!token || c.expires_at > token.expires_at) token = c;
+        }
       }
-      if (!token || !token.access_token || !token.expires_at) return false;
-      if (Date.now() >= token.expires_at) {
-        clearPersistedDriveToken();
+      if (!token) {
+        try {
+          var m = readDriveMeta();
+          if (m.token && m.token.expires_at && Date.now() >= m.token.expires_at) {
+            delete m.token; writeDriveMeta(m);
+          }
+          sessionStorage.removeItem(GDRIVE_META_KEY + '-token');
+          localStorage.removeItem(GDRIVE_META_KEY + '-token');
+        } catch (e4) {}
         return false;
       }
       gdriveToken = {
@@ -3083,9 +3124,7 @@
       };
       gdriveReady = true;
       return true;
-    } catch (e) {
-      return false;
-    }
+    } catch (e) { return false; }
   }
 
   function driveTokenValid() {
@@ -3192,6 +3231,7 @@
     }
   }
 
+
   function waitForGoogle(maxMs) {
     maxMs = maxMs || 8000;
     return new Promise(function (resolve) {
@@ -3204,33 +3244,71 @@
     });
   }
 
-  var gdriveSilentAuth = false;
-  var gdriveSyncAfterDisk = false;
-
   async function initGdriveClient() {
     var ok = await waitForGoogle();
     if (!ok) return false;
-    if (gdriveTokenClient) return true;
+    if (gdriveCodeClient) return true;
     try {
-      gdriveTokenClient = google.accounts.oauth2.initTokenClient({
+      gdriveCodeClient = google.accounts.oauth2.initCodeClient({
         client_id: GDRIVE_CLIENT_ID,
         scope: GDRIVE_SCOPE,
-        callback: function (resp) {
-          if (resp && resp.access_token) {
-            persistDriveToken(resp);
+        ux_mode: 'popup',
+        callback: async function (resp) {
+          try {
+            if (resp && resp.error) {
+              if (!gdriveSilentAuth) {
+                var err = String(resp.error || 'failed');
+                if (err === 'popup_closed_by_user' || err === 'access_denied') toast('Drive sign-in cancelled');
+                else toast('Drive sign-in: ' + err);
+              }
+              gdriveSilentAuth = false;
+              gdriveSyncAfterDisk = false;
+              updateDriveUI();
+              return;
+            }
+            if (!resp || !resp.code) {
+              if (!gdriveSilentAuth) toast('Drive sign-in failed (no code)');
+              gdriveSilentAuth = false;
+              return;
+            }
+            toast('Finishing Drive connect…');
+            var r = await fetch(GDRIVE_API_BASE + '/exchange', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ code: resp.code })
+            });
+            var data = await r.json().catch(function () { return {}; });
+            if (!r.ok) {
+              toast(data.error || 'Drive exchange failed');
+              gdriveSilentAuth = false;
+              gdriveSyncAfterDisk = false;
+              updateDriveUI();
+              return;
+            }
+            persistDriveSession(data);
             updateDriveUI();
-            if (!gdriveSilentAuth) toast('Google Drive connected');
+            if (!gdriveSilentAuth) {
+              toast(data.has_refresh ? 'Google Drive connected' : 'Drive connected — if sync stops later, connect once more');
+            }
             gdriveSilentAuth = false;
             if (gdriveSyncAfterDisk) {
               gdriveSyncAfterDisk = false;
               setTimeout(function () { syncCurrentToDrive({ quiet: true }); }, 200);
             }
-          } else if (resp && resp.error) {
-            // silent fail is normal when no Google session — keep preferDrive for next user click
-            if (!gdriveSilentAuth) toast('Drive sign-in: ' + (resp.error || 'failed'));
+          } catch (e) {
+            toast((e && e.message) || 'Drive connect failed');
             gdriveSilentAuth = false;
             gdriveSyncAfterDisk = false;
+            updateDriveUI();
           }
+        },
+        error_callback: function (err) {
+          if (!gdriveSilentAuth) {
+            toast('Drive sign-in: ' + ((err && (err.message || err.type)) || 'failed'));
+          }
+          gdriveSilentAuth = false;
+          gdriveSyncAfterDisk = false;
+          updateDriveUI();
         }
       });
       return true;
@@ -3242,36 +3320,69 @@
 
   async function connectGoogleDrive(opts) {
     opts = opts || {};
+    if (!opts.forceConsent) {
+      var meta0 = readDriveMeta();
+      if (meta0.sessionId) {
+        var tok = await refreshDriveViaWorker({ quiet: !!opts.silent });
+        if (tok) {
+          updateDriveUI();
+          if (!opts.silent) toast('Google Drive connected');
+          return;
+        }
+      }
+    }
     var ok = await initGdriveClient();
-    if (!ok || !gdriveTokenClient) {
-      if (!opts.silent) toast('Google sign-in not available. Check network and authorized origins in Google Cloud.');
+    if (!ok || !gdriveCodeClient) {
+      if (!opts.silent) toast('Google sign-in not available. Check network.');
       return;
     }
     try {
       gdriveSilentAuth = !!opts.silent;
-      // prompt: '' tries to reuse existing Google session without a full consent screen
-      gdriveTokenClient.requestAccessToken({ prompt: opts.silent ? '' : (gdriveToken ? '' : 'consent') });
+      gdriveCodeClient.requestCode();
     } catch (e) {
       if (!opts.silent) toast('Could not start Google sign-in');
       gdriveSilentAuth = false;
     }
   }
 
-  var gdriveRefreshTimer = null;
+  async function refreshDriveViaWorker(opts) {
+    opts = opts || {};
+    var meta = readDriveMeta();
+    if (!meta.sessionId) return null;
+    if (gdriveRefreshInFlight) return gdriveRefreshInFlight;
+    gdriveRefreshInFlight = (async function () {
+      try {
+        var r = await fetch(GDRIVE_API_BASE + '/refresh', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionId: meta.sessionId })
+        });
+        var data = await r.json().catch(function () { return {}; });
+        if (!r.ok) {
+          clearPersistedDriveToken();
+          gdriveToken = null;
+          gdriveReady = false;
+          return null;
+        }
+        data.sessionId = data.sessionId || meta.sessionId;
+        persistDriveSession(data);
+        return data.access_token;
+      } catch (e) {
+        return null;
+      } finally {
+        gdriveRefreshInFlight = null;
+      }
+    })();
+    return gdriveRefreshInFlight;
+  }
 
   function scheduleDriveTokenRefresh() {
     try {
-      if (gdriveRefreshTimer) {
-        clearTimeout(gdriveRefreshTimer);
-        gdriveRefreshTimer = null;
-      }
+      if (gdriveRefreshTimer) { clearTimeout(gdriveRefreshTimer); gdriveRefreshTimer = null; }
       if (!driveTokenValid() || !gdriveToken.expires_at) return;
-      // Refresh 5 minutes before expiry (or halfway if shorter)
       var ms = gdriveToken.expires_at - Date.now() - 5 * 60 * 1000;
       if (ms < 60 * 1000) ms = 60 * 1000;
-      gdriveRefreshTimer = setTimeout(function () {
-        refreshDriveTokenSilent();
-      }, ms);
+      gdriveRefreshTimer = setTimeout(function () { refreshDriveTokenSilent(); }, ms);
     } catch (e) {}
   }
 
@@ -3279,77 +3390,91 @@
     try {
       var meta = readDriveMeta();
       if (!meta.preferDrive) return;
-      // Obtain a new access token without consent UI while Google session exists
-      await connectGoogleDrive({ silent: true });
-      // If silent worked, schedule next; if not, UI shows reconnect
-      setTimeout(function () {
-        if (driveTokenValid()) scheduleDriveTokenRefresh();
-        updateDriveUI();
-      }, 1500);
+      if (meta.sessionId) {
+        var t = await refreshDriveViaWorker({ quiet: true });
+        if (t) { scheduleDriveTokenRefresh(); updateDriveUI(); return; }
+      }
+      updateDriveUI();
     } catch (e) {}
   }
 
   async function trySilentDriveReconnect() {
     try {
-      // 1) Restore non-expired token from storage (same browser, until Google expiry)
       if (restoreDriveTokenFromStorage()) {
         updateDriveUI();
         scheduleDriveTokenRefresh();
+        var meta = readDriveMeta();
+        if (meta.sessionId && gdriveToken && gdriveToken.expires_at &&
+            (gdriveToken.expires_at - Date.now()) < 15 * 60 * 1000) {
+          await refreshDriveViaWorker({ quiet: true });
+          updateDriveUI();
+        }
         return;
       }
-      var meta = readDriveMeta();
-      if (!meta.preferDrive) {
-        updateDriveUI();
-        return;
+      var meta2 = readDriveMeta();
+      if (!meta2.preferDrive) { updateDriveUI(); return; }
+      if (meta2.sessionId) {
+        var t2 = await refreshDriveViaWorker({ quiet: true });
+        if (t2) { updateDriveUI(); scheduleDriveTokenRefresh(); return; }
       }
-      // 2) Expired or missing — silent refresh via Google session (no extra consent when still signed in)
-      await connectGoogleDrive({ silent: true });
-      setTimeout(function () {
-        if (driveTokenValid()) scheduleDriveTokenRefresh();
-        updateDriveUI();
-      }, 1500);
-    } catch (e) {}
+      updateDriveUI();
+    } catch (e) { updateDriveUI(); }
   }
 
-  function disconnectGoogleDrive() {
-    if (gdriveToken && gdriveToken.access_token && window.google && google.accounts && google.accounts.oauth2) {
+  async function disconnectGoogleDrive() {
+    var meta = readDriveMeta();
+    var sid = meta.sessionId;
+    if (sid) {
       try {
-        google.accounts.oauth2.revoke(gdriveToken.access_token, function () {});
+        await fetch(GDRIVE_API_BASE + '/revoke', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionId: sid })
+        });
       } catch (e) {}
     }
-    gdriveToken = null;
-    gdriveReady = false;
-    try {
-      if (gdriveRefreshTimer) {
-        clearTimeout(gdriveRefreshTimer);
-        gdriveRefreshTimer = null;
-      }
-    } catch (e) {}
-    try {
-      var meta = readDriveMeta();
-      meta.preferDrive = false;
-      delete meta.token;
-      writeDriveMeta(meta);
-      sessionStorage.removeItem(GDRIVE_META_KEY + '-token');
-    } catch (e) {}
+    if (gdriveToken && gdriveToken.access_token && window.google && google.accounts && google.accounts.oauth2) {
+      try { google.accounts.oauth2.revoke(gdriveToken.access_token, function () {}); } catch (e) {}
+    }
+    clearDriveSessionLocal();
     updateDriveUI();
     toast('Drive disconnected on this device');
   }
 
-  function driveAuthHeader() {
-    if (!driveTokenValid()) {
-      // try one restore before giving up
-      restoreDriveTokenFromStorage();
-      if (!driveTokenValid()) return null;
+  async function ensureDriveAccessToken() {
+    if (driveTokenValid()) return gdriveToken.access_token;
+    if (restoreDriveTokenFromStorage() && driveTokenValid()) return gdriveToken.access_token;
+    var meta = readDriveMeta();
+    if (meta.sessionId) {
+      var t = await refreshDriveViaWorker({ quiet: true });
+      if (t) return t;
     }
-    return { Authorization: 'Bearer ' + gdriveToken.access_token };
+    return null;
+  }
+
+  function driveAuthHeader() {
+    if (driveTokenValid()) return { Authorization: 'Bearer ' + gdriveToken.access_token };
+    restoreDriveTokenFromStorage();
+    if (driveTokenValid()) return { Authorization: 'Bearer ' + gdriveToken.access_token };
+    return null;
   }
 
   async function driveFetch(url, opts) {
     opts = opts || {};
-    var headers = Object.assign({}, opts.headers || {}, driveAuthHeader() || {});
+    var token = await ensureDriveAccessToken();
+    if (!token) {
+      updateDriveUI();
+      throw new Error('Drive not connected — connect Google Drive again');
+    }
+    var headers = Object.assign({}, opts.headers || {}, { Authorization: 'Bearer ' + token });
     var res = await fetch(url, Object.assign({}, opts, { headers: headers }));
     if (res.status === 401) {
+      var t2 = await refreshDriveViaWorker({ quiet: true });
+      if (t2) {
+        headers.Authorization = 'Bearer ' + t2;
+        res = await fetch(url, Object.assign({}, opts, { headers: headers }));
+        if (res.status !== 401) return res;
+      }
       gdriveToken = null;
       clearPersistedDriveToken();
       updateDriveUI();
@@ -3536,6 +3661,7 @@
     }
   }
 
+
   function wireGoogleDrive() {
     var c = document.getElementById('sw-drive-connect');
     var s = document.getElementById('sw-drive-sync');
@@ -3549,15 +3675,14 @@
     if (topSync && !topSync.dataset.wired) {
       topSync.dataset.wired = '1';
       topSync.onclick = function () {
-        if (gdriveToken && gdriveToken.access_token) {
-          syncCurrentToDrive();
+        if (driveTokenValid() || (readDriveMeta().sessionId && readDriveMeta().preferDrive)) {
+          if (driveTokenValid()) syncCurrentToDrive();
+          else connectGoogleDrive();
         } else {
-          // Prefer dashboard connect for legal links visibility first time
           connectGoogleDrive();
         }
       };
     }
-    // Restore token immediately so UI shows connected without waiting for Google scripts
     try { restoreDriveTokenFromStorage(); } catch (e) {}
     updateDriveUI();
     initGdriveClient().then(function () {
@@ -3575,6 +3700,12 @@
             var m = readDriveMeta();
             if (m.preferDrive) trySilentDriveReconnect();
           }
+        } catch (e) {}
+      });
+      window.addEventListener('online', function () {
+        try {
+          var m = readDriveMeta();
+          if (m.preferDrive && !driveTokenValid()) trySilentDriveReconnect();
         } catch (e) {}
       });
     }
