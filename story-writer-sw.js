@@ -1,5 +1,5 @@
 /* StoryWriter service worker - offline-first */
-const CACHE = 'storywriter-offline-v10';
+const CACHE = 'storywriter-offline-v11';
 const PRECACHE = [
   './',
   './index.html',
@@ -89,7 +89,7 @@ self.addEventListener('fetch', (event) => {
     }));
     return;
   }
-  // LanguageTool (optional grammar) and other APIs: network only, no cache
+  // LanguageTool (online grammar) — network only, no cache
   if (url.hostname.indexOf('api.languagetool.org') !== -1) {
     event.respondWith(fetch(req));
     return;
