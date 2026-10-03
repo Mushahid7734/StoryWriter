@@ -1715,6 +1715,7 @@
       <button type="button" data-cap="find">Find &amp; replace</button>
       <button type="button" data-cap="highlight">Highlight pass</button>
       <button type="button" data-cap="stats">Readability stats</button>
+      <button type="button" data-cap="grammar">Grammar check (optional)</button>
       <button type="button" data-cap="mentions">Appearance report</button>
       <button type="button" data-cap="continuity">Continuity check</button>
       <button type="button" data-cap="revise">Revision A/B</button>
@@ -5835,6 +5836,323 @@ function exportTxt() {
     return (parts[0] || 'U').slice(0, 2).toUpperCase();
   }
 
+
+  // ===== Seasonal / holiday dashboard messages (warm, personal) =====
+  function easterSunday(year) {
+    // Anonymous Gregorian algorithm (Western Easter)
+    var a = year % 19, b = Math.floor(year / 100), c = year % 100;
+    var d = Math.floor(b / 4), e = b % 4;
+    var f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3);
+    var h = (19 * a + b - d - g + 15) % 30;
+    var i = Math.floor(c / 4), k = c % 4;
+    var l = (32 + 2 * e + 2 * i - h - k) % 7;
+    var m = Math.floor((a + 11 * h + 22 * l) / 451);
+    var month = Math.floor((h + l - 7 * m + 114) / 31);
+    var day = ((h + l - 7 * m + 114) % 31) + 1;
+    return new Date(year, month - 1, day);
+  }
+  function thanksgivingUS(year) {
+    // Fourth Thursday of November
+    var d = new Date(year, 10, 1);
+    var thurs = 1 + ((11 - d.getDay()) % 7); // first Thursday
+    return new Date(year, 10, thurs + 21);
+  }
+  function mothersDayUS(year) {
+    // Second Sunday of May
+    var d = new Date(year, 4, 1);
+    var sun = 1 + ((7 - d.getDay()) % 7);
+    return new Date(year, 4, sun + 7);
+  }
+  function fathersDayUS(year) {
+    // Third Sunday of June
+    var d = new Date(year, 5, 1);
+    var sun = 1 + ((7 - d.getDay()) % 7);
+    return new Date(year, 5, sun + 14);
+  }
+  function sameDay(a, b) {
+    return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+  }
+  function daysBetween(a, b) {
+    var ms = Date.UTC(b.getFullYear(), b.getMonth(), b.getDate()) - Date.UTC(a.getFullYear(), a.getMonth(), a.getDate());
+    return Math.round(ms / 86400000);
+  }
+  /** Returns { badge, line } or null when no holiday window is active. */
+  function getSeasonalDashboardMessage(now, pen) {
+    now = now || new Date();
+    var y = now.getFullYear();
+    var m = now.getMonth(); // 0-based
+    var d = now.getDate();
+    var name = pen ? pen : 'friend';
+    var you = pen ? pen : 'you';
+
+    // --- Twelve soft days into Christmas (Dec 14–25), each unique ---
+    if (m === 11 && d >= 14 && d <= 25) {
+      var cDay = d - 13; // 1..12
+      var christmasLines = {
+        1: 'The year is winding down, ' + name + ' — leave a little room on the page for wonder.',
+        2: 'Somewhere a character is waiting by a window with frost on the glass. Write them in from the cold.',
+        3: 'You do not need a perfect chapter before the holidays. A true paragraph is gift enough.',
+        4: 'If the world feels loud, this desk is still quiet. We are glad you opened it today.',
+        5: 'Stories are a kind of light we pass between people. Keep a small flame going here.',
+        6: 'It is all right to write slowly in December. The novel will still be here after the parties.',
+        7: 'Maybe tonight is only fifty words. That is still a door left open for tomorrow’s self.',
+        8: 'Someone you invent might need comfort this season. You are allowed to give it on the page.',
+        9: 'The tree can wait ten minutes. Your scene has been patient longer than that.',
+        10: 'Nearly Christmas, ' + name + ' — thank you for showing up for your own work.',
+        11: 'Christmas Eve energy: soft lamps, unfinished sentences, hope in the margins. Write a little.',
+        12: 'Merry Christmas' + (pen ? ', ' + pen : '') + '. May your story rest easy today — and return when you are ready.'
+      };
+      return {
+        badge: cDay === 12 ? 'Merry Christmas' : ('December · day ' + cDay + ' of 12'),
+        line: christmasLines[cDay]
+      };
+    }
+    // Boxing Day / quiet after
+    if (m === 11 && d >= 26 && d <= 28) {
+      return {
+        badge: 'After Christmas',
+        line: 'The rush softens. If a quiet scene wants to be written, this desk is still yours, ' + name + '.'
+      };
+    }
+    // New Year stretch
+    if (m === 11 && d >= 29) {
+      return {
+        badge: 'Year’s end',
+        line: 'Almost a new year. No resolutions required — only the next honest sentence, when you want it.'
+      };
+    }
+    if (m === 0 && d <= 3) {
+      return {
+        badge: d === 1 ? 'Happy New Year' : 'New year',
+        line: d === 1
+          ? ('Happy New Year' + (pen ? ', ' + pen : '') + '. Fresh pages, same steadfast desk. Write when the spark finds you.')
+          : ('Early January is for gentle returns. Your novel did not go anywhere, ' + name + '.')
+      };
+    }
+
+    // Valentine’s (Feb 12–14)
+    if (m === 1 && d >= 12 && d <= 14) {
+      var vLines = {
+        12: 'Love stories need first drafts too. Be kind to the awkward dialogue — it often grows into truth.',
+        13: 'Whether you write romance or not, someone on your page deserves a little tenderness today.',
+        14: 'Happy Valentine’s' + (pen ? ', ' + pen : '') + '. The best love on the page is attention. Yours counts.'
+      };
+      return { badge: d === 14 ? 'Valentine’s Day' : 'Near Valentine’s', line: vLines[d] };
+    }
+
+    // St. Patrick’s (Mar 16–17)
+    if (m === 2 && d >= 16 && d <= 17) {
+      return {
+        badge: d === 17 ? 'St. Patrick’s Day' : 'Mid-March',
+        line: 'Luck is showing up when the page is blank. You already did the hard part, ' + name + '.'
+      };
+    }
+
+    // Easter window: Palm Sunday week through Easter Monday
+    try {
+      var easter = easterSunday(y);
+      var delta = daysBetween(now, easter);
+      if (delta <= 7 && delta >= -1) {
+        if (sameDay(now, easter)) {
+          return {
+            badge: 'Happy Easter',
+            line: 'Happy Easter' + (pen ? ', ' + pen : '') + '. New chapters, second chances — the page believes in both.'
+          };
+        }
+        if (delta === -1) {
+          return {
+            badge: 'Easter Monday',
+            line: 'A quiet day after celebration is a good day for a soft scene. Write only what feels alive.'
+          };
+        }
+        if (delta === 1) {
+          return {
+            badge: 'Easter Eve',
+            line: 'Tomorrow is for rest and light. Tonight can be one true paragraph, if you want it.'
+          };
+        }
+        return {
+          badge: 'Easter season',
+          line: 'This season is about return. Your story is still waiting with open hands, ' + name + '.'
+        };
+      }
+    } catch (e) {}
+
+    // Mother’s Day (US window: that Sunday ±1)
+    try {
+      var md = mothersDayUS(y);
+      var mdDelta = daysBetween(now, md);
+      if (mdDelta <= 1 && mdDelta >= -1) {
+        return {
+          badge: mdDelta === 0 ? 'Mother’s Day' : 'Mother’s Day weekend',
+          line: 'For everyone who nurtures a world into being — including the one on your page. Take care of yourself too, ' + name + '.'
+        };
+      }
+    } catch (e) {}
+
+    // Father’s Day window
+    try {
+      var fd = fathersDayUS(y);
+      var fdDelta = daysBetween(now, fd);
+      if (fdDelta <= 1 && fdDelta >= -1) {
+        return {
+          badge: fdDelta === 0 ? 'Father’s Day' : 'Father’s Day weekend',
+          line: 'Steady presence matters in life and in fiction. Your characters notice who shows up. So do we.'
+        };
+      }
+    } catch (e) {}
+
+    // Halloween (Oct 24–31)
+    if (m === 9 && d >= 24 && d <= 31) {
+      var hLines = {
+        24: 'Something strange is stirring in the outline. Let the weird idea stay. October likes courage.',
+        25: 'A little shadow on the page can make the light scenes brighter. Play if you want to.',
+        26: 'Ghosts, secrets, unfinished business — novels love October. So do we, when you write them down.',
+        27: 'If a chapter feels haunted by doubt, name the fear and keep typing past it.',
+        28: 'Costume optional. Bravery on the page is always in season, ' + name + '.',
+        29: 'Three days to Halloween. Perfect weather for a scene that goes bump in the night.',
+        30: 'All Hallows’ Eve is nearly here. Leave one true scare — or one true kindness — on the page.',
+        31: 'Happy Halloween' + (pen ? ', ' + pen : '') + '. Write the thing that gives you a little thrill. We will keep the desk light on.'
+      };
+      return {
+        badge: d === 31 ? 'Happy Halloween' : ('October · ' + d),
+        line: hLines[d]
+      };
+    }
+
+    // Thanksgiving (US): that Thursday ±2 days
+    try {
+      var tg = thanksgivingUS(y);
+      var tgDelta = daysBetween(now, tg);
+      if (tgDelta <= 2 && tgDelta >= -1) {
+        if (tgDelta === 0) {
+          return {
+            badge: 'Thanksgiving',
+            line: 'Grateful you are here, ' + name + '. The page does not need a feast — only your honest attention.'
+          };
+        }
+        return {
+          badge: 'Thanksgiving week',
+          line: 'Busy kitchens, quiet keyboards. Steal a short session if you can; your future self will thank you.'
+        };
+      }
+    } catch (e) {}
+
+    // World Writers / quiet international touches
+    // March 21 approx — World Poetry Day-ish window
+    if (m === 2 && d === 21) {
+      return {
+        badge: 'World Poetry Day',
+        line: 'Even novelists steal breath from poetry. Let one sentence sing today.'
+      };
+    }
+    // May 1 — a gentle spring note
+    if (m === 4 && d === 1) {
+      return {
+        badge: 'May Day',
+        line: 'New month, same craft. Plant one scene and trust it to grow, ' + name + '.'
+      };
+    }
+    // Sept 8 — International Literacy Day
+    if (m === 8 && d === 8) {
+      return {
+        badge: 'Literacy Day',
+        line: 'Someone learned to read so stories like yours could find them. That chain includes you.'
+      };
+    }
+    // Oct 10 — Mental Health awareness soft note
+    if (m === 9 && d === 10) {
+      return {
+        badge: 'Take care',
+        line: 'Writing is work of the heart. Rest counts. Return when you can — the desk will wait without judgment.'
+      };
+    }
+
+    return null;
+  }
+
+  // ===== Optional LanguageTool grammar check (Tools menu; needs network) =====
+  async function runGrammarCheck() {
+    try { saveCurrent(); } catch (e) {}
+    var plain = '';
+    try {
+      plain = (typeof stripHtml === 'function' ? stripHtml(editor.innerHTML) : (editor.innerText || '')).trim();
+    } catch (e) {
+      plain = (editor && (editor.innerText || editor.textContent) || '').trim();
+    }
+    if (!plain) {
+      toast('Nothing to check in this scene');
+      return;
+    }
+    var limit = 12000;
+    var truncated = plain.length > limit;
+    var slice = plain.slice(0, limit);
+    toast('Checking grammar (online)…');
+    try {
+      var body = new URLSearchParams();
+      body.set('text', slice);
+      body.set('language', 'en-US');
+      body.set('enabledOnly', 'false');
+      var res = await fetch('https://api.languagetool.org/v2/check', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: body.toString()
+      });
+      if (!res.ok) throw new Error('LanguageTool returned ' + res.status);
+      var data = await res.json();
+      var matches = data.matches || [];
+      if (!matches.length) {
+        openModal(
+          '<h3>Grammar check</h3>' +
+          '<p style="line-height:1.55;margin:0 0 10px">No issues found in this scene' +
+          (truncated ? ' (first ' + limit.toLocaleString() + ' characters)' : '') +
+          '. LanguageTool is optional and runs only when you ask.</p>' +
+          '<p style="font-size:0.8rem;color:var(--sw-muted);margin:0 0 12px">Checks use the public LanguageTool API over the network. Your full project stays in this browser.</p>' +
+          '<div class="sw-modal-actions"><button type="button" class="sw-btn" id="m-cancel">Close</button></div>'
+        );
+        $('#m-cancel').onclick = closeModal;
+        return;
+      }
+      // Dedupe by message+offset loosely; show top suggestions
+      var rows = matches.slice(0, 40).map(function (m, i) {
+        var ctx = m.context || {};
+        var from = Math.max(0, (ctx.offset || 0) - 20);
+        var bit = String(ctx.text || '').slice(from, from + 80);
+        var reps = (m.replacements || []).slice(0, 3).map(function (r) { return r.value; }).filter(Boolean);
+        return '<div class="sw-appear-block" style="margin-bottom:8px">' +
+          '<div style="font-size:0.78rem;color:var(--sw-muted);margin-bottom:4px">' +
+          escapeHtml((m.rule && (m.rule.issueType || m.rule.id)) || 'suggestion') +
+          '</div>' +
+          '<div style="font-size:0.9rem;margin-bottom:4px">' + escapeHtml(m.message || '') + '</div>' +
+          (bit ? '<div style="font-size:0.82rem;color:var(--sw-muted);font-family:Georgia,serif">…' + escapeHtml(bit) + '…</div>' : '') +
+          (reps.length ? '<div style="margin-top:6px;font-size:0.82rem"><strong>Try:</strong> ' +
+            reps.map(function (r) { return '<code style="padding:1px 5px;border-radius:4px;background:var(--sw-bg)">' + escapeHtml(r) + '</code>'; }).join(' ') +
+            '</div>' : '') +
+          '</div>';
+      }).join('');
+      openModal(
+        '<h3>Grammar check</h3>' +
+        '<p style="font-size:0.85rem;color:var(--sw-muted);margin:0 0 10px">' +
+        matches.length + ' suggestion' + (matches.length === 1 ? '' : 's') +
+        (truncated ? ' · checked first ' + limit.toLocaleString() + ' characters' : '') +
+        ' · optional online check via LanguageTool</p>' +
+        '<div style="max-height:50vh;overflow:auto">' + rows + '</div>' +
+        '<div class="sw-modal-actions"><button type="button" class="sw-btn" id="m-cancel">Close</button></div>'
+      );
+      $('#m-cancel').onclick = closeModal;
+    } catch (err) {
+      openModal(
+        '<h3>Grammar check unavailable</h3>' +
+        '<p style="line-height:1.55;margin:0 0 10px">Could not reach LanguageTool. You may be offline, or the public API is busy.</p>' +
+        '<p style="font-size:0.85rem;color:var(--sw-muted);margin:0 0 12px">' +
+        escapeHtml((err && err.message) || 'Network error') +
+        '. StoryWriter itself stays offline-first — this tool is optional.</p>' +
+        '<div class="sw-modal-actions"><button type="button" class="sw-btn" id="m-cancel">Close</button></div>'
+      );
+      $('#m-cancel').onclick = closeModal;
+    }
+  }
+
   async function showDashboard() {
     saveCurrent();
     try { await persistToIdbPromise(); } catch (e) {}
@@ -5867,8 +6185,18 @@ function exportTxt() {
       'Welcome back to the only audience that matters first: you.'
     ];
     var warmLine = warm[Math.floor(Math.random() * warm.length)];
-    if (hello) hello.textContent = pen ? (timeWord + ', ' + pen) : (timeWord + ' — welcome to StoryWriter');
-    if (sub) sub.textContent = warmLine;
+    var seasonal = null;
+    try { seasonal = getSeasonalDashboardMessage(new Date(), pen); } catch (e) { seasonal = null; }
+    if (hello) {
+      if (seasonal && seasonal.badge) {
+        hello.textContent = pen
+          ? (timeWord + ', ' + pen + ' · ' + seasonal.badge)
+          : (timeWord + ' · ' + seasonal.badge);
+      } else {
+        hello.textContent = pen ? (timeWord + ', ' + pen) : (timeWord + ' — welcome to StoryWriter');
+      }
+    }
+    if (sub) sub.textContent = (seasonal && seasonal.line) ? seasonal.line : warmLine;
 
     var list = [];
     try {
@@ -6759,6 +7087,7 @@ function exportTxt() {
           find: function () { if (typeof openFindReplace === 'function') openFindReplace(); },
           highlight: function () { if (typeof openHighlightMenu === 'function') openHighlightMenu(); },
           stats: function () { if (typeof showStats === 'function') showStats(); },
+          grammar: function () { if (typeof runGrammarCheck === 'function') runGrammarCheck(); },
           mentions: openAppearanceReport,
           continuity: function () { if (typeof runContinuityCheck === 'function') runContinuityCheck(); },
           revise: function () {
