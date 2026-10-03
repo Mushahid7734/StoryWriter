@@ -62,6 +62,8 @@
   <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="https://apis.google.com/js/api.js" async defer></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Source+Sans+3:wght@400;500;600&display=swap');
 
@@ -443,6 +445,33 @@
     #sw-root .sw-cork-card:hover { border-color: var(--sw-accent-soft); }
     #sw-root .sw-cork-card h4 { margin: 0 0 6px; font-size: 0.95rem; font-family: "EB Garamond", Georgia, serif; }
     #sw-root .sw-cork-card p { margin: 0; font-size: 0.8rem; color: var(--sw-muted); }
+    #sw-root .sw-cork-card .sw-cork-meta {
+      display: flex; align-items: center; gap: 8px; margin-top: 10px; flex-wrap: wrap;
+    }
+    #sw-root .sw-cork-chip {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;
+      padding: 3px 8px; border-radius: 999px; border: 1px solid transparent;
+    }
+    #sw-root .sw-cork-chip.draft {
+      background: color-mix(in srgb, #a09070 22%, var(--sw-paper));
+      color: #6a5e48; border-color: color-mix(in srgb, #a09070 35%, transparent);
+    }
+    #sw-root .sw-cork-chip.revise {
+      background: color-mix(in srgb, #c09040 22%, var(--sw-paper));
+      color: #7a5a18; border-color: color-mix(in srgb, #c09040 40%, transparent);
+    }
+    #sw-root .sw-cork-chip.done {
+      background: color-mix(in srgb, var(--sw-ok) 22%, var(--sw-paper));
+      color: var(--sw-ok); border-color: color-mix(in srgb, var(--sw-ok) 40%, transparent);
+    }
+    #sw-root[data-theme="dark"] .sw-cork-chip.draft,
+    #sw-root[data-theme="midnight"] .sw-cork-chip.draft,
+    #sw-root[data-theme="ink"] .sw-cork-chip.draft { color: #d0c4a8; }
+    #sw-root[data-theme="dark"] .sw-cork-chip.revise,
+    #sw-root[data-theme="midnight"] .sw-cork-chip.revise,
+    #sw-root[data-theme="ink"] .sw-cork-chip.revise { color: #e0c080; }
+    #sw-root .sw-cork-words { font-size: 0.72rem; color: var(--sw-muted); }
     #sw-root .sw-cork-card .sw-cork-status {
       display: inline-block; margin-top: 8px; font-size: 0.68rem; text-transform: uppercase;
       letter-spacing: 0.04em; color: var(--sw-muted);
@@ -510,6 +539,19 @@
     #sw-root .sw-modal h3 { margin: 0 0 10px; font-family: "EB Garamond", Georgia, serif; font-size: 1.2rem; }
     #sw-root .sw-modal a.sw-btn { display: inline-flex; align-items: center; }
     #sw-root .sw-modal-actions { display: flex; gap: 6px; justify-content: flex-end; margin-top: 12px; flex-wrap: wrap; }
+    #sw-root .sw-mention-list {
+      margin-top: 12px; border-top: 1px solid var(--sw-border); padding-top: 10px;
+    }
+    #sw-root .sw-mention-list h4 {
+      margin: 0 0 8px; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--sw-muted);
+    }
+    #sw-root .sw-mention-jump {
+      display: block; width: 100%; text-align: left; margin-bottom: 6px;
+      font-size: 0.86rem; padding: 8px 10px;
+    }
+    #sw-root .sw-mention-jump .sw-m-sub {
+      display: block; font-size: 0.72rem; color: var(--sw-muted); font-weight: 400; margin-top: 2px;
+    }
     #sw-root .sw-detail-grid { display: grid; gap: 8px; margin: 6px 0; }
     #sw-root .sw-detail-row strong {
       display: block; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.04em;
@@ -767,6 +809,62 @@
     #sw-dashboard .sw-dash-sub {
       color: var(--sw-muted); font-size: 0.92rem; margin: 0 0 22px;
     }
+    #sw-dashboard .sw-dash-levels {
+      margin: 0 0 16px; padding: 14px; border-radius: 12px;
+      border: 1px solid var(--sw-border); background: var(--sw-paper);
+    }
+    #sw-dashboard .sw-dash-level-head {
+      display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px;
+      margin-bottom: 10px; font-size: 0.95rem;
+    }
+    #sw-dashboard .sw-dash-level-head span { color: var(--sw-muted); font-size: 0.82rem; }
+    #sw-dashboard .sw-recent-achs { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 8px; }
+    #sw-dashboard .sw-recent-label { font-size: 0.72rem; color: var(--sw-muted); text-transform: uppercase; letter-spacing: 0.04em; margin-right: 4px; }
+    #sw-dashboard .sw-recent-ach {
+      font-size: 0.75rem; padding: 4px 10px; border-radius: 999px;
+      border: 1px solid var(--sw-border); background: color-mix(in srgb, var(--sw-accent) 10%, transparent);
+      color: var(--sw-ink);
+    }
+    #sw-dashboard .sw-level-next { margin: 10px 0 0; font-size: 0.8rem; color: var(--sw-muted); }
+    #sw-dashboard .sw-ach-summary { font-size: 0.9rem; line-height: 1.5; margin: 0 0 14px; }
+    #sw-dashboard .sw-ach-list { display: flex; flex-direction: column; gap: 8px; max-height: 55vh; overflow-y: auto; }
+    #sw-dashboard .sw-ach-row {
+      border: 1px solid var(--sw-border); border-radius: 10px; padding: 10px 12px; background: var(--sw-paper);
+    }
+    #sw-dashboard .sw-ach-row.locked { opacity: 0.72; }
+    #sw-dashboard .sw-ach-row.on { border-color: color-mix(in srgb, var(--sw-accent) 40%, var(--sw-border)); }
+    #sw-dashboard .sw-ach-name { font-weight: 600; margin-bottom: 4px; }
+    #sw-dashboard .sw-ach-msg { font-size: 0.84rem; color: var(--sw-muted); line-height: 1.45; }
+    #sw-dashboard .sw-ach-when { font-size: 0.72rem; color: var(--sw-muted); margin-top: 6px; }
+    #sw-dashboard .sw-dash-today-card { cursor: default; }
+    #sw-dashboard #sw-dash-words-card { cursor: pointer; }
+    #sw-dashboard #sw-dash-words-card:hover { border-color: var(--sw-accent-soft); }
+    #sw-dashboard .sw-dash-today {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 0 0 16px;
+    }
+    @media (min-width: 640px) {
+      #sw-dashboard .sw-dash-today { grid-template-columns: 1.4fr 1fr 1fr; }
+    }
+    #sw-dashboard .sw-dash-today-card {
+      background: var(--sw-paper); border: 1px solid var(--sw-border); border-radius: 12px;
+      padding: 12px 14px;
+    }
+    #sw-dashboard .sw-dash-today-card .label {
+      font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em;
+      color: var(--sw-muted); margin-bottom: 4px;
+    }
+    #sw-dashboard .sw-dash-today-card .value {
+      font-size: 1.25rem; font-weight: 600; color: var(--sw-ink);
+    }
+    #sw-dashboard .sw-dash-today-card .hint {
+      font-size: 0.78rem; color: var(--sw-muted); margin-top: 4px;
+    }
+    #sw-dashboard .sw-dash-today-bar {
+      height: 8px; background: var(--sw-border); border-radius: 4px; overflow: hidden; margin-top: 8px;
+    }
+    #sw-dashboard .sw-dash-today-fill {
+      height: 100%; background: var(--sw-ok); width: 0%; transition: width 0.25s;
+    }
     #sw-dashboard .sw-dash-stats {
       display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
       gap: 10px; margin-bottom: 22px;
@@ -782,6 +880,23 @@
     #sw-dashboard .sw-dash-stat span {
       font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--sw-muted);
     }
+    #sw-dashboard .sw-drive-box {
+      margin: 0 0 16px; padding: 12px 14px; border-radius: 12px;
+      border: 1px solid var(--sw-border); background: var(--sw-paper);
+    }
+    #sw-dashboard .sw-drive-box h3 {
+      margin: 0 0 6px; font-size: 0.85rem; font-weight: 600;
+    }
+    #sw-dashboard .sw-drive-box p {
+      margin: 0 0 10px; font-size: 0.8rem; color: var(--sw-muted); line-height: 1.45;
+    }
+    #sw-dashboard .sw-drive-row {
+      display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+    }
+    #sw-dashboard .sw-drive-status {
+      font-size: 0.78rem; color: var(--sw-muted); margin-top: 8px;
+    }
+    #sw-dashboard .sw-drive-status.on { color: var(--sw-ok); }
     #sw-dashboard .sw-dash-actions {
       display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px;
     }
@@ -1431,10 +1546,22 @@
       <div class="sw-dash-tabs" id="sw-dash-tabs">
         <button type="button" class="active" data-dtab="projects">Projects</button>
         <button type="button" data-dtab="progress">Progress</button>
+        <button type="button" data-dtab="achievements">Achievements</button>
         <button type="button" data-dtab="designs">Designs</button>
         <button type="button" data-dtab="about">About</button>
       </div>
       <div class="sw-dash-panel active" id="sw-dpanel-projects">
+        <div class="sw-drive-box" id="sw-drive-box">
+          <h3>Google Drive sync</h3>
+          <p>Optional cloud backup for this browser. Files are stored in your Drive as StoryWriter JSON (only files this app creates). Local IndexedDB remains the working copy.</p>
+          <div class="sw-drive-row">
+            <button type="button" class="sw-btn sw-btn-primary" id="sw-drive-connect">Connect Google Drive</button>
+            <button type="button" class="sw-btn" id="sw-drive-sync" style="display:none">Sync current novel</button>
+            <button type="button" class="sw-btn" id="sw-drive-pull" style="display:none">Open from Drive</button>
+            <button type="button" class="sw-btn" id="sw-drive-disconnect" style="display:none">Disconnect</button>
+          </div>
+          <div class="sw-drive-status" id="sw-drive-status">Not connected</div>
+        </div>
         <div class="sw-dash-actions">
           <button type="button" class="sw-btn sw-btn-primary" id="sw-dash-new">+ New novel</button>
           <button type="button" class="sw-btn" id="sw-dash-open-disk">Open disk</button>
@@ -1447,6 +1574,9 @@
       </div>
       <div class="sw-dash-panel" id="sw-dpanel-progress">
         <div id="sw-progress-body"></div>
+      </div>
+      <div class="sw-dash-panel" id="sw-dpanel-achievements">
+        <div id="sw-achievements-body"></div>
       </div>
       <div class="sw-dash-panel" id="sw-dpanel-designs">
         <div class="sw-dash-actions">
@@ -1627,18 +1757,117 @@
   let diskAutoSaveTimer = null;
   var DISK_AUTOSAVE_MS = 45000; // auto-save to linked file after idle when dirty
 
+  var IDB_HANDLES = 'fileHandles';
+
   function openIdb() {
     return new Promise(function (resolve, reject) {
-      const req = indexedDB.open(IDB_NAME, 1);
-      req.onupgradeneeded = function () {
+      const req = indexedDB.open(IDB_NAME, 2);
+      req.onupgradeneeded = function (ev) {
         const db = req.result;
         if (!db.objectStoreNames.contains(IDB_STORE)) {
           db.createObjectStore(IDB_STORE, { keyPath: 'id' });
+        }
+        if (!db.objectStoreNames.contains(IDB_HANDLES)) {
+          db.createObjectStore(IDB_HANDLES, { keyPath: 'projectId' });
         }
       };
       req.onsuccess = function () { resolve(req.result); };
       req.onerror = function () { reject(req.error); };
     });
+  }
+
+  function idbPutHandle(projectId, handle, fileName) {
+    if (!projectId || !handle) return Promise.resolve();
+    return openIdb().then(function (db) {
+      if (!db.objectStoreNames.contains(IDB_HANDLES)) return;
+      return new Promise(function (resolve, reject) {
+        try {
+          var tx = db.transaction(IDB_HANDLES, 'readwrite');
+          tx.objectStore(IDB_HANDLES).put({
+            projectId: projectId,
+            handle: handle,
+            fileName: fileName || (handle && handle.name) || '',
+            updatedAt: new Date().toISOString()
+          });
+          tx.oncomplete = function () { resolve(); };
+          tx.onerror = function () { reject(tx.error); };
+        } catch (e) { resolve(); }
+      });
+    }).catch(function () {});
+  }
+
+  function idbGetHandle(projectId) {
+    if (!projectId) return Promise.resolve(null);
+    return openIdb().then(function (db) {
+      if (!db.objectStoreNames.contains(IDB_HANDLES)) return null;
+      return new Promise(function (resolve, reject) {
+        var tx = db.transaction(IDB_HANDLES, 'readonly');
+        var req = tx.objectStore(IDB_HANDLES).get(projectId);
+        req.onsuccess = function () { resolve(req.result || null); };
+        req.onerror = function () { resolve(null); };
+      });
+    }).catch(function () { return null; });
+  }
+
+  function idbClearHandle(projectId) {
+    if (!projectId) return Promise.resolve();
+    return openIdb().then(function (db) {
+      if (!db.objectStoreNames.contains(IDB_HANDLES)) return;
+      return new Promise(function (resolve) {
+        try {
+          var tx = db.transaction(IDB_HANDLES, 'readwrite');
+          tx.objectStore(IDB_HANDLES).delete(projectId);
+          tx.oncomplete = function () { resolve(); };
+          tx.onerror = function () { resolve(); };
+        } catch (e) { resolve(); }
+      });
+    }).catch(function () {});
+  }
+
+  async function restoreFileHandleForProject(projectId) {
+    try {
+      var rec = await idbGetHandle(projectId);
+      if (!rec || !rec.handle) return false;
+      var h = rec.handle;
+      // Verify permission without forcing prompt yet
+      if (h.queryPermission) {
+        var perm = await h.queryPermission({ mode: 'readwrite' });
+        if (perm === 'granted') {
+          fileHandle = h;
+          diskFileName = rec.fileName || h.name || diskFileName || '';
+          updateDiskSaveLabel();
+          return true;
+        }
+        // Keep handle; permission can be requested on next user gesture (Save)
+        fileHandle = h;
+        diskFileName = rec.fileName || h.name || diskFileName || '';
+        updateDiskSaveLabel();
+        return true;
+      }
+      fileHandle = h;
+      diskFileName = rec.fileName || h.name || '';
+      updateDiskSaveLabel();
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  async function ensureFileHandlePermission() {
+    if (!fileHandle) return false;
+    try {
+      if (fileHandle.queryPermission) {
+        var perm = await fileHandle.queryPermission({ mode: 'readwrite' });
+        if (perm === 'granted') return true;
+        if (fileHandle.requestPermission) {
+          perm = await fileHandle.requestPermission({ mode: 'readwrite' });
+          return perm === 'granted';
+        }
+      }
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 
   function idbPut(record) {
@@ -1826,7 +2055,7 @@
     religions: [],
     planets: [],
     brainstorm: '',
-    goals: { sessionTarget: 500, sessionBase: 0, draftTarget: 80000 },
+    goals: { sessionTarget: 500, sessionBase: 0, draftTarget: 0 },
     viewMode: 'write',
     openThreads: [],
     pinnedRef: null,
@@ -1908,6 +2137,7 @@
   function save() {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      try { if (typeof checkLevelUp === 'function') setTimeout(checkLevelUp, 50); } catch (e) {}
       const meta = readMeta();
       meta.currentId = currentProjectId;
       writeMeta(meta);
@@ -1969,7 +2199,7 @@
       religions: d.religions || [],
       planets: d.planets || [],
       brainstorm: d.brainstorm || '',
-      goals: { sessionTarget: 500, sessionBase: 0, draftTarget: 80000 },
+      goals: { sessionTarget: 500, sessionBase: 0, draftTarget: 0 },
       viewMode: 'write'
     };
   }
@@ -2006,7 +2236,7 @@
         if (!ch.status) ch.status = 'draft';
       if (!ch.kind) ch.kind = 'chapter';
       });
-      if (!state.goals) state.goals = { sessionTarget: 500, sessionBase: 0, draftTarget: 80000 };
+      if (!state.goals) state.goals = { sessionTarget: 500, sessionBase: 0, draftTarget: 0 };
       if (state.goals.sessionBase == null) state.goals.sessionBase = totalWords();
       if (!state.chapters.find(c => c.id === state.activeChapterId)) {
         state.activeChapterId = state.chapters[0].id;
@@ -2038,7 +2268,7 @@
       });
       if (!ch.status) ch.status = 'draft';
     });
-    if (!state.goals) state.goals = { sessionTarget: 500, sessionBase: 0, draftTarget: 80000 };
+    if (!state.goals) state.goals = { sessionTarget: 500, sessionBase: 0, draftTarget: 0 };
     if (!state.openThreads) state.openThreads = [];
     if (!state.timeline) state.timeline = [];
     if (!state.relationships) state.relationships = [];
@@ -2052,6 +2282,7 @@
     if (!state.projectStatus) state.projectStatus = 'draft';
     if (!state.pastePlain && state.pastePlain !== false) state.pastePlain = true;
     if (!state.streak) state.streak = { days: {}, lastDate: '' };
+    if (!state.gamify) state.gamify = { unlocked: {}, recent: [], level: 0, celebratedDone: false }; ensureGamify();
     if (Array.isArray(state.streak.days)) {
       var map = {};
       state.streak.days.forEach(function (d) { map[d] = 1; });
@@ -2119,7 +2350,6 @@
     meta.currentId = id;
     writeMeta(meta);
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
-    // Switching projects clears linked handle (handle is per session/file)
     fileHandle = null;
     if (meta.lastDiskProjectId === id && meta.lastDiskSavedAt) {
       lastDiskSavedAt = meta.lastDiskSavedAt;
@@ -2130,6 +2360,7 @@
     }
     projectDirty = false;
     updateProjectLabel();
+    await restoreFileHandleForProject(id);
     updateDiskSaveLabel();
     return true;
   }
@@ -2151,7 +2382,7 @@
       religions: [],
       planets: [],
       brainstorm: '',
-      goals: { sessionTarget: 500, sessionBase: 0, draftTarget: 80000 },
+      goals: { sessionTarget: 500, sessionBase: 0, draftTarget: 0 },
       viewMode: 'write',
       openThreads: [],
       pinnedRef: null,
@@ -2173,6 +2404,7 @@
     lastDiskSavedAt = null;
     diskFileName = '';
     projectDirty = false;
+    try { await idbClearHandle(currentProjectId); } catch (e) {}
     updateDiskSaveLabel();
     updateProjectLabel();
     await persistToIdbPromise();
@@ -2184,6 +2416,7 @@
     applyTheme();
     applyFontSize();
     ROOT.classList.toggle('sw-typewriter', !!state.typewriter);
+    if (state.typewriter) { ensureGamify(); state.gamify.focusUsed = true; }
     if (state.pinnedRef) ROOT.classList.add('sw-ref-open');
     else ROOT.classList.remove('sw-ref-open');
     renderChapters();
@@ -2286,6 +2519,10 @@
   }
 
   function noteDiskSaveSuccess(name) {
+    if (fileHandle && currentProjectId) {
+      idbPutHandle(currentProjectId, fileHandle, diskFileName || (fileHandle && fileHandle.name) || '');
+    }
+
     lastDiskSavedAt = new Date().toISOString();
     if (name) diskFileName = name;
     else if (fileHandle && fileHandle.name) diskFileName = fileHandle.name;
@@ -2406,6 +2643,7 @@
         var text = await file.text();
         await importProjectJson(text, file.name, { fromDiskHandle: true, fileLastModified: file.lastModified });
         diskFileName = fileHandle.name || file.name || '';
+        if (currentProjectId) await idbPutHandle(currentProjectId, fileHandle, diskFileName);
         updateDiskSaveLabel();
         toast('Opened · ' + diskFileName + ' — Ctrl/Cmd+S updates this file');
         return;
@@ -2724,6 +2962,669 @@
     markDirty();
   }
 
+  
+
+
+  // ----- Google Drive sync (optional) -----
+  var GDRIVE_CLIENT_ID = '412518703025-cqcgf3dpu0v9hms0subhfpu9024hnptd.apps.googleusercontent.com';
+  var GDRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.file';
+  var GDRIVE_META_KEY = 'sw-gdrive-meta-v1';
+  var gdriveToken = null;
+  var gdriveTokenClient = null;
+  var gdriveReady = false;
+
+  function readDriveMeta() {
+    try { return JSON.parse(localStorage.getItem(GDRIVE_META_KEY) || '{}') || {}; }
+    catch (e) { return {}; }
+  }
+  function writeDriveMeta(m) {
+    try { localStorage.setItem(GDRIVE_META_KEY, JSON.stringify(m)); } catch (e) {}
+  }
+
+  function updateDriveUI() {
+    var st = document.getElementById('sw-drive-status');
+    var conn = document.getElementById('sw-drive-connect');
+    var sync = document.getElementById('sw-drive-sync');
+    var pull = document.getElementById('sw-drive-pull');
+    var disc = document.getElementById('sw-drive-disconnect');
+    var on = !!(gdriveToken && gdriveToken.access_token);
+    if (st) {
+      st.classList.toggle('on', on);
+      if (on) {
+        var meta = readDriveMeta();
+        var email = meta.email || 'Google account';
+        st.textContent = 'Connected · ' + email + (meta.lastSync ? ' · last sync ' + String(meta.lastSync).slice(0, 16).replace('T', ' ') : '');
+      } else {
+        st.textContent = 'Not connected';
+      }
+    }
+    if (conn) conn.style.display = on ? 'none' : '';
+    if (sync) sync.style.display = on ? '' : 'none';
+    if (pull) pull.style.display = on ? '' : 'none';
+    if (disc) disc.style.display = on ? '' : 'none';
+  }
+
+  function waitForGoogle(maxMs) {
+    maxMs = maxMs || 8000;
+    return new Promise(function (resolve) {
+      var t0 = Date.now();
+      (function tick() {
+        if (window.google && google.accounts && google.accounts.oauth2) return resolve(true);
+        if (Date.now() - t0 > maxMs) return resolve(false);
+        setTimeout(tick, 120);
+      })();
+    });
+  }
+
+  async function initGdriveClient() {
+    var ok = await waitForGoogle();
+    if (!ok) return false;
+    if (gdriveTokenClient) return true;
+    try {
+      gdriveTokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: GDRIVE_CLIENT_ID,
+        scope: GDRIVE_SCOPE,
+        callback: function (resp) {
+          if (resp && resp.access_token) {
+            gdriveToken = resp;
+            gdriveReady = true;
+            var meta = readDriveMeta();
+            meta.connectedAt = new Date().toISOString();
+            writeDriveMeta(meta);
+            updateDriveUI();
+            toast('Google Drive connected');
+          } else if (resp && resp.error) {
+            toast('Drive sign-in: ' + (resp.error || 'failed'));
+          }
+        }
+      });
+      return true;
+    } catch (e) {
+      console.warn(e);
+      return false;
+    }
+  }
+
+  async function connectGoogleDrive() {
+    var ok = await initGdriveClient();
+    if (!ok || !gdriveTokenClient) {
+      toast('Google sign-in not available. Check network and authorized origins in Google Cloud.');
+      return;
+    }
+    try {
+      // prompt empty = show account picker when needed
+      gdriveTokenClient.requestAccessToken({ prompt: gdriveToken ? '' : 'consent' });
+    } catch (e) {
+      toast('Could not start Google sign-in');
+    }
+  }
+
+  function disconnectGoogleDrive() {
+    if (gdriveToken && gdriveToken.access_token && window.google && google.accounts && google.accounts.oauth2) {
+      try {
+        google.accounts.oauth2.revoke(gdriveToken.access_token, function () {});
+      } catch (e) {}
+    }
+    gdriveToken = null;
+    gdriveReady = false;
+    updateDriveUI();
+    toast('Drive disconnected on this device');
+  }
+
+  function driveAuthHeader() {
+    if (!gdriveToken || !gdriveToken.access_token) return null;
+    return { Authorization: 'Bearer ' + gdriveToken.access_token };
+  }
+
+  async function driveFetch(url, opts) {
+    opts = opts || {};
+    var headers = Object.assign({}, opts.headers || {}, driveAuthHeader() || {});
+    var res = await fetch(url, Object.assign({}, opts, { headers: headers }));
+    if (res.status === 401) {
+      gdriveToken = null;
+      updateDriveUI();
+      throw new Error('Session expired — connect Google Drive again');
+    }
+    return res;
+  }
+
+  function buildProjectExportPayload() {
+    saveCurrent();
+    return {
+      app: 'StoryWriter',
+      version: 2,
+      exportedAt: new Date().toISOString(),
+      projectId: currentProjectId,
+      projectName: currentProjectName,
+      state: state
+    };
+  }
+
+  async function driveFindFileForProject(projectId, projectName) {
+    var q = "trashed=false and mimeType='application/json' and name contains 'StoryWriter'";
+    var url = 'https://www.googleapis.com/drive/v3/files?pageSize=50&fields=files(id,name,modifiedTime,appProperties)&q=' + encodeURIComponent(q);
+    var res = await driveFetch(url);
+    if (!res.ok) throw new Error('Could not list Drive files');
+    var data = await res.json();
+    var files = data.files || [];
+    var meta = readDriveMeta();
+    var map = meta.fileMap || {};
+    if (projectId && map[projectId]) {
+      var hit = files.find(function (f) { return f.id === map[projectId]; });
+      if (hit) return hit;
+    }
+    // match by appProperties or name
+    var byProp = files.find(function (f) {
+      return f.appProperties && f.appProperties.swProjectId === projectId;
+    });
+    if (byProp) return byProp;
+    var safe = (projectName || 'project').replace(/[^\w\- ]+/g, '').slice(0, 40);
+    var byName = files.find(function (f) {
+      return f.name && f.name.indexOf(safe) >= 0 && f.name.indexOf('StoryWriter') >= 0;
+    });
+    return byName || null;
+  }
+
+  async function syncCurrentToDrive() {
+    if (!driveAuthHeader()) {
+      toast('Connect Google Drive first');
+      return;
+    }
+    try {
+      toast('Syncing to Drive…');
+      var payload = buildProjectExportPayload();
+      var bodyStr = JSON.stringify(payload, null, 2);
+      var fileName = 'StoryWriter - ' + (currentProjectName || 'Untitled').replace(/[\\/:*?"<>|]+/g, ' ').slice(0, 80) + '.json';
+      var existing = await driveFindFileForProject(currentProjectId, currentProjectName);
+      var meta = readDriveMeta();
+      if (!meta.fileMap) meta.fileMap = {};
+
+      if (existing && existing.id) {
+        // multipart update
+        var boundary = '-------sw' + Date.now();
+        var metaPart = JSON.stringify({
+          name: fileName,
+          mimeType: 'application/json',
+          appProperties: { swProjectId: currentProjectId || '', swApp: 'StoryWriter' }
+        });
+        var mp =
+          '--' + boundary + '\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n' + metaPart + '\r\n' +
+          '--' + boundary + '\r\nContent-Type: application/json\r\n\r\n' + bodyStr + '\r\n' +
+          '--' + boundary + '--';
+        var res = await driveFetch(
+          'https://www.googleapis.com/upload/drive/v3/files/' + existing.id + '?uploadType=multipart&fields=id,name,modifiedTime',
+          {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'multipart/related; boundary=' + boundary },
+            body: mp
+          }
+        );
+        if (!res.ok) {
+          var errT = await res.text();
+          throw new Error(errT.slice(0, 180) || 'Update failed');
+        }
+        var updated = await res.json();
+        meta.fileMap[currentProjectId] = updated.id;
+        meta.lastSync = new Date().toISOString();
+        writeDriveMeta(meta);
+        updateDriveUI();
+        toast('Synced · ' + (updated.name || fileName));
+      } else {
+        var boundary2 = '-------sw' + Date.now();
+        var metaPart2 = JSON.stringify({
+          name: fileName,
+          mimeType: 'application/json',
+          appProperties: { swProjectId: currentProjectId || '', swApp: 'StoryWriter' }
+        });
+        var mp2 =
+          '--' + boundary2 + '\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n' + metaPart2 + '\r\n' +
+          '--' + boundary2 + '\r\nContent-Type: application/json\r\n\r\n' + bodyStr + '\r\n' +
+          '--' + boundary2 + '--';
+        var res2 = await driveFetch(
+          'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,modifiedTime',
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'multipart/related; boundary=' + boundary2 },
+            body: mp2
+          }
+        );
+        if (!res2.ok) {
+          var errT2 = await res2.text();
+          throw new Error(errT2.slice(0, 180) || 'Upload failed');
+        }
+        var created = await res2.json();
+        meta.fileMap[currentProjectId] = created.id;
+        meta.lastSync = new Date().toISOString();
+        writeDriveMeta(meta);
+        updateDriveUI();
+        toast('Uploaded to Drive · ' + (created.name || fileName));
+      }
+    } catch (e) {
+      console.error(e);
+      toast(e.message || 'Drive sync failed');
+    }
+  }
+
+  async function openFromDrive() {
+    if (!driveAuthHeader()) {
+      toast('Connect Google Drive first');
+      return;
+    }
+    try {
+      toast('Loading Drive files…');
+      var q = "trashed=false and mimeType='application/json' and name contains 'StoryWriter'";
+      var url = 'https://www.googleapis.com/drive/v3/files?pageSize=30&orderBy=modifiedTime desc&fields=files(id,name,modifiedTime)&q=' + encodeURIComponent(q);
+      var res = await driveFetch(url);
+      if (!res.ok) throw new Error('Could not list files');
+      var data = await res.json();
+      var files = data.files || [];
+      if (!files.length) {
+        toast('No StoryWriter files found in Drive yet. Sync a novel first.');
+        return;
+      }
+      openModal(
+        '<h3>Open from Google Drive</h3>' +
+        '<p style="font-size:0.85rem;color:var(--sw-muted);margin:0 0 10px">Loads into this browser as a project (IndexedDB). Your Drive file stays intact.</p>' +
+        '<div style="max-height:50vh;overflow:auto;display:flex;flex-direction:column;gap:6px">' +
+        files.map(function (f, i) {
+          return '<button type="button" class="sw-btn sw-drive-file" data-i="' + i + '" style="justify-content:flex-start;text-align:left">' +
+            escapeHtml(f.name || 'file') +
+            '<span style="display:block;font-size:0.72rem;color:var(--sw-muted);font-weight:400">' +
+            escapeHtml((f.modifiedTime || '').slice(0, 16).replace('T', ' ')) + '</span></button>';
+        }).join('') +
+        '</div>' +
+        '<div class="sw-modal-actions"><button type="button" class="sw-btn" id="m-cancel">Cancel</button></div>'
+      );
+      document.getElementById('m-cancel').onclick = closeModal;
+      ROOT.querySelectorAll('.sw-drive-file').forEach(function (btn) {
+        btn.onclick = async function () {
+          var f = files[+btn.dataset.i];
+          if (!f) return;
+          closeModal();
+          try {
+            toast('Downloading…');
+            var r = await driveFetch('https://www.googleapis.com/drive/v3/files/' + f.id + '?alt=media');
+            if (!r.ok) throw new Error('Download failed');
+            var text = await r.text();
+            await importProjectJson(text, f.name, { fromDrive: true });
+            var meta = readDriveMeta();
+            if (!meta.fileMap) meta.fileMap = {};
+            if (currentProjectId) meta.fileMap[currentProjectId] = f.id;
+            meta.lastSync = new Date().toISOString();
+            writeDriveMeta(meta);
+            updateDriveUI();
+            ROOT.classList.remove('sw-show-dash');
+            refreshUI();
+            toast('Opened from Drive');
+          } catch (err) {
+            toast(err.message || 'Open failed');
+          }
+        };
+      });
+    } catch (e) {
+      toast(e.message || 'Drive open failed');
+    }
+  }
+
+  function wireGoogleDrive() {
+    var c = document.getElementById('sw-drive-connect');
+    var s = document.getElementById('sw-drive-sync');
+    var p = document.getElementById('sw-drive-pull');
+    var d = document.getElementById('sw-drive-disconnect');
+    if (c) c.onclick = function () { connectGoogleDrive(); };
+    if (s) s.onclick = function () { syncCurrentToDrive(); };
+    if (p) p.onclick = function () { openFromDrive(); };
+    if (d) d.onclick = function () { disconnectGoogleDrive(); };
+    updateDriveUI();
+    initGdriveClient();
+  }
+
+
+  // ----- Achievements, levels & confetti -----
+  var LEVEL_TITLES = ['Inkdrop', 'Page Spark', 'Quiet Quill', 'Dawn Draft', 'First Candle', 'Warm Hearth', 'Open Window', 'Morning Desk', 'Steady Lamp', 'Soft Thunder', 'River Start', 'Pathfinder', 'Map Corner', 'Story Seed', 'Root Word', 'Green Shoot', 'Early Bloom', 'Field Note', 'Trail Marker', 'Campfire', 'Night Watch', 'Second Wind', 'Deep Ink', 'Long Page', 'Wide Margin', 'Spine Light', 'Chapter Air', 'Plot Thread', 'Scene Weaver', 'Arc Keeper', 'Voice Finder', 'Echo Room', 'Name Giver', 'World Tiller', 'Sky Draft', 'Stone Step', 'Bridge Word', 'Harbor Line', 'Tide Writer', 'Star Margin', 'Forge Quiet', 'Anvil Hour', 'Glass Hour', 'Silver Draft', 'Gold Margin', 'Iron Plot', 'Copper Scene', 'Amber Arc', 'Jade Note', 'Obsidian Page', 'North Star', 'South Wind', 'East Gate', 'West Road', 'True North', 'Deep Well', 'High Shelf', 'Long Shelf', 'Full Shelf', 'Open Atlas', 'Quiet Epic', 'Loud Whisper', 'Soft Roar', 'Patient Hand', 'Brave Cut', 'Kind Edit', 'Honest Pass', 'Clear Eye', 'Warm Critic', 'Cool Head', 'Midnight Oil', 'Noon Light', 'Dusk Line', 'Dawn Again', 'Return Desk', 'Habit Flame', 'Streak Keeper', 'Day Builder', 'Week Weaver', 'Month Maker', 'Season Pen', 'Year Dream', 'Life Page', 'Legacy Draft', 'Reader Hope', 'Shelf Ready', 'Binding Near', 'Title Glow', 'Dedication', 'Epilogue Light', 'Encore Ink', 'New Blot', 'Second Book', 'Third Fire', 'Fourth Tide', 'Fifth Horizon', 'Series Heart', 'Saga Breath', 'Myth Seed', 'Legend Draft', 'Master Quiet', 'Craft Elder', 'Story Steward', 'Word Guardian', 'Ink Sovereign', 'Page Monarch', 'Desk Legend', 'Final Flourish', 'Everwriter', 'Storywright', 'Chronicler', 'Mythmaker', 'Worldwright', 'Talekeeper', 'Endpaper'];
+
+  var ACHIEVEMENTS = [
+{ id: 'open_desk', name: 'Open Desk', msg: 'You opened the desk. The story can wait — but it is glad you are here.', when: 'always' },
+{ id: 'words_50', name: 'First Footsteps', msg: 'You have written 50 words in this novel. That is real labor, quietly done.', when: 'words:50' },
+{ id: 'words_100', name: 'Hundred Sparks', msg: 'You have written 100 words in this novel. That is real labor, quietly done.', when: 'words:100' },
+{ id: 'words_200', name: 'Warming Up', msg: 'You have written 200 words in this novel. That is real labor, quietly done.', when: 'words:200' },
+{ id: 'words_350', name: 'Ink Rising', msg: 'You have written 350 words in this novel. That is real labor, quietly done.', when: 'words:350' },
+{ id: 'words_500', name: 'Half a Thousand', msg: 'You have written 500 words in this novel. That is real labor, quietly done.', when: 'words:500' },
+{ id: 'words_750', name: 'Three Quarters', msg: 'You have written 750 words in this novel. That is real labor, quietly done.', when: 'words:750' },
+{ id: 'words_1000', name: 'Thousand Voices', msg: 'You have written 1,000 words in this novel. That is real labor, quietly done.', when: 'words:1000' },
+{ id: 'words_1250', name: 'Beyond a Thousand', msg: 'You have written 1,250 words in this novel. That is real labor, quietly done.', when: 'words:1250' },
+{ id: 'words_1500', name: 'Page Turner', msg: 'You have written 1,500 words in this novel. That is real labor, quietly done.', when: 'words:1500' },
+{ id: 'words_1750', name: 'Steady Hand', msg: 'You have written 1,750 words in this novel. That is real labor, quietly done.', when: 'words:1750' },
+{ id: 'words_2000', name: 'Two Thousand', msg: 'You have written 2,000 words in this novel. That is real labor, quietly done.', when: 'words:2000' },
+{ id: 'words_2500', name: 'Chapter Breath', msg: 'You have written 2,500 words in this novel. That is real labor, quietly done.', when: 'words:2500' },
+{ id: 'words_3000', name: 'Three Thousand', msg: 'You have written 3,000 words in this novel. That is real labor, quietly done.', when: 'words:3000' },
+{ id: 'words_3500', name: 'Deep Current', msg: 'You have written 3,500 words in this novel. That is real labor, quietly done.', when: 'words:3500' },
+{ id: 'words_4000', name: 'Four Thousand', msg: 'You have written 4,000 words in this novel. That is real labor, quietly done.', when: 'words:4000' },
+{ id: 'words_4500', name: 'Near Five', msg: 'You have written 4,500 words in this novel. That is real labor, quietly done.', when: 'words:4500' },
+{ id: 'words_5000', name: 'Five Thousand', msg: 'You have written 5,000 words in this novel. That is real labor, quietly done.', when: 'words:5000' },
+{ id: 'words_6000', name: 'Six Thousand', msg: 'You have written 6,000 words in this novel. That is real labor, quietly done.', when: 'words:6000' },
+{ id: 'words_7000', name: 'Seven Thousand', msg: 'You have written 7,000 words in this novel. That is real labor, quietly done.', when: 'words:7000' },
+{ id: 'words_8000', name: 'Eight Thousand', msg: 'You have written 8,000 words in this novel. That is real labor, quietly done.', when: 'words:8000' },
+{ id: 'words_9000', name: 'Nine Thousand', msg: 'You have written 9,000 words in this novel. That is real labor, quietly done.', when: 'words:9000' },
+{ id: 'words_10000', name: 'Ten Thousand', msg: 'You have written 10,000 words in this novel. That is real labor, quietly done.', when: 'words:10000' },
+{ id: 'words_12000', name: 'Twelve Thousand', msg: 'You have written 12,000 words in this novel. That is real labor, quietly done.', when: 'words:12000' },
+{ id: 'words_15000', name: 'Fifteen Thousand', msg: 'You have written 15,000 words in this novel. That is real labor, quietly done.', when: 'words:15000' },
+{ id: 'words_18000', name: 'Eighteen Thousand', msg: 'You have written 18,000 words in this novel. That is real labor, quietly done.', when: 'words:18000' },
+{ id: 'words_20000', name: 'Twenty Thousand', msg: 'You have written 20,000 words in this novel. That is real labor, quietly done.', when: 'words:20000' },
+{ id: 'words_25000', name: 'Twenty-Five Thousand', msg: 'You have written 25,000 words in this novel. That is real labor, quietly done.', when: 'words:25000' },
+{ id: 'words_30000', name: 'Thirty Thousand', msg: 'You have written 30,000 words in this novel. That is real labor, quietly done.', when: 'words:30000' },
+{ id: 'words_35000', name: 'Thirty-Five Thousand', msg: 'You have written 35,000 words in this novel. That is real labor, quietly done.', when: 'words:35000' },
+{ id: 'words_40000', name: 'Forty Thousand', msg: 'You have written 40,000 words in this novel. That is real labor, quietly done.', when: 'words:40000' },
+{ id: 'words_45000', name: 'Forty-Five Thousand', msg: 'You have written 45,000 words in this novel. That is real labor, quietly done.', when: 'words:45000' },
+{ id: 'words_50000', name: 'Fifty Thousand', msg: 'You have written 50,000 words in this novel. That is real labor, quietly done.', when: 'words:50000' },
+{ id: 'words_55000', name: 'Fifty-Five Thousand', msg: 'You have written 55,000 words in this novel. That is real labor, quietly done.', when: 'words:55000' },
+{ id: 'words_60000', name: 'Sixty Thousand', msg: 'You have written 60,000 words in this novel. That is real labor, quietly done.', when: 'words:60000' },
+{ id: 'words_65000', name: 'Sixty-Five Thousand', msg: 'You have written 65,000 words in this novel. That is real labor, quietly done.', when: 'words:65000' },
+{ id: 'words_70000', name: 'Seventy Thousand', msg: 'You have written 70,000 words in this novel. That is real labor, quietly done.', when: 'words:70000' },
+{ id: 'words_75000', name: 'Seventy-Five Thousand', msg: 'You have written 75,000 words in this novel. That is real labor, quietly done.', when: 'words:75000' },
+{ id: 'words_80000', name: 'Novel Spine', msg: 'You have written 80,000 words in this novel. That is real labor, quietly done.', when: 'words:80000' },
+{ id: 'words_90000', name: 'Ninety Thousand', msg: 'You have written 90,000 words in this novel. That is real labor, quietly done.', when: 'words:90000' },
+{ id: 'words_100000', name: 'Hundred Thousand', msg: 'You have written 100,000 words in this novel. That is real labor, quietly done.', when: 'words:100000' },
+{ id: 'words_120000', name: 'Epic Stretch', msg: 'You have written 120,000 words in this novel. That is real labor, quietly done.', when: 'words:120000' },
+{ id: 'words_150000', name: 'Saga Depth', msg: 'You have written 150,000 words in this novel. That is real labor, quietly done.', when: 'words:150000' },
+{ id: 'chars_1', name: 'First Soul', msg: 'You named a character. Someone new now walks your pages.', when: 'characters:1' },
+{ id: 'chars_2', name: 'Two Lives', msg: 'A second character joins the stage. Tension can breathe.', when: 'characters:2' },
+{ id: 'chars_3', name: 'Small Cast', msg: 'Three characters. A triangle of want and will.', when: 'characters:3' },
+{ id: 'chars_5', name: 'Ensemble Rising', msg: 'Five characters. Your world is getting crowded in the best way.', when: 'characters:5' },
+{ id: 'chars_8', name: 'Crowded Room', msg: 'Eight characters. Keep their voices distinct.', when: 'characters:8' },
+{ id: 'chars_12', name: 'Company of Twelve', msg: 'Twelve souls. You are building a living cast.', when: 'characters:12' },
+{ id: 'chars_20', name: 'Village of Voices', msg: 'Twenty characters. A village could live on your page.', when: 'characters:20' },
+{ id: 'locs_1', name: 'First Place', msg: 'You pinned a location. The story has somewhere to stand.', when: 'locations:1' },
+{ id: 'locs_2', name: 'Two Horizons', msg: 'A second place. Maps begin with two points.', when: 'locations:2' },
+{ id: 'locs_3', name: 'Third Landmark', msg: 'Three locations. Routes and journeys can form.', when: 'locations:3' },
+{ id: 'locs_5', name: 'Cartographer', msg: 'Five places. You are drawing a small world.', when: 'locations:5' },
+{ id: 'locs_10', name: 'Atlas Seed', msg: 'Ten locations. An atlas is no longer a dream.', when: 'locations:10' },
+{ id: 'relig_1', name: 'First Faith', msg: 'You invented a religion. Belief is a powerful engine on the page.', when: 'religions:1' },
+{ id: 'relig_2', name: 'Two Creeds', msg: 'Two faiths. Conflict and comfort can share a sky.', when: 'religions:2' },
+{ id: 'relig_3', name: 'Pantheon Sketch', msg: 'Three religions. Doctrine can drive plot.', when: 'religions:3' },
+{ id: 'planets_1', name: 'First World', msg: 'You added a planet. Space just got personal.', when: 'planets:1' },
+{ id: 'planets_2', name: 'Binary System', msg: 'Two planets. Travel, exile, and longing have room.', when: 'planets:2' },
+{ id: 'planets_3', name: 'Near Star', msg: 'Three planets. A small system of stories.', when: 'planets:3' },
+{ id: 'scenes_1', name: 'Scene One', msg: 'Your first scene exists. Everything grows from this.', when: 'scenes:1' },
+{ id: 'scenes_3', name: 'Three Scenes', msg: 'Three scenes. Rhythm is forming.', when: 'scenes:3' },
+{ id: 'scenes_5', name: 'Five Scenes', msg: 'Five scenes. You are sequencing a story.', when: 'scenes:5' },
+{ id: 'scenes_10', name: 'Ten Scenes', msg: 'Ten scenes. The spine of a short book.', when: 'scenes:10' },
+{ id: 'scenes_20', name: 'Twenty Scenes', msg: 'Twenty scenes. Structure is your friend.', when: 'scenes:20' },
+{ id: 'scenes_40', name: 'Forty Scenes', msg: 'Forty scenes. Patience is a craft skill.', when: 'scenes:40' },
+{ id: 'chapters_2', name: 'Second Chapter', msg: 'A second chapter. The road continues.', when: 'chapters:2' },
+{ id: 'chapters_3', name: 'Third Chapter', msg: 'Three chapters. Arc space is opening.', when: 'chapters:3' },
+{ id: 'chapters_5', name: 'Five Chapters', msg: 'Five chapters. A real middle can exist.', when: 'chapters:5' },
+{ id: 'chapters_10', name: 'Ten Chapters', msg: 'Ten chapters. Novel shape is visible.', when: 'chapters:10' },
+{ id: 'chapters_15', name: 'Fifteen Chapters', msg: 'Fifteen chapters. Endurance meets design.', when: 'chapters:15' },
+{ id: 'chapters_25', name: 'Twenty-Five Chapters', msg: 'Twenty-five chapters. You are building a long house.', when: 'chapters:25' },
+{ id: 'done_scenes_1', name: 'First Finish Line', msg: 'You marked a scene Done. Completion is a practice.', when: 'doneScenes:1' },
+{ id: 'done_scenes_3', name: 'Three Done', msg: 'Three scenes Done. You know how to close.', when: 'doneScenes:3' },
+{ id: 'done_scenes_5', name: 'Five Done', msg: 'Five scenes Done. Revision energy is real.', when: 'doneScenes:5' },
+{ id: 'done_scenes_10', name: 'Ten Done', msg: 'Ten scenes Done. Your manuscript is ripening.', when: 'doneScenes:10' },
+{ id: 'revise_scenes_1', name: 'Needs Another Pass', msg: 'You marked a scene Revise. Honesty about the draft is strength.', when: 'reviseScenes:1' },
+{ id: 'revise_scenes_3', name: 'Revision Habit', msg: 'Three scenes marked Revise. You are editing with intention.', when: 'reviseScenes:3' },
+{ id: 'timeline_1', name: 'First Beat', msg: 'You placed a timeline event. Story-order is clearer now.', when: 'timeline:1' },
+{ id: 'timeline_5', name: 'Beat Sheet', msg: 'Five timeline events. Causality is on the board.', when: 'timeline:5' },
+{ id: 'rel_1', name: 'First Tie', msg: 'You recorded a relationship. People do not float alone.', when: 'relationships:1' },
+{ id: 'rel_5', name: 'Web of Ties', msg: 'Five relationships. The social map is living.', when: 'relationships:5' },
+{ id: 'gloss_1', name: 'First Coinage', msg: 'You added a glossary term. Language is world-building.', when: 'glossary:1' },
+{ id: 'gloss_5', name: 'Lexicon Seed', msg: 'Five glossary terms. Readers will thank future-you.', when: 'glossary:5' },
+{ id: 'brain_1', name: 'Scratch Pad', msg: 'Brainstorm notes exist. Messy thinking is allowed here.', when: 'brainstorm' },
+{ id: 'thread_1', name: 'Open Thread', msg: 'You tracked an open thread. Loose ends are tools.', when: 'threads:1' },
+{ id: 'snap_1', name: 'Safety Net', msg: 'You took a snapshot. Future cuts are less frightening.', when: 'snapshots:1' },
+{ id: 'note_1', name: 'Margin Note', msg: 'A scene note that is not in the prose. Side thoughts count.', when: 'comments:1' },
+{ id: 'series_1', name: 'Series Name', msg: 'You named a series. Ambition has a label.', when: 'series' },
+{ id: 'cover_1', name: 'Cover Art', msg: 'A cover image sits on this project. It looks like a book already.', when: 'cover' },
+{ id: 'goal_set', name: 'Aim Set', msg: 'You set a session or draft goal. Direction helps the hand.', when: 'goalSet' },
+{ id: 'focus_1', name: 'Focus Mode', msg: 'You entered Focus Mode. The noise can wait.', when: 'focusUsed' },
+{ id: 'project_done', name: 'Book Finished', msg: 'You marked this novel Done. Congratulations — a rare finish line.', when: 'projectDone' },
+{ id: 'streak_3', name: 'Three-Day Flame', msg: 'A three-day writing streak. Showing up is the skill.', when: 'streak:3' },
+{ id: 'streak_7', name: 'Week of Fire', msg: 'Seven days in a row. The desk is becoming home.', when: 'streak:7' },
+{ id: 'streak_14', name: 'Two-Week Tide', msg: 'Fourteen days. Habit is forming under your feet.', when: 'streak:14' },
+{ id: 'streak_30', name: 'Month of Ink', msg: 'Thirty days of streak. This is discipline with a soft face.', when: 'streak:30' },
+{ id: 'mention_1', name: 'Name on the Page', msg: 'You used an @ mention. Continuity just got easier.', when: 'mentions:1' },
+{ id: 'multi_proj', name: 'Second Shelf', msg: 'More than one project lives here. A writer’s shelf grows.', when: 'projects:2' },
+{ id: 'multi_proj5', name: 'Busy Shelf', msg: 'Five projects. You keep more than one fire lit.', when: 'projects:5' }
+  ];
+
+  function ensureGamify() {
+    if (!state.gamify || typeof state.gamify !== 'object') {
+      state.gamify = { unlocked: {}, recent: [], level: 0, celebratedDone: false, focusUsed: false, mentionUsed: false };
+    }
+    if (!state.gamify.unlocked) state.gamify.unlocked = {};
+    if (!state.gamify.recent) state.gamify.recent = [];
+    if (state.gamify.level == null) state.gamify.level = Object.keys(state.gamify.unlocked).length;
+  }
+
+  function achievementStats() {
+    var words = typeof totalWords === 'function' ? totalWords() : 0;
+    var scenes = 0, chapters = (state.chapters || []).length, doneScenes = 0, reviseScenes = 0, snaps = 0, comments = 0;
+    (state.chapters || []).forEach(function (ch) {
+      (ch.scenes || []).forEach(function (sc) {
+        scenes++;
+        if ((sc.status || '') === 'done') doneScenes++;
+        if ((sc.status || '') === 'revise') reviseScenes++;
+        snapshots += (sc.snapshots || []).length;
+        comments += (sc.comments || []).length;
+      });
+    });
+    var streak = 0;
+    try {
+      if (typeof currentStreakCount === 'function') streak = currentStreakCount();
+      else if (state.streak && state.streak.days) {
+        var days = Array.isArray(state.streak.days) ? state.streak.days : Object.keys(state.streak.days || {});
+        streak = days.length;
+      }
+    } catch (e) {}
+    var projects = 1;
+    try {
+      var meta = readMeta();
+      projects = (meta.list || []).length || 1;
+    } catch (e) {}
+    return {
+      words: words,
+      characters: (state.characters || []).length,
+      locations: (state.locations || []).length,
+      religions: (state.religions || []).length,
+      planets: (state.planets || []).length,
+      scenes: scenes,
+      chapters: chapters,
+      doneScenes: doneScenes,
+      reviseScenes: reviseScenes,
+      timeline: (state.timeline || []).length,
+      relationships: (state.relationships || []).length,
+      glossary: (state.glossary || []).length,
+      brainstorm: !!(state.brainstorm && String(state.brainstorm).trim()),
+      threads: (state.openThreads || []).length,
+      snapshots: snapshots,
+      comments: comments,
+      series: !!(state.seriesName && String(state.seriesName).trim()),
+      cover: !!state.coverImage,
+      goalSet: !!(state.goals && ((state.goals.sessionTarget > 0) || (state.goals.draftTarget > 0))),
+      focusUsed: !!(state.gamify && state.gamify.focusUsed),
+      projectDone: (state.projectStatus || '') === 'done',
+      streak: streak,
+      mentions: !!(state.gamify && state.gamify.mentionUsed),
+      projects: projects,
+      always: true
+    };
+  }
+
+  function evalAchievement(when, stats) {
+    if (!when || when === 'always') return true;
+    if (when === 'brainstorm') return !!stats.brainstorm;
+    if (when === 'series') return !!stats.series;
+    if (when === 'cover') return !!stats.cover;
+    if (when === 'goalSet') return !!stats.goalSet;
+    if (when === 'focusUsed') return !!stats.focusUsed;
+    if (when === 'projectDone') return !!stats.projectDone;
+    var parts = when.split(':');
+    var key = parts[0];
+    var n = parseInt(parts[1], 10) || 0;
+    if (key === 'words') return stats.words >= n;
+    if (key === 'characters') return stats.characters >= n;
+    if (key === 'locations') return stats.locations >= n;
+    if (key === 'religions') return stats.religions >= n;
+    if (key === 'planets') return stats.planets >= n;
+    if (key === 'scenes') return stats.scenes >= n;
+    if (key === 'chapters') return stats.chapters >= n;
+    if (key === 'doneScenes') return stats.doneScenes >= n;
+    if (key === 'reviseScenes') return stats.reviseScenes >= n;
+    if (key === 'timeline') return stats.timeline >= n;
+    if (key === 'relationships') return stats.relationships >= n;
+    if (key === 'glossary') return stats.glossary >= n;
+    if (key === 'threads') return stats.threads >= n;
+    if (key === 'snapshots') return stats.snapshots >= n;
+    if (key === 'comments') return stats.comments >= n;
+    if (key === 'streak') return stats.streak >= n;
+    if (key === 'mentions') return stats.mentions;
+    if (key === 'projects') return stats.projects >= n;
+    return false;
+  }
+
+  function levelTitleFor(level) {
+    var i = Math.max(0, (level || 1) - 1);
+    if (i < LEVEL_TITLES.length) return LEVEL_TITLES[i];
+    return 'Everwriter ' + level;
+  }
+
+  function getAchievementById(id) {
+    for (var i = 0; i < ACHIEVEMENTS.length; i++) {
+      if (ACHIEVEMENTS[i].id === id) return ACHIEVEMENTS[i];
+    }
+    return null;
+  }
+
+  function fireConfetti() {
+    var canvas = document.getElementById('sw-confetti');
+    if (!canvas) {
+      canvas = document.createElement('canvas');
+      canvas.id = 'sw-confetti';
+      canvas.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:99999';
+      document.body.appendChild(canvas);
+    }
+    var ctx = canvas.getContext('2d');
+    var w = canvas.width = window.innerWidth;
+    var h = canvas.height = window.innerHeight;
+    var pieces = [];
+    var colors = ['#c4a574', '#6a8f71', '#5c7a9e', '#c47878', '#d4b85c', '#8b7355', '#a67c52'];
+    for (var i = 0; i < 140; i++) {
+      pieces.push({
+        x: Math.random() * w, y: Math.random() * h * -0.4,
+        r: 3 + Math.random() * 7, c: colors[i % colors.length],
+        vx: -3.5 + Math.random() * 7, vy: 2 + Math.random() * 5,
+        rot: Math.random() * Math.PI, vr: -0.25 + Math.random() * 0.5
+      });
+    }
+    var frames = 0;
+    function tick() {
+      frames++;
+      ctx.clearRect(0, 0, w, h);
+      pieces.forEach(function (p) {
+        p.x += p.vx; p.y += p.vy; p.vy += 0.09; p.rot += p.vr;
+        ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+        ctx.fillStyle = p.c; ctx.fillRect(-p.r, -p.r / 2, p.r * 2, p.r); ctx.restore();
+      });
+      if (frames < 100) requestAnimationFrame(tick);
+      else {
+        ctx.clearRect(0, 0, w, h);
+        if (canvas.parentNode) canvas.parentNode.removeChild(canvas);
+      }
+    }
+    requestAnimationFrame(tick);
+  }
+
+  var achievementQueue = [];
+  var achievementShowing = false;
+
+  function celebrateAchievement(ach, level) {
+    achievementQueue.push({ ach: ach, level: level });
+    drainAchievementQueue();
+  }
+
+  function drainAchievementQueue() {
+    if (achievementShowing || !achievementQueue.length) return;
+    achievementShowing = true;
+    var item = achievementQueue.shift();
+    fireConfetti();
+    openModal(
+      '<h3>Achievement · Level ' + item.level + '</h3>' +
+      '<p style="font-size:1.15rem;font-weight:600;margin:0 0 8px;font-family:EB Garamond,Georgia,serif">' +
+      escapeHtml(item.ach.name) + '</p>' +
+      '<p style="line-height:1.55;margin:0 0 8px">' + escapeHtml(item.ach.msg) + '</p>' +
+      '<p style="font-size:0.85rem;color:var(--sw-muted);margin:0">Title: ' + escapeHtml(levelTitleFor(item.level)) + '</p>' +
+      '<div class="sw-modal-actions"><button type="button" class="sw-btn sw-btn-primary" id="m-ach-ok">Wonderful</button></div>'
+    );
+    var btn = document.getElementById('m-ach-ok');
+    if (btn) btn.onclick = function () {
+      closeModal();
+      achievementShowing = false;
+      setTimeout(drainAchievementQueue, 200);
+    };
+  }
+
+  function checkAchievements(opts) {
+    opts = opts || {};
+    ensureGamify();
+    var stats = achievementStats();
+    var newly = [];
+    ACHIEVEMENTS.forEach(function (ach) {
+      if (state.gamify.unlocked[ach.id]) return;
+      if (evalAchievement(ach.when, stats)) {
+        state.gamify.unlocked[ach.id] = new Date().toISOString();
+        state.gamify.recent = [ach.id].concat(state.gamify.recent.filter(function (x) { return x !== ach.id; })).slice(0, 12);
+        newly.push(ach);
+      }
+    });
+    if (newly.length) {
+      state.gamify.level = Object.keys(state.gamify.unlocked).length;
+      try { save(); } catch (e) {}
+      if (!opts.silent) {
+        newly.forEach(function (ach) {
+          celebrateAchievement(ach, state.gamify.level);
+        });
+      }
+    }
+    return newly;
+  }
+
+  // Back-compat aliases
+  function checkLevelUp() { checkAchievements(); }
+  function getLevelProgress() {
+    ensureGamify();
+    var level = state.gamify.level || Object.keys(state.gamify.unlocked || {}).length || 0;
+    return {
+      index: Math.max(0, level - 1),
+      current: { name: levelTitleFor(Math.max(1, level)), desc: '' },
+      next: null,
+      words: typeof totalWords === 'function' ? totalWords() : 0,
+      doneScenes: 0,
+      level: level
+    };
+  }
+
+  function renderAchievementsPanel() {
+    ensureGamify();
+    var el = document.getElementById('sw-achievements-body');
+    if (!el) return;
+    var unlocked = state.gamify.unlocked || {};
+    var n = Object.keys(unlocked).length;
+    var total = ACHIEVEMENTS.length;
+    var rows = ACHIEVEMENTS.map(function (ach) {
+      var on = !!unlocked[ach.id];
+      var when = unlocked[ach.id];
+      return '<div class="sw-ach-row' + (on ? ' on' : ' locked') + '">' +
+        '<div class="sw-ach-name">' + (on ? escapeHtml(ach.name) : '???') + '</div>' +
+        '<div class="sw-ach-msg">' + (on ? escapeHtml(ach.msg) : 'Keep writing and building your world — this one stays a surprise until you earn it.') + '</div>' +
+        (on && when ? '<div class="sw-ach-when">' + escapeHtml(String(when).slice(0, 10)) + '</div>' : '') +
+        '</div>';
+    }).join('');
+    el.innerHTML =
+      '<p class="sw-ach-summary">You are <strong>Level ' + n + '</strong> — <em>' + escapeHtml(levelTitleFor(Math.max(1, n))) +
+      '</em>. ' + n + ' of ' + total + ' achievements unlocked. Locked ones stay hidden by name so the surprise stays intact.</p>' +
+      '<div class="sw-ach-list">' + rows + '</div>';
+  }
+
   // ----- Corkboard -----
   function renderCorkboard() {
     const ch = getActiveChapter();
@@ -2731,8 +3632,13 @@
     (ch ? ch.scenes : []).forEach(sc => {
       const card = document.createElement('div');
       card.className = 'sw-cork-card';
+      var st = (sc.status || 'draft').toLowerCase();
+      if (st !== 'revise' && st !== 'done') st = 'draft';
+      var stLabel = st === 'done' ? 'Done' : (st === 'revise' ? 'Revise' : 'Draft');
       card.innerHTML = '<h4>' + escapeHtml(sc.title) + '</h4><p>' + escapeHtml(sc.synopsis || 'No synopsis') + '</p>' +
-        '<span class="sw-cork-status">' + escapeHtml(sc.status || 'draft') + ' · ' + wordCount(sc.content) + 'w</span>';
+        '<div class="sw-cork-meta">' +
+        '<span class="sw-cork-chip ' + st + '">' + stLabel + '</span>' +
+        '<span class="sw-cork-words">' + wordCount(sc.content) + ' words</span></div>';
       card.addEventListener('click', () => {
         state.viewMode = 'write';
         setViewMode();
@@ -3545,13 +4451,27 @@
     if (kind === 'character') {
       data = state.characters.find(x => x.id === id); if (!data) return;
       title = data.name;
+      var mentions = (typeof buildMentionIndex === 'function') ? buildMentionIndex('character', id, data.name) : [];
+      var mentionHtml = '<div class="sw-mention-list"><h4>Mentions in manuscript</h4>';
+      if (!mentions.length) {
+        mentionHtml += '<p style="font-size:0.85rem;color:var(--sw-muted);margin:0">No scenes mention this name yet. Use @' + escapeHtml(data.name) + ' while writing.</p>';
+      } else {
+        mentionHtml += mentions.map(function (h, i) {
+          return '<button type="button" class="sw-btn sw-mention-jump" data-mi="' + i + '">' +
+            escapeHtml(h.sceneTitle || h.label) +
+            '<span class="sw-m-sub">' + escapeHtml(h.chapterTitle || '') + ' · Open scene</span></button>';
+        }).join('');
+      }
+      mentionHtml += '</div>';
       body = '<div class="sw-hp-type">Character</div><div class="sw-detail-grid">' +
         (data.image ? '<img src="' + data.image + '" style="max-width:100%;border-radius:8px;margin-bottom:8px">' : '') +
         detailRow('Role', data.role) + detailRow('Age', data.age) + detailRow('Appearance', data.appearance) +
         detailRow('Traits', data.traits) + detailRow('Wants', data.wants) + detailRow('Fears', data.fears) +
         detailRow('Values', data.values) + detailRow('Background', data.background) +
-        detailRow('Conflict', data.conflict) + detailRow('Arc', data.arc) + detailRow('Voice notes', data.voice) + detailRow('Notes', data.notes) + '</div>';
+        detailRow('Conflict', data.conflict) + detailRow('Arc', data.arc) + detailRow('Voice notes', data.voice) + detailRow('Notes', data.notes) + '</div>' + mentionHtml;
       editFn = () => editCharacter(id);
+      // stash for click handlers after openModal
+      window.__swMentionHits = mentions;
     } else if (kind === 'location') {
       data = state.locations.find(x => x.id === id); if (!data) return;
       title = data.name;
@@ -3579,6 +4499,15 @@
       '<button type="button" class="sw-btn sw-btn-primary" id="m-edit">Edit</button></div>');
     $('#m-cancel').onclick = closeModal;
     $('#m-edit').onclick = () => { closeModal(); editFn(); };
+    if (kind === 'character') {
+      ROOT.querySelectorAll('.sw-mention-jump').forEach(function (btn) {
+        btn.onclick = function () {
+          var hits = window.__swMentionHits || [];
+          var h = hits[+btn.dataset.mi];
+          if (h && h.chapterId && h.sceneId) jumpToMention(h.chapterId, h.sceneId);
+        };
+      });
+    }
   }
 
   // ----- Export -----
@@ -3896,7 +4825,8 @@ function exportTxt() {
   function openGoals() {
     openModal('<h3>Word goals &amp; editor</h3>' +
       field('Session target', 'm-session', String(state.goals.sessionTarget || 500)) +
-      field('Draft target (whole manuscript)', 'm-draft', String(state.goals.draftTarget || 80000)) +
+      field('Draft target (optional — whole manuscript)', 'm-draft', String(state.goals.draftTarget || '')) +
+      '<p style="font-size:0.8rem;color:var(--sw-muted);margin:0 0 8px">Leave blank or 0 if you do not want a fixed novel length. Short stories need not be 80,000 words.</p>' +
       '<label style="display:flex;align-items:center;gap:8px;margin:10px 0;font-size:0.88rem">' +
       '<input type="checkbox" id="m-autocap"' + (state.autoCapitalize ? ' checked' : '') + '> Auto-capitalize sentences (off by default; skips Mr., i.e., initials)</label>' +
       '<label style="display:flex;align-items:center;gap:8px;margin:6px 0 10px;font-size:0.88rem">' +
@@ -3913,7 +4843,7 @@ function exportTxt() {
     };
     $('#m-save').onclick = () => {
       state.goals.sessionTarget = parseInt($('#m-session').value, 10) || 500;
-      state.goals.draftTarget = parseInt($('#m-draft').value, 10) || 80000;
+      state.goals.draftTarget = Math.max(0, parseInt($('#m-draft').value, 10) || 0);
       state.autoCapitalize = !!document.getElementById('m-autocap').checked;
       state.pastePlain = !!document.getElementById('m-pasteplain').checked;
       save(); updateWordcount(); closeModal(); toast('Goals saved');
@@ -4325,7 +5255,7 @@ function exportTxt() {
       version: 2, theme: 'parchment', fontSize: 16,
       chapters: [emptyChapter('Chapter 1', 1)], activeChapterId: null, activeSceneId: null,
       locations: [], characters: [], religions: [], planets: [], brainstorm: '',
-      goals: { sessionTarget: 500, sessionBase: 0, draftTarget: 80000 }, viewMode: 'write'
+      goals: { sessionTarget: 500, sessionBase: 0, draftTarget: 0 }, viewMode: 'write'
     };
     state.activeChapterId = state.chapters[0].id;
     state.activeSceneId = state.chapters[0].scenes[0].id;
@@ -4483,7 +5413,21 @@ function exportTxt() {
       'Glad you are back at the desk.',
       'Your stories live here, privately, offline.',
       'Small sessions add up. Keep going.',
-      'Pour some coffee and open a chapter.'
+      'Pour some coffee and open a chapter.',
+      'No one else has to see this draft. Write freely.',
+      'A messy page today still beats a perfect blank.',
+      'Characters wait in the wings. Invite one in.',
+      'You showed up. That already counts.',
+      'Trust the next sentence more than the outline.',
+      'Quiet rooms make loud stories.',
+      'Progress is not always pretty. It is still progress.',
+      'Leave the sentence mid-thought — tomorrow will thank you.',
+      'This desk is yours. No deadlines here unless you set them.',
+      'The world can wait. The chapter cannot write itself.',
+      'Ink and patience built every book you love.',
+      'You are allowed to write badly on purpose. Then revise.',
+      'One honest paragraph is a good day’s work.',
+      'Welcome back to the only audience that matters first: you.'
     ];
     var warmLine = warm[Math.floor(Math.random() * warm.length)];
     if (hello) hello.textContent = pen ? (timeWord + ', ' + pen) : (timeWord + ' — welcome to StoryWriter');
@@ -4517,13 +5461,89 @@ function exportTxt() {
     var streakEl = document.getElementById('sw-streak');
     var streakTxt = streakEl ? streakEl.textContent.replace('Streak: ', '') : '0';
 
+    var sessionTarget = (state.goals && state.goals.sessionTarget) || 500;
+    var sessionBase = (state.goals && state.goals.sessionBase) || 0;
+    var sessionNow = Math.max(0, (typeof totalWords === 'function' ? totalWords() : 0) - sessionBase);
+    var sessionPct = sessionTarget ? Math.min(100, Math.round((sessionNow / sessionTarget) * 100)) : 0;
+    var streakCount = 0;
+    try {
+      if (typeof currentStreakCount === 'function') streakCount = currentStreakCount();
+      else streakCount = parseInt(String(streakTxt).replace(/[^\d]/g, '') || '0', 10) || 0;
+    } catch (e) {
+      streakCount = parseInt(String(streakTxt).replace(/[^\d]/g, '') || '0', 10) || 0;
+    }
+    var draftTarget = (state.goals && state.goals.draftTarget) || 0;
+    var draftWords = typeof totalWords === 'function' ? totalWords() : 0;
+
+    var todayEl = document.getElementById('sw-dash-today');
+    if (!todayEl) {
+      var statsParent = document.getElementById('sw-dash-stats');
+      if (statsParent && statsParent.parentNode) {
+        todayEl = document.createElement('div');
+        todayEl.id = 'sw-dash-today';
+        todayEl.className = 'sw-dash-today';
+        statsParent.parentNode.insertBefore(todayEl, statsParent);
+      }
+    }
+    if (todayEl) {
+      todayEl.innerHTML =
+        '<div class="sw-dash-today-card">' +
+          '<div class="label">Today\'s target</div>' +
+          '<div class="value">' + sessionNow.toLocaleString() + ' / ' + sessionTarget.toLocaleString() + '</div>' +
+          '<div class="hint">Session words toward your daily goal</div>' +
+          '<div class="sw-dash-today-bar"><div class="sw-dash-today-fill" style="width:' + sessionPct + '%"></div></div>' +
+        '</div>' +
+        '<div class="sw-dash-today-card">' +
+          '<div class="label">Writing streak</div>' +
+          '<div class="value">' + streakCount + ' day' + (streakCount === 1 ? '' : 's') + '</div>' +
+          '<div class="hint">' + (streakCount > 0 ? 'Keep the chain going today' : 'Write a little to start a streak') + '</div>' +
+        '</div>' +
+        '<div class="sw-dash-today-card" id="sw-dash-words-card" title="Click to set optional draft goal">' +
+          '<div class="label">Words written</div>' +
+          '<div class="value">' + draftWords.toLocaleString() + '</div>' +
+          '<div class="hint">' + (draftTarget
+            ? ('Goal ' + draftTarget.toLocaleString() + ' · ' + Math.min(100, Math.round((draftWords / draftTarget) * 100)) + '% — tap to change')
+            : 'No fixed goal — tap to set one if you want') + '</div>' +
+        '</div>';
+    }
+
+
+    // Level + recent achievements (no full list — surprises live in Achievements tab)
+    ensureGamify();
+    try { checkAchievements({ silent: true }); } catch (e) {}
+    var levelWrap = document.getElementById('sw-dash-levels');
+    if (!levelWrap && todayEl && todayEl.parentNode) {
+      levelWrap = document.createElement('div');
+      levelWrap.id = 'sw-dash-levels';
+      levelWrap.className = 'sw-dash-levels';
+      todayEl.parentNode.insertBefore(levelWrap, todayEl.nextSibling);
+    }
+    if (levelWrap) {
+      var lv = state.gamify.level || Object.keys(state.gamify.unlocked || {}).length || 0;
+      var recent = (state.gamify.recent || []).slice(0, 3).map(function (id) {
+        var a = getAchievementById(id);
+        return a ? '<span class="sw-recent-ach">' + escapeHtml(a.name) + '</span>' : '';
+      }).filter(Boolean).join('');
+      levelWrap.innerHTML =
+        '<div class="sw-dash-level-head"><strong>Level ' + lv + ' · ' + escapeHtml(levelTitleFor(Math.max(1, lv))) + '</strong>' +
+        '<span>' + lv + ' achievements · open the Achievements tab for the full journey</span></div>' +
+        (recent ? '<div class="sw-recent-achs"><span class="sw-recent-label">Recent</span>' + recent + '</div>' :
+          '<p class="sw-level-next">Write, add a character, place a location — milestones will appear here as you earn them.</p>');
+    }
+    var wcard = document.getElementById('sw-dash-words-card');
+    if (wcard) wcard.onclick = function () {
+      var b = document.getElementById('sw-goals-btn');
+      if (b) b.click();
+      else if (typeof openGoals === 'function') openGoals();
+    };
+
     var stats = document.getElementById('sw-dash-stats');
     if (stats) {
       stats.innerHTML =
         '<div class="sw-dash-stat"><strong>' + totalProjects + '</strong><span>Projects</span></div>' +
         '<div class="sw-dash-stat"><strong>' + totalWordsAll.toLocaleString() + '</strong><span>Words stored</span></div>' +
-        '<div class="sw-dash-stat"><strong>' + (currentProjectName || '—') + '</strong><span>Current</span></div>' +
-        '<div class="sw-dash-stat"><strong>' + escapeHtml(String(streakTxt).replace(/[^\d]/g, '') || '0') + '</strong><span>Day streak</span></div>';
+        '<div class="sw-dash-stat"><strong>' + escapeHtml(currentProjectName || '—') + '</strong><span>Current</span></div>' +
+        '<div class="sw-dash-stat"><strong>' + sessionPct + '%</strong><span>Today</span></div>';
     }
 
     var grid = document.getElementById('sw-proj-grid');
@@ -4627,7 +5647,9 @@ function exportTxt() {
       };
     });
     try { wireDashTabs(); } catch (e) {}
+    try { if (typeof wireGoogleDrive === 'function') wireGoogleDrive(); } catch (e) {}
     try { renderProgressPanel(list); } catch (e) {}
+    try { if (document.querySelector('#sw-dash-tabs button.active[data-dtab="achievements"]')) renderAchievementsPanel(); } catch (e) {}
     try { renderDesignsPanel(); } catch (e) {}
   }
 
@@ -5464,6 +6486,7 @@ function exportTxt() {
   }
   function recordStreakProgress() {
     if (!state.streak) state.streak = { days: {}, lastDate: '' };
+    if (!state.gamify) state.gamify = { unlocked: {}, recent: [], level: 0, celebratedDone: false }; ensureGamify();
     if (!state.streak.days) state.streak.days = {};
     var k = todayKey();
     var w = totalWords();
@@ -6064,6 +7087,7 @@ function exportTxt() {
 
   function updateStreakDisplay() {
     if (!state.streak) state.streak = { days: {}, lastDate: '' };
+    if (!state.gamify) state.gamify = { unlocked: {}, recent: [], level: 0, celebratedDone: false }; ensureGamify();
     if (Array.isArray(state.streak.days)) {
       var m = {}; state.streak.days.forEach(function (d) { m[d] = 1; }); state.streak.days = m;
     }
@@ -6236,15 +7260,33 @@ function exportTxt() {
     var hits = [];
     var needle = (name || '').toLowerCase();
     state.chapters.forEach(function (ch) {
-      ch.scenes.forEach(function (sc) {
+      (ch.scenes || []).forEach(function (sc) {
         var htmlc = (sc.content || '').toLowerCase();
-        var plain = stripHtml(sc.content).toLowerCase();
-        if ((id && htmlc.indexOf('data-id="' + id + '"') >= 0) || (needle && plain.indexOf(needle) >= 0)) {
-          hits.push(ch.title + ' / ' + sc.title);
+        var plain = (typeof stripHtml === 'function' ? stripHtml(sc.content) : (sc.content || '')).toLowerCase();
+        var byId = id && htmlc.indexOf('data-id="' + id + '"') >= 0;
+        var byName = needle && needle.length > 1 && plain.indexOf(needle) >= 0;
+        if (byId || byName) {
+          hits.push({
+            label: (ch.title || 'Chapter') + ' / ' + (sc.title || 'Scene'),
+            chapterId: ch.id,
+            sceneId: sc.id,
+            chapterTitle: ch.title || 'Chapter',
+            sceneTitle: sc.title || 'Scene'
+          });
         }
       });
     });
     return hits;
+  }
+
+  function jumpToMention(chapterId, sceneId) {
+    closeModal();
+    ROOT.classList.remove('sw-show-dash');
+    if (typeof switchTab === 'function') switchTab('story');
+    state.viewMode = 'write';
+    if (typeof setViewMode === 'function') setViewMode();
+    if (typeof switchScene === 'function') switchScene(chapterId, sceneId);
+    toast('Opened scene');
   }
 
   // Timeline
@@ -6472,7 +7514,7 @@ function exportTxt() {
       var extra = document.createElement('div');
       extra.style.cssText = 'margin-top:8px;font-size:0.75rem;color:var(--sw-muted)';
       extra.innerHTML = '<strong style="color:var(--sw-ink)">Appears in</strong><br>' +
-        hits.slice(0, 8).map(function (h) { return escapeHtml(h); }).join('<br>') +
+        hits.slice(0, 8).map(function (h) { return escapeHtml(typeof h === 'string' ? h : h.label); }).join('<br>') +
         (hits.length > 8 ? '<br>…' : '');
       hoverEl.appendChild(extra);
     }
@@ -7276,7 +8318,7 @@ function exportTxt() {
         });
         btn.classList.add('active');
         btn.setAttribute('aria-selected', 'true');
-        ['projects', 'progress', 'designs', 'about'].forEach(function (name) {
+        ['projects', 'progress', 'achievements', 'designs', 'about'].forEach(function (name) {
           var p = document.getElementById('sw-dpanel-' + name);
           if (p) {
             var on = name === btn.dataset.dtab;
@@ -7285,6 +8327,7 @@ function exportTxt() {
           }
         });
         if (btn.dataset.dtab === 'about') refreshStorageInfo();
+        if (btn.dataset.dtab === 'achievements' && typeof renderAchievementsPanel === 'function') renderAchievementsPanel();
       };
     });
     var nd = document.getElementById('sw-dash-new-design');
@@ -8100,6 +9143,7 @@ function exportTxt() {
     if (!state.openThreads) state.openThreads = [];
     refreshUI();
     updateProjectLabel();
+    try { if (currentProjectId) await restoreFileHandleForProject(currentProjectId); } catch (e) {}
     updateDiskSaveLabel();
 
   // Mobile: collapse sidebar by default
@@ -8110,6 +9154,7 @@ function exportTxt() {
   } catch (e) {}
 
     try { wireCapsule(); } catch (e) { console.warn(e); }
+    try { if (typeof wireGoogleDrive === 'function') wireGoogleDrive(); } catch (e) {}
 
     setTimeout(async function () {
       try { await maybeOfferCrashRecovery(); } catch (e) {}
