@@ -307,6 +307,11 @@
     #sw-root .sw-btn-primary { background: var(--sw-accent); color: var(--sw-paper); border-color: var(--sw-accent); }
     #sw-root .sw-btn-primary:hover { filter: brightness(1.08); }
     #sw-root .sw-top-sep { width: 1px; height: 20px; background: var(--sw-border); margin: 0 3px; }
+    #sw-root .sw-top-drive-status {
+      font-size: 0.68rem; color: var(--sw-muted); max-width: 140px;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    #sw-root .sw-top-drive-status.on { color: var(--sw-ok); }
     #sw-root .sw-wordcount { font-size: 0.75rem; color: var(--sw-muted); margin-left: auto; }
     #sw-root .sw-goal-wrap {
       display: flex; align-items: center; gap: 6px; font-size: 0.72rem; color: var(--sw-muted);
@@ -1316,6 +1321,8 @@
     <button type="button" class="sw-btn" id="sw-disk-save" title="Save to linked file (Ctrl/Cmd+S). First time chooses a file.">Save disk</button>
     <button type="button" class="sw-btn" id="sw-disk-open" title="Open a project JSON from disk">Open disk</button>
     <button type="button" class="sw-btn" id="sw-disk-save-as" title="Save as a new file">Save as</button>
+    <button type="button" class="sw-btn" id="sw-top-drive-sync" title="Sync current novel to Google Drive">Drive sync</button>
+    <span id="sw-top-drive-status" class="sw-top-drive-status" title="Google Drive status">Drive: off</span>
     <div class="sw-dropdown" id="sw-export-dd">
       <button type="button" class="sw-btn sw-btn-primary" id="sw-export-btn">Export ▾</button>
       <div class="sw-dropdown-menu">
@@ -1542,6 +1549,8 @@
         Support by <a href="https://www.authormasoncarter.com/p/books-series.html" target="_blank" rel="noopener noreferrer">buying my books</a>.
         Leave a review or see the roadmap at the
         <a href="https://www.authormasoncarter.com/2026/09/storywriter-free-offline-writing-app.html" target="_blank" rel="noopener noreferrer">project page</a>.
+        · <a href="https://www.authormasoncarter.com/p/privacy-policy-for-storywriter.html" target="_blank" rel="noopener noreferrer">Privacy</a>
+        · <a href="https://www.authormasoncarter.com/p/terms-of-service-for-storywriter.html" target="_blank" rel="noopener noreferrer">Terms</a>
       </div>
       <div class="sw-dash-tabs" id="sw-dash-tabs">
         <button type="button" class="active" data-dtab="projects">Projects</button>
@@ -1553,7 +1562,12 @@
       <div class="sw-dash-panel active" id="sw-dpanel-projects">
         <div class="sw-drive-box" id="sw-drive-box">
           <h3>Google Drive sync</h3>
-          <p>Optional cloud backup for this browser. Files are stored in your Drive as StoryWriter JSON (only files this app creates). Local IndexedDB remains the working copy.</p>
+          <p>Optional cloud backup for this browser. Files are stored in your Drive as StoryWriter JSON (only files this app creates). Local IndexedDB remains the working copy.
+            By connecting, you agree to our
+            <a href="https://www.authormasoncarter.com/p/terms-of-service-for-storywriter.html" target="_blank" rel="noopener noreferrer">Terms of Service</a>
+            and
+            <a href="https://www.authormasoncarter.com/p/privacy-policy-for-storywriter.html" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.
+          </p>
           <div class="sw-drive-row">
             <button type="button" class="sw-btn sw-btn-primary" id="sw-drive-connect">Connect Google Drive</button>
             <button type="button" class="sw-btn" id="sw-drive-sync" style="display:none">Sync current novel</button>
@@ -1585,6 +1599,15 @@
         <div class="sw-design-grid" id="sw-design-grid"></div>
       </div>
       <div class="sw-dash-panel" id="sw-dpanel-about">
+        <div class="sw-support-card" style="margin-bottom:12px">
+          <h3>Legal</h3>
+          <p style="margin:0 0 8px">Please read these before using optional Google Drive sync or relying on the app for important work.</p>
+          <p style="margin:0">
+            <a href="https://www.authormasoncarter.com/p/privacy-policy-for-storywriter.html" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
+            ·
+            <a href="https://www.authormasoncarter.com/p/terms-of-service-for-storywriter.html" target="_blank" rel="noopener noreferrer">Terms of Service</a>
+          </p>
+        </div>
         <div class="sw-support-card">
           <h3>StoryWriter stays free</h3>
           <p style="margin:0 0 10px"><strong>Promise to be free forever.</strong> No pricing. No tiers. No accounts. Built by Mason Carter for indie authors who want a private offline desk.</p>
@@ -2137,7 +2160,12 @@
   function save() {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-      try { if (typeof checkLevelUp === 'function') setTimeout(checkLevelUp, 50); } catch (e) {}
+      try {
+        if (typeof checkLevelUp === 'function') {
+          clearTimeout(window.__swAchTimer);
+          window.__swAchTimer = setTimeout(function () { checkLevelUp(); }, 1200);
+        }
+      } catch (e) {}
       const meta = readMeta();
       meta.currentId = currentProjectId;
       writeMeta(meta);
@@ -2536,6 +2564,15 @@
     } catch (e) {}
     updateDiskSaveLabel();
     updateProjectLabel();
+    // Optional: mirror to Google Drive when already connected
+    try {
+      if (gdriveToken && gdriveToken.access_token && typeof syncCurrentToDrive === 'function') {
+        clearTimeout(window.__swDriveAfterDisk);
+        window.__swDriveAfterDisk = setTimeout(function () {
+          syncCurrentToDrive({ quiet: true });
+        }, 600);
+      }
+    } catch (e) {}
   }
 
   function updateDiskSaveLabel() {
@@ -2706,8 +2743,9 @@
       if (!(await swConfirm(msg))) return;
       saveCurrent();
       await persistToIdbPromise();
-      currentProjectId = data.id || uid();
-      currentProjectName = data.name || (filename || 'Imported').replace(/\.json$/i, '');
+      // Support StoryWriter export shape { projectId, projectName, state } and flat project JSON
+      currentProjectId = data.projectId || data.id || (st && st.projectId) || uid();
+      currentProjectName = data.projectName || data.name || (filename || 'Imported').replace(/\.json$/i, '');
       normalizeState(st);
       lastDiskSavedAt = fileDiskAt || fileUpdated || null;
       diskFileName = data.diskFileName || filename || diskFileName || '';
@@ -2981,27 +3019,103 @@
     try { localStorage.setItem(GDRIVE_META_KEY, JSON.stringify(m)); } catch (e) {}
   }
 
+  function formatSyncTime(iso) {
+    if (!iso) return '';
+    try {
+      var d = new Date(iso);
+      if (isNaN(d.getTime())) return String(iso).slice(0, 16).replace('T', ' ');
+      var now = new Date();
+      var diff = (now - d) / 1000;
+      if (diff < 60) return 'just now';
+      if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+      if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+      return d.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    } catch (e) {
+      return String(iso).slice(0, 16).replace('T', ' ');
+    }
+  }
+
+  function linkedDriveFileName() {
+    var meta = readDriveMeta();
+    if (!meta) return '';
+    if (currentProjectId && meta.fileNames && meta.fileNames[currentProjectId]) {
+      return meta.fileNames[currentProjectId];
+    }
+    if (currentProjectId && meta.fileMap && meta.fileMap[currentProjectId] && meta.lastFileName && meta.lastFileProjectId === currentProjectId) {
+      return meta.lastFileName;
+    }
+    if (meta.lastFileName && meta.lastFileProjectId === currentProjectId) return meta.lastFileName;
+    return '';
+  }
+
+  function rememberDriveFile(projectId, fileId, fileName) {
+    try {
+      var meta = readDriveMeta();
+      if (!meta.fileMap) meta.fileMap = {};
+      if (!meta.fileNames) meta.fileNames = {};
+      if (projectId && fileId) meta.fileMap[projectId] = fileId;
+      if (projectId && fileName) meta.fileNames[projectId] = fileName;
+      if (fileName) {
+        meta.lastFileName = fileName;
+        meta.lastFileProjectId = projectId || currentProjectId;
+      }
+      meta.lastSync = new Date().toISOString();
+      writeDriveMeta(meta);
+    } catch (e) {}
+  }
+
   function updateDriveUI() {
     var st = document.getElementById('sw-drive-status');
     var conn = document.getElementById('sw-drive-connect');
     var sync = document.getElementById('sw-drive-sync');
     var pull = document.getElementById('sw-drive-pull');
     var disc = document.getElementById('sw-drive-disconnect');
+    var topSync = document.getElementById('sw-top-drive-sync');
+    var topSt = document.getElementById('sw-top-drive-status');
     var on = !!(gdriveToken && gdriveToken.access_token);
+    var meta = readDriveMeta();
+    var last = meta.lastSync ? formatSyncTime(meta.lastSync) : '';
+    var fname = linkedDriveFileName();
+    var shortName = fname ? (fname.length > 28 ? fname.slice(0, 26) + '…' : fname) : '';
     if (st) {
       st.classList.toggle('on', on);
       if (on) {
-        var meta = readDriveMeta();
-        var email = meta.email || 'Google account';
-        st.textContent = 'Connected · ' + email + (meta.lastSync ? ' · last sync ' + String(meta.lastSync).slice(0, 16).replace('T', ' ') : '');
+        st.textContent = 'Connected' +
+          (shortName ? ' · ' + shortName : '') +
+          (last ? ' · synced ' + last : ' · not synced yet');
+      } else if (meta.preferDrive) {
+        st.textContent = 'Reconnect available' + (shortName ? ' · ' + shortName : '') + (last ? ' · last ' + last : '');
       } else {
-        st.textContent = 'Not connected';
+        st.textContent = 'Not connected — optional cloud backup';
       }
     }
     if (conn) conn.style.display = on ? 'none' : '';
     if (sync) sync.style.display = on ? '' : 'none';
     if (pull) pull.style.display = on ? '' : 'none';
     if (disc) disc.style.display = on ? '' : 'none';
+    if (topSync) {
+      topSync.style.display = '';
+      topSync.textContent = on ? 'Drive sync' : (meta.preferDrive ? 'Drive…' : 'Drive');
+      topSync.title = on
+        ? ('Sync current novel' + (fname ? ': ' + fname : '') + (last ? ' (last: ' + last + ')' : ''))
+        : (meta.preferDrive ? 'Click to reconnect Google Drive' : 'Connect Google Drive');
+    }
+    if (topSt) {
+      topSt.classList.toggle('on', !!(on && (meta.lastSync || fname)));
+      if (on) {
+        if (shortName && last) topSt.textContent = shortName + ' · ' + last;
+        else if (shortName) topSt.textContent = shortName;
+        else if (last) topSt.textContent = 'Synced ' + last;
+        else topSt.textContent = 'Drive on';
+        topSt.title = (fname ? fname + '\n' : '') + (meta.lastSync ? 'Last sync: ' + meta.lastSync : 'Connected — sync to upload this novel');
+      } else if (meta.preferDrive) {
+        topSt.textContent = shortName ? ('Was: ' + shortName) : 'Drive: reconnect';
+        topSt.title = 'Previously connected' + (fname ? ' to ' + fname : '') + '. Click Drive to reconnect.';
+      } else {
+        topSt.textContent = 'Drive: off';
+        topSt.title = 'Google Drive not connected';
+      }
+    }
   }
 
   function waitForGoogle(maxMs) {
@@ -3016,6 +3130,9 @@
     });
   }
 
+  var gdriveSilentAuth = false;
+  var gdriveSyncAfterDisk = false;
+
   async function initGdriveClient() {
     var ok = await waitForGoogle();
     if (!ok) return false;
@@ -3029,12 +3146,21 @@
             gdriveToken = resp;
             gdriveReady = true;
             var meta = readDriveMeta();
+            meta.preferDrive = true;
             meta.connectedAt = new Date().toISOString();
             writeDriveMeta(meta);
             updateDriveUI();
-            toast('Google Drive connected');
+            if (!gdriveSilentAuth) toast('Google Drive connected');
+            gdriveSilentAuth = false;
+            // If Save disk asked us to follow up with Drive
+            if (gdriveSyncAfterDisk) {
+              gdriveSyncAfterDisk = false;
+              setTimeout(function () { syncCurrentToDrive({ quiet: true }); }, 200);
+            }
           } else if (resp && resp.error) {
-            toast('Drive sign-in: ' + (resp.error || 'failed'));
+            if (!gdriveSilentAuth) toast('Drive sign-in: ' + (resp.error || 'failed'));
+            gdriveSilentAuth = false;
+            gdriveSyncAfterDisk = false;
           }
         }
       });
@@ -3045,18 +3171,33 @@
     }
   }
 
-  async function connectGoogleDrive() {
+  async function connectGoogleDrive(opts) {
+    opts = opts || {};
     var ok = await initGdriveClient();
     if (!ok || !gdriveTokenClient) {
-      toast('Google sign-in not available. Check network and authorized origins in Google Cloud.');
+      if (!opts.silent) toast('Google sign-in not available. Check network and authorized origins in Google Cloud.');
       return;
     }
     try {
-      // prompt empty = show account picker when needed
-      gdriveTokenClient.requestAccessToken({ prompt: gdriveToken ? '' : 'consent' });
+      gdriveSilentAuth = !!opts.silent;
+      // prompt: '' tries to reuse existing Google session without a full consent screen
+      gdriveTokenClient.requestAccessToken({ prompt: opts.silent ? '' : (gdriveToken ? '' : 'consent') });
     } catch (e) {
-      toast('Could not start Google sign-in');
+      if (!opts.silent) toast('Could not start Google sign-in');
+      gdriveSilentAuth = false;
     }
+  }
+
+  async function trySilentDriveReconnect() {
+    try {
+      var meta = readDriveMeta();
+      if (!meta.preferDrive) return;
+      if (gdriveToken && gdriveToken.access_token) {
+        updateDriveUI();
+        return;
+      }
+      await connectGoogleDrive({ silent: true });
+    } catch (e) {}
   }
 
   function disconnectGoogleDrive() {
@@ -3067,6 +3208,11 @@
     }
     gdriveToken = null;
     gdriveReady = false;
+    try {
+      var meta = readDriveMeta();
+      meta.preferDrive = false;
+      writeDriveMeta(meta);
+    } catch (e) {}
     updateDriveUI();
     toast('Drive disconnected on this device');
   }
@@ -3096,6 +3242,9 @@
       exportedAt: new Date().toISOString(),
       projectId: currentProjectId,
       projectName: currentProjectName,
+      id: currentProjectId,
+      name: currentProjectName,
+      updatedAt: new Date().toISOString(),
       state: state
     };
   }
@@ -3125,13 +3274,14 @@
     return byName || null;
   }
 
-  async function syncCurrentToDrive() {
+  async function syncCurrentToDrive(opts) {
+    opts = opts || {};
     if (!driveAuthHeader()) {
-      toast('Connect Google Drive first');
+      if (!opts.quiet) toast('Connect Google Drive first');
       return;
     }
     try {
-      toast('Syncing to Drive…');
+      if (!opts.quiet) toast('Syncing to Drive…');
       var payload = buildProjectExportPayload();
       var bodyStr = JSON.stringify(payload, null, 2);
       var fileName = 'StoryWriter - ' + (currentProjectName || 'Untitled').replace(/[\\/:*?"<>|]+/g, ' ').slice(0, 80) + '.json';
@@ -3164,11 +3314,9 @@
           throw new Error(errT.slice(0, 180) || 'Update failed');
         }
         var updated = await res.json();
-        meta.fileMap[currentProjectId] = updated.id;
-        meta.lastSync = new Date().toISOString();
-        writeDriveMeta(meta);
+        rememberDriveFile(currentProjectId, updated.id, updated.name || fileName);
         updateDriveUI();
-        toast('Synced · ' + (updated.name || fileName));
+        if (!(opts && opts.quiet)) toast('Synced · ' + (updated.name || fileName));
       } else {
         var boundary2 = '-------sw' + Date.now();
         var metaPart2 = JSON.stringify({
@@ -3193,15 +3341,13 @@
           throw new Error(errT2.slice(0, 180) || 'Upload failed');
         }
         var created = await res2.json();
-        meta.fileMap[currentProjectId] = created.id;
-        meta.lastSync = new Date().toISOString();
-        writeDriveMeta(meta);
+        rememberDriveFile(currentProjectId, created.id, created.name || fileName);
         updateDriveUI();
-        toast('Uploaded to Drive · ' + (created.name || fileName));
+        if (!(opts && opts.quiet)) toast('Uploaded to Drive · ' + (created.name || fileName));
       }
     } catch (e) {
       console.error(e);
-      toast(e.message || 'Drive sync failed');
+      if (!(opts && opts.quiet)) toast(e.message || 'Drive sync failed');
     }
   }
 
@@ -3271,12 +3417,26 @@
     var s = document.getElementById('sw-drive-sync');
     var p = document.getElementById('sw-drive-pull');
     var d = document.getElementById('sw-drive-disconnect');
+    var topSync = document.getElementById('sw-top-drive-sync');
     if (c) c.onclick = function () { connectGoogleDrive(); };
     if (s) s.onclick = function () { syncCurrentToDrive(); };
     if (p) p.onclick = function () { openFromDrive(); };
     if (d) d.onclick = function () { disconnectGoogleDrive(); };
+    if (topSync && !topSync.dataset.wired) {
+      topSync.dataset.wired = '1';
+      topSync.onclick = function () {
+        if (gdriveToken && gdriveToken.access_token) {
+          syncCurrentToDrive();
+        } else {
+          // Prefer dashboard connect for legal links visibility first time
+          connectGoogleDrive();
+        }
+      };
+    }
     updateDriveUI();
-    initGdriveClient();
+    initGdriveClient().then(function () {
+      trySilentDriveReconnect();
+    });
   }
 
 
@@ -3577,11 +3737,16 @@
       }
     });
     if (newly.length) {
+      var base = Object.keys(state.gamify.unlocked).length - newly.length;
       state.gamify.level = Object.keys(state.gamify.unlocked).length;
-      try { save(); } catch (e) {}
+      try {
+        // Persist without re-entering achievement checks
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        if (typeof persistToIdb === 'function') persistToIdb();
+      } catch (e) {}
       if (!opts.silent) {
-        newly.forEach(function (ach) {
-          celebrateAchievement(ach, state.gamify.level);
+        newly.forEach(function (ach, i) {
+          celebrateAchievement(ach, base + i + 1);
         });
       }
     }
@@ -8457,8 +8622,8 @@ function exportTxt() {
     var rows = list.map(function (p) {
       var w = projectWordsFromState(p.state);
       total += w;
-      var target = (p.state && p.state.goals && p.state.goals.draftTarget) || 80000;
-      var pct = Math.min(100, Math.round((w / target) * 100));
+      var target = (p.state && p.state.goals && p.state.goals.draftTarget) || 0;
+      var pct = target ? Math.min(100, Math.round((w / target) * 100)) : 0;
       return { name: p.name || 'Untitled', words: w, target: target, pct: pct, status: (p.state && p.state.projectStatus) || 'draft' };
     });
     var meta = readMeta();
