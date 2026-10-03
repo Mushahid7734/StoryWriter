@@ -653,6 +653,49 @@
 
 
     #sw-root .sw-timer { font-size: 0.75rem; color: var(--sw-muted); font-variant-numeric: tabular-nums; min-width: 3.5em; }
+    #sw-root .sw-timer-panel {
+      display: none; align-items: center; gap: 10px; flex-wrap: wrap;
+      padding: 6px 12px; border-bottom: 1px solid var(--sw-border);
+      background: color-mix(in srgb, var(--sw-accent) 8%, var(--sw-bg));
+      flex-shrink: 0; font-size: 0.82rem; color: var(--sw-ink);
+    }
+    #sw-root .sw-timer-panel.show { display: flex; }
+    #sw-root .sw-timer-panel strong {
+      font-variant-numeric: tabular-nums; font-size: 1.05rem;
+      min-width: 3.6em; color: var(--sw-accent);
+    }
+    #sw-root .sw-timer-bar {
+      flex: 1; min-width: 80px; max-width: 220px; height: 8px;
+      background: var(--sw-border); border-radius: 4px; overflow: hidden;
+    }
+    #sw-root .sw-timer-fill {
+      height: 100%; width: 0%; background: var(--sw-ok); transition: width 0.35s linear;
+    }
+    #sw-root .sw-timer-panel.urgent .sw-timer-fill { background: var(--sw-danger); }
+    #sw-root .sw-timer-panel.urgent strong { color: var(--sw-danger); }
+    #sw-root .sw-footnotes-panel {
+      border-top: 1px solid var(--sw-border); background: var(--sw-bg);
+      padding: 10px 12px 14px; max-height: 28vh; overflow-y: auto; flex-shrink: 0;
+    }
+    #sw-root .sw-footnotes-panel h3 {
+      margin: 0 0 8px; font-size: 0.72rem; text-transform: uppercase;
+      letter-spacing: 0.04em; color: var(--sw-muted); font-weight: 600;
+    }
+    #sw-root .sw-fn-row {
+      display: flex; gap: 8px; align-items: flex-start; margin-bottom: 8px;
+      font-size: 0.86rem; line-height: 1.45;
+    }
+    #sw-root .sw-fn-row .sw-fn-n {
+      flex-shrink: 0; font-weight: 600; color: var(--sw-tag); min-width: 1.6em;
+    }
+    #sw-root .sw-fn-row .sw-fn-text { flex: 1; color: var(--sw-ink); }
+    #sw-root .sw-fn-row .sw-fn-del {
+      border: none; background: none; color: var(--sw-danger); cursor: pointer; font-size: 0.8rem;
+    }
+    #sw-root .sw-footnote {
+      font-size: 0.75em; vertical-align: super; color: var(--sw-tag); cursor: help;
+      text-decoration: none; font-weight: 600;
+    }
     #sw-root .sw-streak { font-size: 0.72rem; color: var(--sw-muted); }
     #sw-root .sw-streak strong { color: var(--sw-ok); }
     #sw-root .sw-compare {
@@ -1442,6 +1485,13 @@
           <button type="button" class="sw-btn sw-tool-secondary" id="sw-scenebreak-btn" style="display:none" title="Custom scene break image">Scene break</button>
           <button type="button" class="sw-btn sw-tool-secondary" id="sw-copyitem-btn" style="display:none" title="Copy item to another novel">Copy to…</button>
         </div>
+        <div class="sw-timer-panel" id="sw-timer-panel" aria-live="polite">
+          <span id="sw-timer-session-label">Focus timer</span>
+          <strong id="sw-timer-time">25:00</strong>
+          <div class="sw-timer-bar" title="Time remaining"><div class="sw-timer-fill" id="sw-timer-fill"></div></div>
+          <button type="button" class="sw-btn" id="sw-timer-pause-btn">Pause</button>
+          <button type="button" class="sw-btn" id="sw-timer-reset-btn">Reset</button>
+        </div>
         <div class="sw-warn-bar" id="sw-warn-bar"></div>
         <div class="sw-threads-bar" id="sw-threads-bar">
           <button type="button" class="sw-btn" id="sw-thread-add">+ Thread</button>
@@ -1454,6 +1504,10 @@
               <input type="text" class="sw-scene-title-input" id="sw-scene-title" placeholder="Scene title…">
               <input type="text" class="sw-synopsis-input" id="sw-synopsis" placeholder="One-line synopsis (outline & corkboard)…">
               <div class="sw-editor" id="sw-editor" contenteditable="true" data-placeholder="Begin writing… Type @ to insert a name. Double-click a word for synonyms." spellcheck="true"></div>
+              <div class="sw-footnotes-panel" id="sw-footnotes-panel" style="display:none">
+                <h3>Footnotes (this scene)</h3>
+                <div id="sw-footnotes-list"></div>
+              </div>
             </div>
             <div class="sw-corkboard" id="sw-corkboard"></div>
             <div class="sw-compare" id="sw-compare">
@@ -2943,6 +2997,7 @@
     if (rb) rb.textContent = sc.revMode ? 'Draft B' : 'Revise';
     updateWordcount();
     renderComments();
+    if (typeof renderFootnotesPanel === 'function') renderFootnotesPanel();
     if (state.viewMode === 'cork') renderCorkboard();
   }
 
@@ -7648,38 +7703,16 @@ function exportTxt() {
     el.innerHTML = 'Streak: <strong>' + currentStreakCount() + '</strong>d';
   }
 
-  // ----- Pomodoro -----
+  // ----- Pomodoro (full implementation later; these aliases keep early wiring happy) -----
   var pomoLeft = 25 * 60;
   var pomoTimer = null;
   var pomoRunning = false;
-  function formatPomo(s) {
-    var m = Math.floor(s / 60); var sec = s % 60;
-    return String(m).padStart(2, '0') + ':' + String(sec).padStart(2, '0');
-  }
   function updatePomoUI() {
-    var el = document.getElementById('sw-timer');
-    if (el) el.textContent = formatPomo(pomoLeft);
-  }
-  function togglePomo() {
-    if (pomoRunning) {
-      clearInterval(pomoTimer); pomoRunning = false;
-      var b = document.getElementById('sw-timer-btn'); if (b) b.textContent = 'Timer';
-      toast('Timer paused');
-      return;
+    if (typeof updatePomoDisplay === 'function') updatePomoDisplay();
+    else {
+      var el = document.getElementById('sw-timer');
+      if (el) el.textContent = (Math.floor(pomoLeft / 60) + '').padStart(2, '0') + ':' + (pomoLeft % 60 + '').padStart(2, '0');
     }
-    if (pomoLeft <= 0) pomoLeft = 25 * 60;
-    pomoRunning = true;
-    var b = document.getElementById('sw-timer-btn'); if (b) b.textContent = 'Pause';
-    pomoTimer = setInterval(function () {
-      pomoLeft--;
-      updatePomoUI();
-      if (pomoLeft <= 0) {
-        clearInterval(pomoTimer); pomoRunning = false;
-        if (b) b.textContent = 'Timer';
-        toast('Focus block done');
-        try { if (navigator.vibrate) navigator.vibrate(200); } catch (e) {}
-      }
-    }, 1000);
   }
 
   // ----- Paste plain -----
@@ -8276,26 +8309,59 @@ function exportTxt() {
     updateStreakDisplay();
   }
 
+  var pomoTotal = 25 * 60;
   function formatPomo(sec) {
-    var m = Math.floor(sec / 60);
-    var s = sec % 60;
+    var m = Math.floor(Math.max(0, sec) / 60);
+    var s = Math.max(0, sec) % 60;
     return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
   }
   function updatePomoDisplay() {
+    var t = formatPomo(pomoLeft);
     var el = document.getElementById('sw-pomodoro');
-    if (el) el.textContent = formatPomo(pomoLeft);
+    if (el) { el.textContent = t; el.style.display = pomoRunning || pomoLeft < pomoTotal ? '' : el.style.display; }
+    var el2 = document.getElementById('sw-timer');
+    if (el2) { el2.textContent = t; el2.style.display = (pomoRunning || pomoLeft < pomoTotal) ? '' : 'none'; }
+    var timeEl = document.getElementById('sw-timer-time');
+    if (timeEl) timeEl.textContent = t;
+    var panel = document.getElementById('sw-timer-panel');
+    if (panel) {
+      if (pomoRunning || (pomoLeft > 0 && pomoLeft < pomoTotal)) panel.classList.add('show');
+      else if (!pomoRunning && pomoLeft >= pomoTotal) panel.classList.remove('show');
+      if (pomoRunning) panel.classList.add('show');
+      var pct = pomoTotal ? Math.max(0, Math.min(100, (pomoLeft / pomoTotal) * 100)) : 0;
+      var fill = document.getElementById('sw-timer-fill');
+      if (fill) fill.style.width = pct + '%';
+      panel.classList.toggle('urgent', pomoRunning && pomoLeft <= 60);
+      var pauseBtn = document.getElementById('sw-timer-pause-btn');
+      if (pauseBtn) pauseBtn.textContent = pomoRunning ? 'Pause' : 'Resume';
+      var lab = document.getElementById('sw-timer-session-label');
+      if (lab) lab.textContent = pomoRunning ? 'Focus timer' : (pomoLeft > 0 && pomoLeft < pomoTotal ? 'Paused' : 'Focus timer');
+    }
+    var topBtn = document.getElementById('sw-timer-btn');
+    if (topBtn) topBtn.textContent = pomoRunning ? 'Pause' : 'Timer';
+  }
+  function resetPomodoro() {
+    if (pomoTimer) { clearInterval(pomoTimer); pomoTimer = null; }
+    pomoRunning = false;
+    pomoLeft = pomoTotal;
+    updatePomoDisplay();
+    var panel = document.getElementById('sw-timer-panel');
+    if (panel) panel.classList.remove('show');
+    toast('Timer reset');
   }
   function togglePomodoro() {
     if (pomoRunning) {
       clearInterval(pomoTimer);
       pomoTimer = null;
       pomoRunning = false;
+      updatePomoDisplay();
       toast('Timer paused');
       return;
     }
-    if (pomoLeft <= 0) pomoLeft = 25 * 60;
+    if (pomoLeft <= 0) pomoLeft = pomoTotal;
     pomoRunning = true;
-    toast('Focus timer running');
+    updatePomoDisplay();
+    toast('Focus timer running — ' + formatPomo(pomoLeft));
     pomoTimer = setInterval(function () {
       pomoLeft--;
       updatePomoDisplay();
@@ -8303,11 +8369,32 @@ function exportTxt() {
         clearInterval(pomoTimer);
         pomoTimer = null;
         pomoRunning = false;
-        pomoLeft = 25 * 60;
+        pomoLeft = 0;
         updatePomoDisplay();
         toast('Focus session complete');
+        try { if (navigator.vibrate) navigator.vibrate([120, 60, 120]); } catch (e) {}
+        setTimeout(function () {
+          pomoLeft = pomoTotal;
+          updatePomoDisplay();
+          var panel = document.getElementById('sw-timer-panel');
+          if (panel && !pomoRunning) panel.classList.remove('show');
+        }, 2500);
       }
     }, 1000);
+  }
+  // Alias used by older wiring
+  function togglePomo() { togglePomodoro(); }
+  function wireTimerPanel() {
+    var p = document.getElementById('sw-timer-pause-btn');
+    var r = document.getElementById('sw-timer-reset-btn');
+    if (p && !p.dataset.wired) {
+      p.dataset.wired = '1';
+      p.onclick = function () { togglePomodoro(); };
+    }
+    if (r && !r.dataset.wired) {
+      r.dataset.wired = '1';
+      r.onclick = function () { resetPomodoro(); };
+    }
   }
 
   // Paste plain text
@@ -8839,6 +8926,10 @@ function exportTxt() {
     markDirty();
     recordStreakIfNeeded();
     if (totalWords() % 50 === 0) runContinuityCheck();
+    if (typeof renderFootnotesPanel === 'function') {
+      clearTimeout(window._fnPanelT);
+      window._fnPanelT = setTimeout(renderFootnotesPanel, 200);
+    }
   };
 
   // Location hierarchy: patch editLocation to add parent field - via string already done hard
@@ -9230,18 +9321,163 @@ function exportTxt() {
     };
   }
 
+    function saveEditorSelection() {
+    try {
+      var sel = window.getSelection();
+      if (!sel || !sel.rangeCount) return null;
+      var range = sel.getRangeAt(0);
+      if (!editor.contains(range.commonAncestorContainer)) return null;
+      return range.cloneRange();
+    } catch (e) { return null; }
+  }
+  function restoreEditorSelection(range) {
+    if (!range) return false;
+    try {
+      editor.focus();
+      var sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+      return true;
+    } catch (e) {
+      try { editor.focus(); } catch (e2) {}
+      return false;
+    }
+  }
+  function nextFootnoteNumber() {
+    var max = 0;
+    if (state.footnotes && state.footnotes.length) {
+      state.footnotes.forEach(function (f) {
+        if (f.n && f.n > max) max = f.n;
+      });
+    }
+    try {
+      editor.querySelectorAll('.sw-footnote').forEach(function (el) {
+        var m = (el.textContent || '').match(/\[(\d+)\]/);
+        if (m) max = Math.max(max, parseInt(m[1], 10) || 0);
+      });
+    } catch (e) {}
+    return max + 1;
+  }
+  function renderFootnotesPanel() {
+    var panel = document.getElementById('sw-footnotes-panel');
+    var list = document.getElementById('sw-footnotes-list');
+    if (!panel || !list) return;
+    // Collect marks in this scene (DOM order) + text from state.footnotes
+    var byId = {};
+    (state.footnotes || []).forEach(function (f) { byId[f.id] = f; });
+    var rows = [];
+    editor.querySelectorAll('.sw-footnote').forEach(function (el) {
+      var id = el.getAttribute('data-fn') || '';
+      var nMatch = (el.textContent || '').match(/\[(\d+)\]/);
+      var n = nMatch ? parseInt(nMatch[1], 10) : 0;
+      var text = el.getAttribute('title') || (byId[id] && byId[id].text) || '';
+      rows.push({ id: id, n: n, text: text, el: el });
+    });
+    if (!rows.length) {
+      panel.style.display = 'none';
+      list.innerHTML = '';
+      return;
+    }
+    panel.style.display = '';
+    list.innerHTML = rows.map(function (r) {
+      return '<div class="sw-fn-row" data-fn="' + escapeHtml(r.id) + '">' +
+        '<span class="sw-fn-n">[' + r.n + ']</span>' +
+        '<span class="sw-fn-text">' + escapeHtml(r.text || '(no text)') + '</span>' +
+        '<button type="button" class="sw-fn-del" data-fn="' + escapeHtml(r.id) + '" title="Remove mark">×</button>' +
+        '</div>';
+    }).join('');
+    list.querySelectorAll('.sw-fn-del').forEach(function (btn) {
+      btn.onclick = function () {
+        var id = btn.getAttribute('data-fn');
+        editor.querySelectorAll('.sw-footnote[data-fn="' + id + '"]').forEach(function (el) {
+          if (el.parentNode) el.parentNode.removeChild(el);
+        });
+        if (state.footnotes) {
+          state.footnotes = state.footnotes.filter(function (f) { return f.id !== id; });
+        }
+        onEditorInput();
+        renderFootnotesPanel();
+        toast('Footnote removed');
+      };
+    });
+    list.querySelectorAll('.sw-fn-row').forEach(function (row) {
+      row.style.cursor = 'pointer';
+      row.onclick = function (e) {
+        if (e.target.classList.contains('sw-fn-del')) return;
+        var id = row.getAttribute('data-fn');
+        var mark = editor.querySelector('.sw-footnote[data-fn="' + id + '"]');
+        if (mark) {
+          mark.scrollIntoView({ block: 'center', behavior: 'smooth' });
+          mark.style.outline = '2px solid var(--sw-accent)';
+          setTimeout(function () { mark.style.outline = ''; }, 1200);
+        }
+      };
+    });
+  }
   async function insertFootnote() {
-    editor.focus();
+    // Capture caret BEFORE the prompt steals focus (this was inserting at the start)
+    var savedRange = saveEditorSelection();
     var text = await swPrompt('Footnote text (definition or detail)', '');
     if (text === null || !String(text).trim()) return;
-    var n = (state._fnCount = (state._fnCount || 0) + 1);
+    var n = nextFootnoteNumber();
+    state._fnCount = n;
     var id = uid();
     if (!state.footnotes) state.footnotes = [];
     state.footnotes.push({ id: id, n: n, text: String(text).trim() });
-    var htmlFn = '<sup class="sw-footnote" data-fn="' + id + '" title="' + escapeHtml(String(text).trim()) + '">[' + n + ']</sup>\u00a0';
-    document.execCommand('insertHTML', false, htmlFn);
+
+    editor.focus();
+    var placed = false;
+    if (savedRange) {
+      try {
+        var sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(savedRange);
+        // Prefer end of current text node / after selection
+        savedRange.collapse(false);
+        var sup = document.createElement('sup');
+        sup.className = 'sw-footnote';
+        sup.setAttribute('data-fn', id);
+        sup.setAttribute('title', String(text).trim());
+        sup.textContent = '[' + n + ']';
+        savedRange.insertNode(sup);
+        // Caret after the footnote
+        var after = document.createRange();
+        after.setStartAfter(sup);
+        after.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(after);
+        placed = true;
+      } catch (e) {
+        placed = false;
+      }
+    }
+    if (!placed) {
+      // Fallback: append to current block or end of editor
+      try {
+        var sel2 = window.getSelection();
+        if (sel2.rangeCount) {
+          var r2 = sel2.getRangeAt(0);
+          if (editor.contains(r2.commonAncestorContainer)) {
+            r2.collapse(false);
+            var sup2 = document.createElement('sup');
+            sup2.className = 'sw-footnote';
+            sup2.setAttribute('data-fn', id);
+            sup2.setAttribute('title', String(text).trim());
+            sup2.textContent = '[' + n + ']';
+            r2.insertNode(sup2);
+            placed = true;
+          }
+        }
+      } catch (e) {}
+    }
+    if (!placed) {
+      var htmlFn = '<sup class="sw-footnote" data-fn="' + id + '" title="' +
+        escapeHtml(String(text).trim()) + '">[' + n + ']</sup>';
+      document.execCommand('insertHTML', false, htmlFn);
+    }
     onEditorInput();
-    toast('Footnote [' + n + '] added');
+    renderFootnotesPanel();
+    toast('Footnote [' + n + '] added at cursor');
   }
 
   function setSceneBreakImage() {
@@ -10385,6 +10621,7 @@ function exportTxt() {
   } catch (e) {}
 
     try { wireCapsule(); } catch (e) { console.warn(e); }
+    try { if (typeof wireTimerPanel === 'function') wireTimerPanel(); } catch (e) {}
     try { if (typeof wireGoogleDrive === 'function') wireGoogleDrive(); } catch (e) {}
 
     setTimeout(async function () {
