@@ -1803,7 +1803,7 @@
       <button type="button" data-cap="find">Find &amp; replace</button>
       <button type="button" data-cap="highlight">Highlight pass</button>
       <button type="button" data-cap="stats">Readability stats</button>
-      <button type="button" data-cap="grammar">Grammar check (optional)</button>
+      <button type="button" data-cap="grammar">Grammar check (online)</button>
       <button type="button" data-cap="mentions">Appearance report</button>
       <button type="button" data-cap="continuity">Continuity check</button>
       <button type="button" data-cap="revise">Revision A/B</button>
@@ -6222,11 +6222,11 @@ function exportTxt() {
     return null;
   }
 
-  // ===== Optional LanguageTool grammar check (Tools menu; needs network) =====
-  // ===== Grammar check (optional LanguageTool) — underline + one-click fix =====
+  // ===== Grammar check (online — LanguageTool) =====
   var grammarModeOn = false;
   var grammarMatchesCache = [];
   var grammarClickWired = false;
+  var grammarPlainSnapshot = ''; // exact string sent to LT — offsets refer to this
 
   function clearGrammarMarks() {
     if (!editor) return;
@@ -6238,81 +6238,180 @@ function exportTxt() {
     });
   }
 
+  /**
+   * Canonical plain text + text-node map.
+   * MUST be the same string we send to LanguageTool so offsets match exactly.
+   * Uses text node values only (no trim, no stripHtml) for stable offsets.
+   */
   function getEditorPlainAndMap() {
-    // Build plain text + map of {node, start, end} for each text node
     var nodes = [];
     var plain = '';
+    if (!editor) return { plain: '', nodes: nodes };
     var walker = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT, null);
     var n;
     while ((n = walker.nextNode())) {
-      var t = n.nodeValue || '';
-      if (!t) continue;
+      // Skip empty
+      var t = n.nodeValue;
+      if (t == null || t === '') continue;
+      // Skip text inside UI chrome that is not real manuscript (none expected after clear)
       nodes.push({ node: n, start: plain.length, end: plain.length + t.length });
       plain += t;
     }
     return { plain: plain, nodes: nodes };
   }
 
+  /**
+   * Replace [offset, offset+length) in the live editor with `replacement`.
+   * Handles spans that cross multiple text nodes without eating neighbors.
+   */
   function replacePlainRange(offset, length, replacement) {
+    offset = Math.max(0, offset | 0);
+    length = Math.max(0, length | 0);
+    if (replacement == null) replacement = '';
     var map = getEditorPlainAndMap();
+    if (!map.plain.length && length > 0) return false;
+    // Clamp to plain bounds
+    if (offset > map.plain.length) return false;
+    if (offset + length > map.plain.length) length = map.plain.length - offset;
     var end = offset + length;
-    // Collect text nodes overlapping [offset, end)
     var hits = map.nodes.filter(function (x) { return x.end > offset && x.start < end; });
-    if (!hits.length) return false;
-    // Replace from the end so earlier node offsets stay valid within this op
+    if (!hits.length) {
+      // Fallback: no text nodes — nothing to do
+      return false;
+    }
+    // Verify the slice we think we're replacing (helps catch drift)
+    var expected = map.plain.slice(offset, end);
+    // Apply from last hit → first so earlier node offsets stay valid
     for (var i = hits.length - 1; i >= 0; i--) {
       var h = hits[i];
       var localStart = Math.max(0, offset - h.start);
       var localEnd = Math.min(h.node.nodeValue.length, end - h.start);
+      if (localEnd < localStart) continue;
       var before = h.node.nodeValue.slice(0, localStart);
       var after = h.node.nodeValue.slice(localEnd);
       if (i === 0) {
+        // First (leftmost) hit receives the full replacement
         h.node.nodeValue = before + replacement + after;
       } else {
+        // Later pieces of the match are deleted
         h.node.nodeValue = before + after;
       }
     }
     return true;
   }
 
+  /**
+   * Wrap every text segment in [offset, offset+length) with .sw-grammar-mark.
+   * Multi-node safe; stores original wrong text for exact replace on correct.
+   */
   function applyGrammarMarks(matches) {
     clearGrammarMarks();
     if (!matches || !matches.length) return;
-    // Apply from end so offsets remain valid
-    var sorted = matches.slice().sort(function (a, b) { return (b.offset || 0) - (a.offset || 0); });
-    sorted.forEach(function (m, idx) {
+    var sorted = matches.slice().sort(function (a, b) {
+      return (b.offset || 0) - (a.offset || 0);
+    });
+    sorted.forEach(function (m) {
       var offset = m.offset || 0;
       var length = m.length || 0;
       if (length < 1) return;
       var map = getEditorPlainAndMap();
+      if (offset + length > map.plain.length) {
+        // Offset drift — skip rather than corrupt text
+        return;
+      }
+      var wrong = map.plain.slice(offset, offset + length);
       var end = offset + length;
       var hits = map.nodes.filter(function (x) { return x.end > offset && x.start < end; });
       if (!hits.length) return;
-      // Only wrap the first overlapping text node segment (simple, stable)
-      var h = hits[0];
-      var localStart = Math.max(0, offset - h.start);
-      var localEnd = Math.min(h.node.nodeValue.length, end - h.start);
-      if (localEnd <= localStart) return;
-      var text = h.node.nodeValue;
-      var before = text.slice(0, localStart);
-      var mid = text.slice(localStart, localEnd);
-      var after = text.slice(localEnd);
-      var span = document.createElement('span');
-      span.className = 'sw-grammar-mark';
-      span.setAttribute('data-g-offset', String(offset));
-      span.setAttribute('data-g-length', String(length));
-      span.setAttribute('data-g-message', m.message || 'Suggestion');
-      var reps = (m.replacements || []).slice(0, 5).map(function (r) { return r.value; }).filter(Boolean);
-      span.setAttribute('data-g-reps', JSON.stringify(reps));
-      span.textContent = mid;
-      var parent = h.node.parentNode;
-      if (!parent) return;
-      var frag = document.createDocumentFragment();
-      if (before) frag.appendChild(document.createTextNode(before));
-      frag.appendChild(span);
-      if (after) frag.appendChild(document.createTextNode(after));
-      parent.replaceChild(frag, h.node);
+      var reps = (m.replacements || []).slice(0, 6).map(function (r) {
+        return typeof r === 'string' ? r : (r && r.value != null ? r.value : '');
+      }).filter(function (v) { return v !== ''; });
+      // Wrap from the end of hits so we don't invalidate earlier node refs mid-pass
+      for (var i = hits.length - 1; i >= 0; i--) {
+        var h = hits[i];
+        var localStart = Math.max(0, offset - h.start);
+        var localEnd = Math.min(h.node.nodeValue.length, end - h.start);
+        if (localEnd <= localStart) continue;
+        var text = h.node.nodeValue;
+        var before = text.slice(0, localStart);
+        var mid = text.slice(localStart, localEnd);
+        var after = text.slice(localEnd);
+        var span = document.createElement('span');
+        span.className = 'sw-grammar-mark';
+        span.setAttribute('data-g-offset', String(offset));
+        span.setAttribute('data-g-length', String(length));
+        span.setAttribute('data-g-wrong', wrong);
+        span.setAttribute('data-g-message', m.message || 'Suggestion');
+        span.setAttribute('data-g-reps', JSON.stringify(reps));
+        span.textContent = mid;
+        var parent = h.node.parentNode;
+        if (!parent) continue;
+        var frag = document.createDocumentFragment();
+        if (before) frag.appendChild(document.createTextNode(before));
+        frag.appendChild(span);
+        if (after) frag.appendChild(document.createTextNode(after));
+        parent.replaceChild(frag, h.node);
+      }
     });
+  }
+
+  /**
+   * Apply one replacement for a match. Prefer mark-based exact wrong→rep swap;
+   * otherwise clear marks and use offset replace on canonical plain.
+   */
+  function applyGrammarReplacement(m, replacement) {
+    if (!m || replacement == null) return false;
+    var offset = m.offset || 0;
+    var length = m.length || 0;
+    var wrong = m.wrong || '';
+
+    // 1) Prefer existing underline marks for this offset
+    var marks = editor.querySelectorAll('.sw-grammar-mark[data-g-offset="' + offset + '"]');
+    if (marks.length) {
+      // Replace first mark's content with full replacement; remove sibling marks of same offset
+      var first = marks[0];
+      var storedWrong = first.getAttribute('data-g-wrong') || '';
+      // Put replacement only in the first mark, clear the rest of the multi-span match
+      for (var i = 1; i < marks.length; i++) {
+        var extra = marks[i];
+        if (extra.parentNode) {
+          // delete the extra segment of the original error
+          extra.parentNode.removeChild(extra);
+        }
+      }
+      first.textContent = replacement;
+      var p = first.parentNode;
+      if (p) {
+        while (first.firstChild) p.insertBefore(first.firstChild, first);
+        p.removeChild(first);
+      }
+      // Merge adjacent text nodes to keep the map clean
+      try { p && p.normalize && p.normalize(); } catch (e) {}
+      return true;
+    }
+
+    // 2) Offset-based replace (marks cleared)
+    clearGrammarMarks();
+    var map = getEditorPlainAndMap();
+    // If we know the original wrong string, try to re-find it near the offset
+    if (wrong && map.plain) {
+      var slice = map.plain.slice(Math.max(0, offset - 20), offset + length + 20);
+      var rel = slice.indexOf(wrong);
+      if (rel !== -1) {
+        offset = Math.max(0, offset - 20) + rel;
+        length = wrong.length;
+      } else if (map.plain.substr(offset, length) !== wrong) {
+        // Try global first occurrence of wrong near original
+        var idx = map.plain.indexOf(wrong);
+        if (idx !== -1) {
+          offset = idx;
+          length = wrong.length;
+        }
+      }
+    }
+    var ok = replacePlainRange(offset, length, replacement);
+    try { editor.normalize && editor.normalize(); } catch (e) {}
+    return ok;
   }
 
   function openGrammarMarkPopup(markEl) {
@@ -6320,13 +6419,15 @@ function exportTxt() {
     var message = markEl.getAttribute('data-g-message') || 'Suggestion';
     var reps = [];
     try { reps = JSON.parse(markEl.getAttribute('data-g-reps') || '[]'); } catch (e) { reps = []; }
-    var wrong = markEl.textContent || '';
+    var wrong = markEl.getAttribute('data-g-wrong') || markEl.textContent || '';
+    var offset = parseInt(markEl.getAttribute('data-g-offset') || '0', 10) || 0;
+    var length = parseInt(markEl.getAttribute('data-g-length') || '0', 10) || wrong.length;
     var repsHtml = reps.length
       ? reps.map(function (r, i) {
           return '<button type="button" class="sw-btn sw-btn-primary" data-g-apply="' + i + '" style="margin:4px 4px 4px 0">' +
             escapeHtml(r) + '</button>';
         }).join('')
-      : '<p style="color:var(--sw-muted);font-size:0.88rem">No automatic replacement suggested — edit manually.</p>';
+      : '<p style="color:var(--sw-muted);font-size:0.88rem">No automatic replacement — edit manually.</p>';
     openModal(
       '<h3>Grammar suggestion</h3>' +
       '<p style="margin:0 0 8px;line-height:1.5">' + escapeHtml(message) + '</p>' +
@@ -6337,15 +6438,17 @@ function exportTxt() {
       '<button type="button" class="sw-btn" id="m-g-ignore">Ignore</button>' +
       '<button type="button" class="sw-btn" id="m-cancel">Cancel</button></div>'
     );
-    $('#m-cancel').onclick = closeModal;
+    var cancel = document.getElementById('m-cancel');
+    if (cancel) cancel.onclick = closeModal;
     var ign = document.getElementById('m-g-ignore');
     if (ign) ign.onclick = function () {
-      // unwrap mark without changing text
-      var p = markEl.parentNode;
-      if (p) {
-        while (markEl.firstChild) p.insertBefore(markEl.firstChild, markEl);
-        p.removeChild(markEl);
-      }
+      // Remove all marks sharing this offset
+      editor.querySelectorAll('.sw-grammar-mark[data-g-offset="' + offset + '"]').forEach(function (el) {
+        var p = el.parentNode;
+        if (!p) return;
+        while (el.firstChild) p.insertBefore(el.firstChild, el);
+        p.removeChild(el);
+      });
       closeModal();
       toast('Ignored');
       try { onEditorInput(); } catch (e) {}
@@ -6355,12 +6458,12 @@ function exportTxt() {
         var i = +btn.getAttribute('data-g-apply');
         var rep = reps[i];
         if (rep == null) return;
-        markEl.textContent = rep;
-        var p = markEl.parentNode;
-        if (p) {
-          while (markEl.firstChild) p.insertBefore(markEl.firstChild, markEl);
-          p.removeChild(markEl);
-        }
+        var m = { offset: offset, length: length, wrong: wrong };
+        applyGrammarReplacement(m, rep);
+        // Drop from cache
+        grammarMatchesCache = grammarMatchesCache.filter(function (x) {
+          return !((x.offset || 0) === offset && (x.length || 0) === length);
+        });
         closeModal();
         try { onEditorInput(); } catch (e) {}
         toast('Corrected');
@@ -6385,8 +6488,10 @@ function exportTxt() {
   function showGrammarResultsModal(matches, truncated, limit) {
     var rows = matches.slice(0, 50).map(function (m, i) {
       var ctx = m.context || {};
-      var bit = String(ctx.text || m.contextText || '').slice(0, 100);
-      var reps = (m.replacements || []).slice(0, 3).map(function (r) { return r.value; }).filter(Boolean);
+      var bit = String(ctx.text || m.contextText || m.wrong || '').slice(0, 100);
+      var reps = (m.replacements || []).slice(0, 4).map(function (r) {
+        return typeof r === 'string' ? r : (r && r.value != null ? r.value : '');
+      }).filter(Boolean);
       var repsBtns = reps.map(function (r, ri) {
         return '<button type="button" class="sw-btn sw-btn-primary" data-g-fix="' + i + '" data-g-rep="' + ri + '" style="margin:2px 4px 2px 0;font-size:0.78rem">' +
           escapeHtml(r) + '</button>';
@@ -6403,11 +6508,11 @@ function exportTxt() {
         '</div>';
     }).join('');
     openModal(
-      '<h3>Grammar check</h3>' +
+      '<h3>Grammar check <span style="font-weight:400;font-size:0.8rem;color:var(--sw-muted)">(online)</span></h3>' +
       '<p style="font-size:0.85rem;color:var(--sw-muted);margin:0 0 10px">' +
       matches.length + ' suggestion' + (matches.length === 1 ? '' : 's') +
       (truncated ? ' · first ' + limit.toLocaleString() + ' characters' : '') +
-      (grammarModeOn ? ' · underlines are on in the scene — click a wavy line to fix' : '') +
+      (grammarModeOn ? ' · underlines on — click a wavy line to fix' : '') +
       '</p>' +
       '<div class="sw-modal-actions" style="justify-content:flex-start;margin:0 0 10px">' +
       '<button type="button" class="sw-btn ' + (grammarModeOn ? 'sw-btn-primary' : '') + '" id="m-g-toggle">' +
@@ -6416,7 +6521,8 @@ function exportTxt() {
       '<div style="max-height:45vh;overflow:auto">' + rows + '</div>' +
       '<div class="sw-modal-actions"><button type="button" class="sw-btn" id="m-cancel">Close</button></div>'
     );
-    $('#m-cancel').onclick = closeModal;
+    var closeBtn = document.getElementById('m-cancel');
+    if (closeBtn) closeBtn.onclick = closeModal;
     var tog = document.getElementById('m-g-toggle');
     if (tog) tog.onclick = function () {
       grammarModeOn = !grammarModeOn;
@@ -6444,33 +6550,29 @@ function exportTxt() {
         var ri = +btn.getAttribute('data-g-rep');
         var m = matches[mi];
         if (!m) return;
-        var reps = (m.replacements || []).map(function (r) { return r.value; });
+        var reps = (m.replacements || []).map(function (r) {
+          return typeof r === 'string' ? r : (r && r.value != null ? r.value : '');
+        });
         var rep = reps[ri];
         if (rep == null) return;
-        // Prefer replacing via existing underline mark if present
-        var mark = editor.querySelector('.sw-grammar-mark[data-g-offset="' + (m.offset || 0) + '"]');
-        if (mark) {
-          mark.textContent = rep;
-          var p = mark.parentNode;
-          if (p) {
-            while (mark.firstChild) p.insertBefore(mark.firstChild, mark);
-            p.removeChild(mark);
-          }
-        } else {
-          // Clear marks first so offsets match plain text, apply, re-mark remaining if mode on
-          clearGrammarMarks();
-          replacePlainRange(m.offset || 0, m.length || 0, rep);
-          // Adjust remaining match offsets
-          var delta = rep.length - (m.length || 0);
-          var oldOff = m.offset || 0;
-          matches.forEach(function (other, oi) {
-            if (oi === mi) return;
-            if ((other.offset || 0) > oldOff) other.offset = (other.offset || 0) + delta;
-          });
-          matches.splice(mi, 1);
-          grammarMatchesCache = matches.slice();
-          if (grammarModeOn) applyGrammarMarks(grammarMatchesCache);
+        var oldOff = m.offset || 0;
+        var oldLen = m.length || 0;
+        var ok = applyGrammarReplacement(m, rep);
+        if (!ok) {
+          toast('Could not apply that fix — try editing manually');
+          return;
         }
+        // Adjust remaining match offsets after this edit
+        var delta = String(rep).length - oldLen;
+        matches.forEach(function (other, oi) {
+          if (oi === mi) return;
+          if ((other.offset || 0) >= oldOff + oldLen) {
+            other.offset = (other.offset || 0) + delta;
+          }
+        });
+        matches.splice(mi, 1);
+        grammarMatchesCache = matches.slice();
+        if (grammarModeOn) applyGrammarMarks(grammarMatchesCache);
         try { onEditorInput(); } catch (e) {}
         toast('Corrected');
         closeModal();
@@ -6481,27 +6583,28 @@ function exportTxt() {
 
   async function runGrammarCheck() {
     try { saveCurrent(); } catch (e) {}
-    // Work on clean text without highlight/grammar chrome
     clearGrammarMarks();
-    var plain = '';
-    try {
-      plain = (typeof stripHtml === 'function' ? stripHtml(editor.innerHTML) : (editor.innerText || '')).trim();
-    } catch (e) {
-      plain = (editor && (editor.innerText || editor.textContent) || '').trim();
-    }
-    if (!plain) {
+    var map = getEditorPlainAndMap();
+    var plain = map.plain;
+    // Do NOT trim — trimming shifts every LanguageTool offset
+    if (!plain || !plain.replace(/\s/g, '').length) {
       toast('Nothing to check in this scene');
       return;
     }
-    var limit = 12000;
+    var limit = 20000; // public API soft limit; keep generous but safe
     var truncated = plain.length > limit;
     var slice = plain.slice(0, limit);
+    grammarPlainSnapshot = slice;
     toast('Checking grammar (online)…');
     try {
       var body = new URLSearchParams();
       body.set('text', slice);
       body.set('language', 'en-US');
+      // Richer rule set: picky level + common writing categories
+      body.set('level', 'picky');
       body.set('enabledOnly', 'false');
+      // Prefer American English; user can still write freely offline
+      body.set('disabledRules', '');
       var res = await fetch('https://api.languagetool.org/v2/check', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -6510,29 +6613,34 @@ function exportTxt() {
       if (!res.ok) throw new Error('LanguageTool returned ' + res.status);
       var data = await res.json();
       var matches = (data.matches || []).map(function (m) {
+        var wrong = slice.substr(m.offset || 0, m.length || 0);
         return {
-          offset: m.offset,
-          length: m.length,
+          offset: m.offset || 0,
+          length: m.length || 0,
+          wrong: wrong,
           message: m.message,
           replacements: m.replacements || [],
           context: m.context,
           rule: m.rule
         };
       });
+      // Drop zero-length or out-of-range
+      matches = matches.filter(function (m) {
+        return m.length > 0 && m.offset >= 0 && m.offset + m.length <= slice.length;
+      });
       grammarMatchesCache = matches;
       if (!matches.length) {
         grammarModeOn = false;
         openModal(
-          '<h3>Grammar check</h3>' +
+          '<h3>Grammar check <span style="font-weight:400;font-size:0.8rem;color:var(--sw-muted)">(online)</span></h3>' +
           '<p style="line-height:1.55;margin:0 0 10px">No issues found in this scene' +
           (truncated ? ' (first ' + limit.toLocaleString() + ' characters)' : '') + '.</p>' +
-          '<p style="font-size:0.8rem;color:var(--sw-muted);margin:0 0 12px">Optional online check via LanguageTool. Your project stays in this browser.</p>' +
+          '<p style="font-size:0.8rem;color:var(--sw-muted);margin:0 0 12px">Uses LanguageTool over the network. Your manuscript stays in this browser.</p>' +
           '<div class="sw-modal-actions"><button type="button" class="sw-btn" id="m-cancel">Close</button></div>'
         );
-        $('#m-cancel').onclick = closeModal;
+        document.getElementById('m-cancel').onclick = closeModal;
         return;
       }
-      // Default: turn underlines on so the scene shows mistakes
       grammarModeOn = true;
       applyGrammarMarks(matches);
       wireGrammarClicks();
@@ -6541,13 +6649,13 @@ function exportTxt() {
     } catch (err) {
       openModal(
         '<h3>Grammar check unavailable</h3>' +
-        '<p style="line-height:1.55;margin:0 0 10px">Could not reach LanguageTool. You may be offline, or the public API is busy.</p>' +
+        '<p style="line-height:1.55;margin:0 0 10px">Could not reach LanguageTool. You need an internet connection for this tool.</p>' +
         '<p style="font-size:0.85rem;color:var(--sw-muted);margin:0 0 12px">' +
         escapeHtml((err && err.message) || 'Network error') +
-        '. StoryWriter stays offline-first — this tool is optional.</p>' +
+        '. StoryWriter itself stays offline-first — only this check is online.</p>' +
         '<div class="sw-modal-actions"><button type="button" class="sw-btn" id="m-cancel">Close</button></div>'
       );
-      $('#m-cancel').onclick = closeModal;
+      document.getElementById('m-cancel').onclick = closeModal;
     }
   }
 
