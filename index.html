@@ -676,6 +676,24 @@
     #sw-root .sw-hl-dialogue { background: rgba(120, 160, 220, 0.25); }
     #sw-root .sw-hl-adverb { background: rgba(220, 160, 80, 0.3); }
     #sw-root .sw-hl-filter { background: rgba(200, 100, 100, 0.25); }
+    #sw-root .sw-grammar-mark {
+      border-bottom: 2px wavy #c45c5c;
+      background: color-mix(in srgb, #c45c5c 12%, transparent);
+      cursor: pointer;
+      border-radius: 2px;
+    }
+    #sw-root[data-theme="dark"] .sw-grammar-mark,
+    #sw-root[data-theme="midnight"] .sw-grammar-mark,
+    #sw-root[data-theme="ink"] .sw-grammar-mark,
+    #sw-root[data-theme="forest"] .sw-grammar-mark,
+    #sw-root[data-theme="ocean"] .sw-grammar-mark,
+    #sw-root[data-theme="rose"] .sw-grammar-mark {
+      border-bottom-color: #e09090;
+      background: color-mix(in srgb, #e09090 18%, transparent);
+    }
+    #sw-root .sw-grammar-mark:hover {
+      background: color-mix(in srgb, #c45c5c 22%, transparent);
+    }
     #sw-root .sw-compare {
       display: none; flex: 1; min-height: 0; gap: 8px; padding: 12px;
     }
@@ -2891,8 +2909,20 @@
     ch.title = chapterTitle.value.trim() || ch.title;
     sc.title = sceneTitle.value.trim() || sc.title;
     sc.synopsis = synopsisEl.value.trim();
-    if (sc.revMode) sc.contentB = editor.innerHTML;
-    else sc.content = editor.innerHTML;
+    var rawHtml = editor.innerHTML || '';
+    if (rawHtml.indexOf('sw-hl-') !== -1 || rawHtml.indexOf('sw-grammar-mark') !== -1) {
+      var tmpS = document.createElement('div');
+      tmpS.innerHTML = rawHtml;
+      tmpS.querySelectorAll('.sw-hl-dialogue, .sw-hl-adverb, .sw-hl-filter, .sw-grammar-mark').forEach(function (el) {
+        var p = el.parentNode;
+        if (!p) return;
+        while (el.firstChild) p.insertBefore(el.firstChild, el);
+        p.removeChild(el);
+      });
+      rawHtml = tmpS.innerHTML;
+    }
+    if (sc.revMode) sc.contentB = rawHtml;
+    else sc.content = rawHtml;
     sc.status = statusSel.value || sc.status;
     ch.status = sc.status;
     recordStreakProgress();
@@ -6072,8 +6102,266 @@ function exportTxt() {
   }
 
   // ===== Optional LanguageTool grammar check (Tools menu; needs network) =====
+  // ===== Grammar check (optional LanguageTool) — underline + one-click fix =====
+  var grammarModeOn = false;
+  var grammarMatchesCache = [];
+  var grammarClickWired = false;
+
+  function clearGrammarMarks() {
+    if (!editor) return;
+    editor.querySelectorAll('.sw-grammar-mark').forEach(function (el) {
+      var p = el.parentNode;
+      if (!p) return;
+      while (el.firstChild) p.insertBefore(el.firstChild, el);
+      p.removeChild(el);
+    });
+  }
+
+  function getEditorPlainAndMap() {
+    // Build plain text + map of {node, start, end} for each text node
+    var nodes = [];
+    var plain = '';
+    var walker = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT, null);
+    var n;
+    while ((n = walker.nextNode())) {
+      var t = n.nodeValue || '';
+      if (!t) continue;
+      nodes.push({ node: n, start: plain.length, end: plain.length + t.length });
+      plain += t;
+    }
+    return { plain: plain, nodes: nodes };
+  }
+
+  function replacePlainRange(offset, length, replacement) {
+    var map = getEditorPlainAndMap();
+    var end = offset + length;
+    // Collect text nodes overlapping [offset, end)
+    var hits = map.nodes.filter(function (x) { return x.end > offset && x.start < end; });
+    if (!hits.length) return false;
+    // Replace from the end so earlier node offsets stay valid within this op
+    for (var i = hits.length - 1; i >= 0; i--) {
+      var h = hits[i];
+      var localStart = Math.max(0, offset - h.start);
+      var localEnd = Math.min(h.node.nodeValue.length, end - h.start);
+      var before = h.node.nodeValue.slice(0, localStart);
+      var after = h.node.nodeValue.slice(localEnd);
+      if (i === 0) {
+        h.node.nodeValue = before + replacement + after;
+      } else {
+        h.node.nodeValue = before + after;
+      }
+    }
+    return true;
+  }
+
+  function applyGrammarMarks(matches) {
+    clearGrammarMarks();
+    if (!matches || !matches.length) return;
+    // Apply from end so offsets remain valid
+    var sorted = matches.slice().sort(function (a, b) { return (b.offset || 0) - (a.offset || 0); });
+    sorted.forEach(function (m, idx) {
+      var offset = m.offset || 0;
+      var length = m.length || 0;
+      if (length < 1) return;
+      var map = getEditorPlainAndMap();
+      var end = offset + length;
+      var hits = map.nodes.filter(function (x) { return x.end > offset && x.start < end; });
+      if (!hits.length) return;
+      // Only wrap the first overlapping text node segment (simple, stable)
+      var h = hits[0];
+      var localStart = Math.max(0, offset - h.start);
+      var localEnd = Math.min(h.node.nodeValue.length, end - h.start);
+      if (localEnd <= localStart) return;
+      var text = h.node.nodeValue;
+      var before = text.slice(0, localStart);
+      var mid = text.slice(localStart, localEnd);
+      var after = text.slice(localEnd);
+      var span = document.createElement('span');
+      span.className = 'sw-grammar-mark';
+      span.setAttribute('data-g-offset', String(offset));
+      span.setAttribute('data-g-length', String(length));
+      span.setAttribute('data-g-message', m.message || 'Suggestion');
+      var reps = (m.replacements || []).slice(0, 5).map(function (r) { return r.value; }).filter(Boolean);
+      span.setAttribute('data-g-reps', JSON.stringify(reps));
+      span.textContent = mid;
+      var parent = h.node.parentNode;
+      if (!parent) return;
+      var frag = document.createDocumentFragment();
+      if (before) frag.appendChild(document.createTextNode(before));
+      frag.appendChild(span);
+      if (after) frag.appendChild(document.createTextNode(after));
+      parent.replaceChild(frag, h.node);
+    });
+  }
+
+  function openGrammarMarkPopup(markEl) {
+    if (!markEl) return;
+    var message = markEl.getAttribute('data-g-message') || 'Suggestion';
+    var reps = [];
+    try { reps = JSON.parse(markEl.getAttribute('data-g-reps') || '[]'); } catch (e) { reps = []; }
+    var wrong = markEl.textContent || '';
+    var repsHtml = reps.length
+      ? reps.map(function (r, i) {
+          return '<button type="button" class="sw-btn sw-btn-primary" data-g-apply="' + i + '" style="margin:4px 4px 4px 0">' +
+            escapeHtml(r) + '</button>';
+        }).join('')
+      : '<p style="color:var(--sw-muted);font-size:0.88rem">No automatic replacement suggested — edit manually.</p>';
+    openModal(
+      '<h3>Grammar suggestion</h3>' +
+      '<p style="margin:0 0 8px;line-height:1.5">' + escapeHtml(message) + '</p>' +
+      '<p style="font-size:0.85rem;color:var(--sw-muted);margin:0 0 10px">Found: <strong style="color:var(--sw-ink)">' +
+      escapeHtml(wrong) + '</strong></p>' +
+      '<div style="margin-bottom:12px">' + repsHtml + '</div>' +
+      '<div class="sw-modal-actions">' +
+      '<button type="button" class="sw-btn" id="m-g-ignore">Ignore</button>' +
+      '<button type="button" class="sw-btn" id="m-cancel">Cancel</button></div>'
+    );
+    $('#m-cancel').onclick = closeModal;
+    var ign = document.getElementById('m-g-ignore');
+    if (ign) ign.onclick = function () {
+      // unwrap mark without changing text
+      var p = markEl.parentNode;
+      if (p) {
+        while (markEl.firstChild) p.insertBefore(markEl.firstChild, markEl);
+        p.removeChild(markEl);
+      }
+      closeModal();
+      toast('Ignored');
+      try { onEditorInput(); } catch (e) {}
+    };
+    ROOT.querySelectorAll('#sw-modal [data-g-apply]').forEach(function (btn) {
+      btn.onclick = function () {
+        var i = +btn.getAttribute('data-g-apply');
+        var rep = reps[i];
+        if (rep == null) return;
+        markEl.textContent = rep;
+        var p = markEl.parentNode;
+        if (p) {
+          while (markEl.firstChild) p.insertBefore(markEl.firstChild, markEl);
+          p.removeChild(markEl);
+        }
+        closeModal();
+        try { onEditorInput(); } catch (e) {}
+        toast('Corrected');
+      };
+    });
+  }
+
+  function wireGrammarClicks() {
+    if (grammarClickWired || !editor) return;
+    grammarClickWired = true;
+    editor.addEventListener('click', function (e) {
+      var t = e.target;
+      if (!t || !t.closest) return;
+      var mark = t.closest('.sw-grammar-mark');
+      if (!mark || !editor.contains(mark)) return;
+      e.preventDefault();
+      e.stopPropagation();
+      openGrammarMarkPopup(mark);
+    });
+  }
+
+  function showGrammarResultsModal(matches, truncated, limit) {
+    var rows = matches.slice(0, 50).map(function (m, i) {
+      var ctx = m.context || {};
+      var bit = String(ctx.text || m.contextText || '').slice(0, 100);
+      var reps = (m.replacements || []).slice(0, 3).map(function (r) { return r.value; }).filter(Boolean);
+      var repsBtns = reps.map(function (r, ri) {
+        return '<button type="button" class="sw-btn sw-btn-primary" data-g-fix="' + i + '" data-g-rep="' + ri + '" style="margin:2px 4px 2px 0;font-size:0.78rem">' +
+          escapeHtml(r) + '</button>';
+      }).join('');
+      return '<div class="sw-appear-block" style="margin-bottom:8px" data-g-row="' + i + '">' +
+        '<div style="font-size:0.78rem;color:var(--sw-muted);margin-bottom:4px">' +
+        escapeHtml((m.rule && (m.rule.issueType || m.rule.id)) || 'suggestion') +
+        '</div>' +
+        '<div style="font-size:0.9rem;margin-bottom:4px">' + escapeHtml(m.message || '') + '</div>' +
+        (bit ? '<div style="font-size:0.82rem;color:var(--sw-muted);font-family:Georgia,serif">…' + escapeHtml(bit) + '…</div>' : '') +
+        (repsBtns
+          ? '<div style="margin-top:6px"><span style="font-size:0.78rem;margin-right:4px">Correct:</span>' + repsBtns + '</div>'
+          : '<div style="margin-top:6px;font-size:0.82rem;color:var(--sw-muted)">No auto-fix — edit in the scene</div>') +
+        '</div>';
+    }).join('');
+    openModal(
+      '<h3>Grammar check</h3>' +
+      '<p style="font-size:0.85rem;color:var(--sw-muted);margin:0 0 10px">' +
+      matches.length + ' suggestion' + (matches.length === 1 ? '' : 's') +
+      (truncated ? ' · first ' + limit.toLocaleString() + ' characters' : '') +
+      (grammarModeOn ? ' · underlines are on in the scene — click a wavy line to fix' : '') +
+      '</p>' +
+      '<div class="sw-modal-actions" style="justify-content:flex-start;margin:0 0 10px">' +
+      '<button type="button" class="sw-btn ' + (grammarModeOn ? 'sw-btn-primary' : '') + '" id="m-g-toggle">' +
+      (grammarModeOn ? 'Turn underlines off' : 'Underline in scene') + '</button>' +
+      '<button type="button" class="sw-btn" id="m-g-clear-marks">Clear underlines</button></div>' +
+      '<div style="max-height:45vh;overflow:auto">' + rows + '</div>' +
+      '<div class="sw-modal-actions"><button type="button" class="sw-btn" id="m-cancel">Close</button></div>'
+    );
+    $('#m-cancel').onclick = closeModal;
+    var tog = document.getElementById('m-g-toggle');
+    if (tog) tog.onclick = function () {
+      grammarModeOn = !grammarModeOn;
+      if (grammarModeOn) {
+        applyGrammarMarks(grammarMatchesCache);
+        wireGrammarClicks();
+        toast('Underlines on — click a mark to correct');
+      } else {
+        clearGrammarMarks();
+        toast('Underlines off');
+      }
+      closeModal();
+      showGrammarResultsModal(matches, truncated, limit);
+    };
+    var clr = document.getElementById('m-g-clear-marks');
+    if (clr) clr.onclick = function () {
+      grammarModeOn = false;
+      clearGrammarMarks();
+      toast('Underlines cleared');
+      closeModal();
+    };
+    ROOT.querySelectorAll('#sw-modal [data-g-fix]').forEach(function (btn) {
+      btn.onclick = function () {
+        var mi = +btn.getAttribute('data-g-fix');
+        var ri = +btn.getAttribute('data-g-rep');
+        var m = matches[mi];
+        if (!m) return;
+        var reps = (m.replacements || []).map(function (r) { return r.value; });
+        var rep = reps[ri];
+        if (rep == null) return;
+        // Prefer replacing via existing underline mark if present
+        var mark = editor.querySelector('.sw-grammar-mark[data-g-offset="' + (m.offset || 0) + '"]');
+        if (mark) {
+          mark.textContent = rep;
+          var p = mark.parentNode;
+          if (p) {
+            while (mark.firstChild) p.insertBefore(mark.firstChild, mark);
+            p.removeChild(mark);
+          }
+        } else {
+          // Clear marks first so offsets match plain text, apply, re-mark remaining if mode on
+          clearGrammarMarks();
+          replacePlainRange(m.offset || 0, m.length || 0, rep);
+          // Adjust remaining match offsets
+          var delta = rep.length - (m.length || 0);
+          var oldOff = m.offset || 0;
+          matches.forEach(function (other, oi) {
+            if (oi === mi) return;
+            if ((other.offset || 0) > oldOff) other.offset = (other.offset || 0) + delta;
+          });
+          matches.splice(mi, 1);
+          grammarMatchesCache = matches.slice();
+          if (grammarModeOn) applyGrammarMarks(grammarMatchesCache);
+        }
+        try { onEditorInput(); } catch (e) {}
+        toast('Corrected');
+        closeModal();
+        if (matches.length) showGrammarResultsModal(matches, truncated, limit);
+      };
+    });
+  }
+
   async function runGrammarCheck() {
     try { saveCurrent(); } catch (e) {}
+    // Work on clean text without highlight/grammar chrome
+    clearGrammarMarks();
     var plain = '';
     try {
       plain = (typeof stripHtml === 'function' ? stripHtml(editor.innerHTML) : (editor.innerText || '')).trim();
@@ -6100,53 +6388,42 @@ function exportTxt() {
       });
       if (!res.ok) throw new Error('LanguageTool returned ' + res.status);
       var data = await res.json();
-      var matches = data.matches || [];
+      var matches = (data.matches || []).map(function (m) {
+        return {
+          offset: m.offset,
+          length: m.length,
+          message: m.message,
+          replacements: m.replacements || [],
+          context: m.context,
+          rule: m.rule
+        };
+      });
+      grammarMatchesCache = matches;
       if (!matches.length) {
+        grammarModeOn = false;
         openModal(
           '<h3>Grammar check</h3>' +
           '<p style="line-height:1.55;margin:0 0 10px">No issues found in this scene' +
-          (truncated ? ' (first ' + limit.toLocaleString() + ' characters)' : '') +
-          '. LanguageTool is optional and runs only when you ask.</p>' +
-          '<p style="font-size:0.8rem;color:var(--sw-muted);margin:0 0 12px">Checks use the public LanguageTool API over the network. Your full project stays in this browser.</p>' +
+          (truncated ? ' (first ' + limit.toLocaleString() + ' characters)' : '') + '.</p>' +
+          '<p style="font-size:0.8rem;color:var(--sw-muted);margin:0 0 12px">Optional online check via LanguageTool. Your project stays in this browser.</p>' +
           '<div class="sw-modal-actions"><button type="button" class="sw-btn" id="m-cancel">Close</button></div>'
         );
         $('#m-cancel').onclick = closeModal;
         return;
       }
-      // Dedupe by message+offset loosely; show top suggestions
-      var rows = matches.slice(0, 40).map(function (m, i) {
-        var ctx = m.context || {};
-        var from = Math.max(0, (ctx.offset || 0) - 20);
-        var bit = String(ctx.text || '').slice(from, from + 80);
-        var reps = (m.replacements || []).slice(0, 3).map(function (r) { return r.value; }).filter(Boolean);
-        return '<div class="sw-appear-block" style="margin-bottom:8px">' +
-          '<div style="font-size:0.78rem;color:var(--sw-muted);margin-bottom:4px">' +
-          escapeHtml((m.rule && (m.rule.issueType || m.rule.id)) || 'suggestion') +
-          '</div>' +
-          '<div style="font-size:0.9rem;margin-bottom:4px">' + escapeHtml(m.message || '') + '</div>' +
-          (bit ? '<div style="font-size:0.82rem;color:var(--sw-muted);font-family:Georgia,serif">…' + escapeHtml(bit) + '…</div>' : '') +
-          (reps.length ? '<div style="margin-top:6px;font-size:0.82rem"><strong>Try:</strong> ' +
-            reps.map(function (r) { return '<code style="padding:1px 5px;border-radius:4px;background:var(--sw-bg)">' + escapeHtml(r) + '</code>'; }).join(' ') +
-            '</div>' : '') +
-          '</div>';
-      }).join('');
-      openModal(
-        '<h3>Grammar check</h3>' +
-        '<p style="font-size:0.85rem;color:var(--sw-muted);margin:0 0 10px">' +
-        matches.length + ' suggestion' + (matches.length === 1 ? '' : 's') +
-        (truncated ? ' · checked first ' + limit.toLocaleString() + ' characters' : '') +
-        ' · optional online check via LanguageTool</p>' +
-        '<div style="max-height:50vh;overflow:auto">' + rows + '</div>' +
-        '<div class="sw-modal-actions"><button type="button" class="sw-btn" id="m-cancel">Close</button></div>'
-      );
-      $('#m-cancel').onclick = closeModal;
+      // Default: turn underlines on so the scene shows mistakes
+      grammarModeOn = true;
+      applyGrammarMarks(matches);
+      wireGrammarClicks();
+      showGrammarResultsModal(matches, truncated, limit);
+      toast(matches.length + ' suggestion' + (matches.length === 1 ? '' : 's') + ' — click underlines to fix');
     } catch (err) {
       openModal(
         '<h3>Grammar check unavailable</h3>' +
         '<p style="line-height:1.55;margin:0 0 10px">Could not reach LanguageTool. You may be offline, or the public API is busy.</p>' +
         '<p style="font-size:0.85rem;color:var(--sw-muted);margin:0 0 12px">' +
         escapeHtml((err && err.message) || 'Network error') +
-        '. StoryWriter itself stays offline-first — this tool is optional.</p>' +
+        '. StoryWriter stays offline-first — this tool is optional.</p>' +
         '<div class="sw-modal-actions"><button type="button" class="sw-btn" id="m-cancel">Close</button></div>'
       );
       $('#m-cancel').onclick = closeModal;
@@ -7635,13 +7912,29 @@ function exportTxt() {
   var ADVERBS = /\\b\\w+ly\\b/gi;
   var FILTERS = /\\b(just|really|very|quite|rather|suddenly|somehow|began to|started to|felt|saw|heard|knew|realized|noticed)\\b/gi;
   function clearHighlights() {
-    var marks = editor.querySelectorAll('.sw-hl-dialogue, .sw-hl-adverb, .sw-hl-filter');
-    // simpler: reload content without highlight wrappers
+    editor.querySelectorAll('.sw-hl-dialogue, .sw-hl-adverb, .sw-hl-filter').forEach(function (el) {
+      var p = el.parentNode;
+      if (!p) return;
+      while (el.firstChild) p.insertBefore(el.firstChild, el);
+      p.removeChild(el);
+    });
     var sc = getActiveScene();
+    if (sc && sc.content && sc.content.indexOf('sw-hl-') !== -1) {
+      sc.content = (typeof stripHighlightSpansFromHtml === 'function')
+        ? stripHighlightSpansFromHtml(sc.content)
+        : sc.content.replace(/<span class="sw-hl-[^"]*">([\s\S]*?)<\/span>/gi, '$1');
+    }
     if (sc) editor.innerHTML = sc.content || '';
     state.highlightMode = '';
   }
   function applyHighlight(mode) {
+    // Strip existing marks before save so they never enter scene content
+    editor.querySelectorAll('.sw-hl-dialogue, .sw-hl-adverb, .sw-hl-filter').forEach(function (el) {
+      var p = el.parentNode;
+      if (!p) return;
+      while (el.firstChild) p.insertBefore(el.firstChild, el);
+      p.removeChild(el);
+    });
     saveCurrent();
     var sc = getActiveScene();
     if (!sc) return;
@@ -8137,20 +8430,76 @@ function exportTxt() {
     list.innerHTML = htmlS;
   }
 
-  // Highlight passes
-  function clearHighlights() {
-    editor.querySelectorAll('.sw-hl-dialogue, .sw-hl-adverb, .sw-hl-filter').forEach(function (el) {
+  // Highlight passes — temporary only; never write .sw-hl-* into saved scene content
+  function stripEditorMarkupSpans(html, selector) {
+    var tmp = document.createElement('div');
+    tmp.innerHTML = html || '';
+    tmp.querySelectorAll(selector).forEach(function (el) {
       var p = el.parentNode;
+      if (!p) return;
       while (el.firstChild) p.insertBefore(el.firstChild, el);
       p.removeChild(el);
     });
+    return tmp.innerHTML;
+  }
+  function stripHighlightSpansFromHtml(html) {
+    return stripEditorMarkupSpans(html, '.sw-hl-dialogue, .sw-hl-adverb, .sw-hl-filter');
+  }
+  function stripGrammarSpansFromHtml(html) {
+    return stripEditorMarkupSpans(html, '.sw-grammar-mark');
+  }
+  function clearHighlights() {
+    // 1) Unwrap live DOM spans
+    editor.querySelectorAll('.sw-hl-dialogue, .sw-hl-adverb, .sw-hl-filter').forEach(function (el) {
+      var p = el.parentNode;
+      if (!p) return;
+      while (el.firstChild) p.insertBefore(el.firstChild, el);
+      p.removeChild(el);
+    });
+    // 2) Scrub scene content if highlights were ever saved by mistake
+    var sc = getActiveScene();
+    if (sc) {
+      var cleaned = stripHighlightSpansFromHtml(sc.content || '');
+      if (cleaned !== (sc.content || '')) sc.content = cleaned;
+      // 3) Reload clean manuscript so nothing remains painted
+      editor.innerHTML = cleaned;
+      if (typeof updateWordcount === 'function') updateWordcount();
+    }
+    state.highlightMode = '';
+    toast('Highlights cleared');
   }
   function applyHighlight(mode) {
+    mode = mode || '';
+    if (!mode || mode === 'clear') {
+      clearHighlights();
+      if (typeof save === 'function') save();
+      return;
+    }
+    // Never save temporary highlight markup
+    editor.querySelectorAll('.sw-hl-dialogue, .sw-hl-adverb, .sw-hl-filter').forEach(function (el) {
+      var p = el.parentNode;
+      if (!p) return;
+      while (el.firstChild) p.insertBefore(el.firstChild, el);
+      p.removeChild(el);
+    });
+    // Strip grammar marks too before measuring plain text for highlight passes
+    editor.querySelectorAll('.sw-grammar-mark').forEach(function (el) {
+      var p = el.parentNode;
+      if (!p) return;
+      while (el.firstChild) p.insertBefore(el.firstChild, el);
+      p.removeChild(el);
+    });
     saveCurrent();
-    clearHighlights();
-    state.highlightMode = mode || '';
-    if (!mode) { loadIntoEditor(); save(); return; }
-    var htmlc = editor.innerHTML;
+    var sc = getActiveScene();
+    if (!sc) return;
+    if (state.highlightMode === mode) {
+      clearHighlights();
+      if (typeof save === 'function') save();
+      return;
+    }
+    state.highlightMode = mode;
+    var htmlc = stripHighlightSpansFromHtml(sc.content || '');
+    htmlc = stripGrammarSpansFromHtml(htmlc);
     if (mode === 'dialogue') {
       htmlc = htmlc.replace(/(&quot;|")([^"&]{2,})(&quot;|")/g, function (m, a, mid, b) {
         return a + '<span class="sw-hl-dialogue">' + mid + '</span>' + b;
@@ -8172,19 +8521,24 @@ function exportTxt() {
       htmlc = htmlc.split('\n').map(function (l) { return '<p>' + l + '</p>'; }).join('');
     }
     editor.innerHTML = htmlc;
-    toast('Highlight: ' + (mode || 'off') + ' (save scene to keep text; toggle off before final export)');
+    // Do not save() — keep marks temporary in the editor only
+    toast('Highlight: ' + mode + ' (temporary — use Clear highlights to remove)');
   }
   function openHighlightMenu() {
     openModal('<h3>Highlight pass</h3>' +
+      '<p style="font-size:0.88rem;color:var(--sw-muted);margin:0 0 12px">Highlights are temporary and are not saved into the manuscript.</p>' +
       '<div class="sw-modal-actions" style="flex-direction:column;align-items:stretch">' +
       '<button type="button" class="sw-btn" data-hl="dialogue">Dialogue</button>' +
       '<button type="button" class="sw-btn" data-hl="adverb">Adverbs (-ly)</button>' +
       '<button type="button" class="sw-btn" data-hl="filter">Filter words</button>' +
-      '<button type="button" class="sw-btn" data-hl="">Clear highlights</button>' +
+      '<button type="button" class="sw-btn" data-hl="clear">Clear highlights</button>' +
       '<button type="button" class="sw-btn" id="m-cancel">Close</button></div>');
     $('#m-cancel').onclick = closeModal;
     ROOT.querySelectorAll('#sw-modal [data-hl]').forEach(function (btn) {
-      btn.onclick = function () { closeModal(); applyHighlight(btn.getAttribute('data-hl')); };
+      btn.onclick = function () {
+        closeModal();
+        applyHighlight(btn.getAttribute('data-hl') || 'clear');
+      };
     });
   }
 
@@ -8232,7 +8586,7 @@ function exportTxt() {
     }
     save();
   }
-  // Patch saveCurrent to handle revision
+  // Patch saveCurrent: revision + never persist highlight/grammar chrome
   var _saveCurrentOrig = saveCurrent;
   saveCurrent = function () {
     var ch = getActiveChapter();
@@ -8242,8 +8596,24 @@ function exportTxt() {
     sc.title = sceneTitle.value.trim() || sc.title;
     sc.synopsis = synopsisEl.value.trim();
     sc.status = statusSel.value || sc.status;
-    if (sc.revisionMode) sc.contentB = editor.innerHTML;
-    else sc.content = editor.innerHTML;
+    var rawHtml = editor.innerHTML || '';
+    if (rawHtml.indexOf('sw-hl-') !== -1 || rawHtml.indexOf('sw-grammar-mark') !== -1) {
+      if (typeof stripHighlightSpansFromHtml === 'function') rawHtml = stripHighlightSpansFromHtml(rawHtml);
+      if (typeof stripGrammarSpansFromHtml === 'function') rawHtml = stripGrammarSpansFromHtml(rawHtml);
+      else {
+        var tmp = document.createElement('div');
+        tmp.innerHTML = rawHtml;
+        tmp.querySelectorAll('.sw-hl-dialogue, .sw-hl-adverb, .sw-hl-filter, .sw-grammar-mark').forEach(function (el) {
+          var p = el.parentNode;
+          if (!p) return;
+          while (el.firstChild) p.insertBefore(el.firstChild, el);
+          p.removeChild(el);
+        });
+        rawHtml = tmp.innerHTML;
+      }
+    }
+    if (sc.revisionMode) sc.contentB = rawHtml;
+    else sc.content = rawHtml;
     ch.status = sc.status;
   };
 
