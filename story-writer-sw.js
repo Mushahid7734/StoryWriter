@@ -1,5 +1,5 @@
 /* StoryWriter service worker - offline-first */
-const CACHE = 'storywriter-offline-v7';
+const CACHE = 'storywriter-offline-v8';
 const PRECACHE = [
   './',
   './index.html',
