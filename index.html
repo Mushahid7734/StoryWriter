@@ -533,7 +533,7 @@
 
     #sw-root .sw-modal-bg {
       display: none; position: absolute; inset: 0; background: rgba(0,0,0,0.4);
-      z-index: 10000; align-items: center; justify-content: center; padding: 14px;
+      z-index: 20000; align-items: center; justify-content: center; padding: 14px;
     }
     #sw-root .sw-modal-bg.open { display: flex; }
     #sw-root .sw-modal {
@@ -579,7 +579,9 @@
     #sw-root .sw-hover-panel {
       display: none; position: absolute; z-index: 10050; background: var(--sw-paper);
       border: 1px solid var(--sw-border); border-radius: 10px; box-shadow: 0 10px 28px rgba(0,0,0,0.15);
-      padding: 12px 14px; max-width: 300px; font-size: 0.84rem;
+      padding: 12px 14px; max-width: min(300px, calc(100% - 16px)); min-width: 160px;
+      font-size: 0.84rem; max-height: min(70vh, 420px); overflow-x: hidden; overflow-y: auto;
+      -webkit-overflow-scrolling: touch; box-sizing: border-box; pointer-events: auto;
     }
     #sw-root .sw-hover-panel.open { display: block; }
     #sw-root .sw-hover-panel h4 {
@@ -4331,14 +4333,54 @@
   }
 
   function positionHoverNear(rect) {
+    if (!hoverEl || !rect) return;
     const rootR = ROOT.getBoundingClientRect();
+    const pad = 8;
+    // Make visible first so we can measure real size (content-dependent)
     hoverEl.classList.add('open');
-    let left = rect.left - rootR.left;
-    let top = rect.bottom - rootR.top + 6;
-    if (left + 300 > rootR.width) left = rootR.width - 310;
-    if (top + 160 > rootR.height) top = Math.max(4, rect.top - rootR.top - 120);
-    hoverEl.style.left = Math.max(4, left) + 'px';
-    hoverEl.style.top = Math.max(4, top) + 'px';
+    hoverEl.style.visibility = 'hidden';
+    hoverEl.style.left = '0px';
+    hoverEl.style.top = '0px';
+    // Force layout
+    var panelW = hoverEl.offsetWidth || 280;
+    var panelH = hoverEl.offsetHeight || 120;
+    // Cap to root so we never claim more space than exists
+    var maxW = Math.max(120, rootR.width - pad * 2);
+    var maxH = Math.max(80, rootR.height - pad * 2);
+    if (panelW > maxW) panelW = maxW;
+    if (panelH > maxH) panelH = maxH;
+    hoverEl.style.maxWidth = maxW + 'px';
+    hoverEl.style.maxHeight = maxH + 'px';
+
+    // Prefer below the mention; flip above if not enough room
+    var left = rect.left - rootR.left;
+    var top = rect.bottom - rootR.top + 6;
+    var spaceBelow = rootR.bottom - rect.bottom;
+    var spaceAbove = rect.top - rootR.top;
+    if (spaceBelow < panelH + pad && spaceAbove > spaceBelow) {
+      top = rect.top - rootR.top - panelH - 6;
+    }
+    // Horizontal: keep fully inside root
+    if (left + panelW > rootR.width - pad) {
+      left = rootR.width - panelW - pad;
+    }
+    // Align to mention right edge if still overflowing left of mention on small screens
+    if (left < pad) left = pad;
+    // Final clamp after measuring again (maxHeight may have changed height)
+    hoverEl.style.left = left + 'px';
+    hoverEl.style.top = top + 'px';
+    hoverEl.style.visibility = 'visible';
+    // Second pass with actual rendered size
+    panelW = hoverEl.offsetWidth || panelW;
+    panelH = hoverEl.offsetHeight || panelH;
+    left = parseFloat(hoverEl.style.left) || left;
+    top = parseFloat(hoverEl.style.top) || top;
+    if (left + panelW > rootR.width - pad) left = Math.max(pad, rootR.width - panelW - pad);
+    if (left < pad) left = pad;
+    if (top + panelH > rootR.height - pad) top = Math.max(pad, rootR.height - panelH - pad);
+    if (top < pad) top = pad;
+    hoverEl.style.left = left + 'px';
+    hoverEl.style.top = top + 'px';
   }
 
   function showHover(mentionEl) {
@@ -4602,7 +4644,12 @@
     if (_modalKeyHandler) document.removeEventListener('keydown', _modalKeyHandler);
     _modalKeyHandler = function (e) {
       if (!modalBg.classList.contains('open')) return;
-      if (e.key === 'Escape') { e.preventDefault(); closeModal(); return; }
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        if (modalBg.getAttribute('data-sw-lock') === '1') return; // must use Skip/Save
+        closeModal();
+        return;
+      }
       if (e.key !== 'Tab') return;
       var nodes = Array.prototype.slice.call(modalEl.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'));
       nodes = nodes.filter(function (n) { return !n.disabled && n.offsetParent !== null; });
@@ -4624,7 +4671,12 @@
       try { _modalLastFocus.focus(); } catch (e) {}
     }
   }
-  modalBg.addEventListener('click', (e) => { if (e.target === modalBg) closeModal(); });
+  modalBg.addEventListener('click', (e) => {
+    if (e.target !== modalBg) return;
+    // Locked dialogs (pen-name onboarding) must use explicit Skip/Save
+    if (modalBg.getAttribute('data-sw-lock') === '1') return;
+    closeModal();
+  });
 
   function swConfirm(message) {
     return new Promise((resolve) => {
@@ -7473,24 +7525,61 @@ function exportTxt() {
   async function maybePenNameOnboarding() {
     var meta = readMeta();
     if (meta.penNameAsked) return;
-    meta.penNameAsked = true;
-    writeMeta(meta);
+    // Do NOT set penNameAsked until the user saves or skips — otherwise a
+    // dismissed/replaced modal would permanently skip the prompt.
     return new Promise(function (resolve) {
       openModal(
         '<h3>What is your pen name?</h3>' +
         '<p style="font-size:0.9rem;color:var(--sw-muted);margin:0 0 12px;line-height:1.5">' +
-        'Optional. We store it only in this browser and use it to greet you and fill title pages when you print.</p>' +
+        'Optional. Stored only in this browser — used to greet you and on title pages when you print.</p>' +
         field('Pen name', 'm-pen', '') +
         '<div class="sw-modal-actions">' +
-        '<button type="button" class="sw-btn" id="m-pen-skip">Skip</button>' +
+        '<button type="button" class="sw-btn" id="m-pen-skip">Skip for now</button>' +
         '<button type="button" class="sw-btn sw-btn-primary" id="m-pen-save">Save</button></div>'
       );
-      function done() { closeModal(); resolve(); }
-      $('#m-pen-skip').onclick = done;
-      $('#m-pen-save').onclick = function () {
-        setPenName(($('#m-pen').value || '').trim());
-        done();
+      // Keep this dialog open until explicit Skip/Save (no backdrop / Escape dismiss)
+      try { modalBg.setAttribute('data-sw-lock', '1'); } catch (e) {}
+
+      function finish(nameOrNull) {
+        try { modalBg.removeAttribute('data-sw-lock'); } catch (e) {}
+        try {
+          var m = readMeta();
+          m.penNameAsked = true;
+          writeMeta(m);
+        } catch (e) {}
+        if (nameOrNull != null && String(nameOrNull).trim()) {
+          try { setPenName(String(nameOrNull).trim()); } catch (e) {}
+        }
+        try { closeModal(); } catch (e) {}
+        resolve();
+      }
+
+      var skipBtn = document.getElementById('m-pen-skip');
+      var saveBtn = document.getElementById('m-pen-save');
+      var input = document.getElementById('m-pen');
+      if (skipBtn) skipBtn.onclick = function (e) {
+        if (e) e.preventDefault();
+        finish(null);
       };
+      if (saveBtn) saveBtn.onclick = function (e) {
+        if (e) e.preventDefault();
+        finish(input ? input.value : '');
+      };
+      if (input) {
+        input.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            finish(input.value);
+          }
+        });
+        // Focus the name field after openModal's generic focus runs
+        setTimeout(function () {
+          try {
+            input.focus();
+            if (input.select) input.select();
+          } catch (e) {}
+        }, 60);
+      }
     });
   }
 
@@ -8638,13 +8727,17 @@ function exportTxt() {
     $('#m-cancel').onclick = closeModal;
   }
 
-  // Enhance showHover with mention index
+  // Enhance showHover with mention index + re-clamp so panel stays on screen
   var _showHoverOrig = showHover;
   showHover = function (mentionEl) {
     _showHoverOrig(mentionEl);
     var data = findEntity(mentionEl.dataset.type, mentionEl.dataset.id);
     if (!data || !hoverEl.classList.contains('open')) return;
-    if (mentionEl.dataset.type === 'glossary') return; // definition already shown
+    if (mentionEl.dataset.type === 'glossary') {
+      // still re-position in case content is tall
+      try { positionHoverNear(mentionEl.getBoundingClientRect()); } catch (e) {}
+      return;
+    }
     var hits = buildMentionIndex(mentionEl.dataset.type, mentionEl.dataset.id, data.name || data.term);
     if (hits.length) {
       var extra = document.createElement('div');
@@ -8654,6 +8747,8 @@ function exportTxt() {
         (hits.length > 8 ? '<br>…' : '');
       hoverEl.appendChild(extra);
     }
+    // Content grew — clamp again so nothing is cut off by the viewport
+    try { positionHoverNear(mentionEl.getBoundingClientRect()); } catch (e) {}
   };
 
   // Location hierarchy fields - extend editLocation via monkey patch after definition is hard;
@@ -10295,8 +10390,16 @@ function exportTxt() {
     setTimeout(async function () {
       try { await maybeOfferCrashRecovery(); } catch (e) {}
       try { maybeRelinkTip(); } catch (e) {}
-      try { await maybePenNameOnboarding(); } catch (e) {}
+      // Dashboard first so the desk is visible under the dialog
       try { showDashboard(); } catch (e) {}
+      // Then pen-name prompt — stays open until Save or Skip
+      try { await maybePenNameOnboarding(); } catch (e) {}
+      // Refresh greeting if they just set a name
+      try {
+        if (ROOT.classList.contains('sw-show-dash') && typeof showDashboard === 'function') {
+          showDashboard();
+        }
+      } catch (e) {}
     }, 300);
     // Refresh "Saved X ago" occasionally
     setInterval(function () {
