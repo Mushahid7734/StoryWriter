@@ -959,8 +959,6 @@
     }
     #sw-root .sw-topbar .sw-hide-when-capsule { }
     @media (min-width: 900px) {
-      #sw-root .sw-topbar #sw-disk-save-as,
-      #sw-root .sw-topbar #sw-disk-open,
       #sw-root .sw-topbar #sw-restore-btn,
       #sw-root .sw-topbar #sw-template-btn,
       #sw-root .sw-topbar #sw-clear-data,
@@ -1201,6 +1199,8 @@
     <button type="button" class="sw-btn sw-btn-icon" id="sw-font-up" title="Larger">A+</button>
     <div class="sw-top-sep"></div>
     <button type="button" class="sw-btn" id="sw-disk-save" title="Save to linked file (Ctrl/Cmd+S). First time chooses a file.">Save disk</button>
+    <button type="button" class="sw-btn" id="sw-disk-open" title="Open a project JSON from disk">Open disk</button>
+    <button type="button" class="sw-btn" id="sw-disk-save-as" title="Save as a new file">Save as</button>
     <div class="sw-dropdown" id="sw-export-dd">
       <button type="button" class="sw-btn sw-btn-primary" id="sw-export-btn">Export ▾</button>
       <div class="sw-dropdown-menu">
@@ -1226,9 +1226,7 @@
     <button type="button" class="sw-btn" id="sw-shortcuts-btn" style="display:none">Keys</button>
     <button type="button" class="sw-btn" id="sw-fullscreen" style="display:none">Fullscreen</button>
     <button type="button" class="sw-btn" id="sw-projects-btn" style="display:none">Home</button>
-    <button type="button" class="sw-btn" id="sw-disk-save-as" style="display:none">Save as</button>
-    <button type="button" class="sw-btn" id="sw-disk-open" style="display:none">Open disk</button>
-    <button type="button" class="sw-btn" id="sw-restore-btn" style="display:none">Restore</button>
+        <button type="button" class="sw-btn" id="sw-restore-btn" style="display:none">Restore</button>
     <button type="button" class="sw-btn" id="sw-template-btn" style="display:none">Template</button>
     <button type="button" class="sw-btn" id="sw-clear-data" style="display:none">Clear</button>
     <input type="file" id="sw-restore-file" accept=".json,application/json" style="display:none">
@@ -1270,7 +1268,7 @@
 
       <div class="sw-panel active" id="sw-panel-story">
         <div class="sw-story-toolbar">
-          <button type="button" class="sw-btn" id="sw-view-write">Write</button>
+          <button type="button" class="sw-btn" id="sw-view-write" title="Story writing view">Story</button>
           <button type="button" class="sw-btn" id="sw-view-cork">Corkboard</button>
           <label class="sw-lbl" style="margin:0 0 0 8px;">Status</label>
           <select class="sw-sel" id="sw-status-sel" style="width:auto;min-width:90px;">
@@ -1336,6 +1334,7 @@
         <div class="sw-wb-toolbar">
           <button type="button" class="sw-btn sw-btn-primary" id="sw-loc-add">+ Location</button>
           <button type="button" class="sw-btn" id="sw-loc-docx">DOCX</button>
+          <button type="button" class="sw-btn sw-goto-story" title="Back to Story">← Story</button>
         </div>
         <div class="sw-wb-list" id="sw-loc-list"></div>
       </div>
@@ -1343,6 +1342,7 @@
         <div class="sw-wb-toolbar">
           <button type="button" class="sw-btn sw-btn-primary" id="sw-char-add">+ Character</button>
           <button type="button" class="sw-btn" id="sw-char-docx">DOCX</button>
+          <button type="button" class="sw-btn sw-goto-story" title="Back to Story">← Story</button>
         </div>
         <div class="sw-wb-list" id="sw-char-list"></div>
       </div>
@@ -1350,6 +1350,7 @@
         <div class="sw-wb-toolbar">
           <button type="button" class="sw-btn sw-btn-primary" id="sw-rel-add">+ Religion</button>
           <button type="button" class="sw-btn" id="sw-rel-docx">DOCX</button>
+          <button type="button" class="sw-btn sw-goto-story" title="Back to Story">← Story</button>
         </div>
         <div class="sw-wb-list" id="sw-rel-list"></div>
       </div>
@@ -1357,18 +1358,21 @@
         <div class="sw-wb-toolbar">
           <button type="button" class="sw-btn sw-btn-primary" id="sw-pl-add">+ Planet</button>
           <button type="button" class="sw-btn" id="sw-pl-docx">DOCX</button>
+          <button type="button" class="sw-btn sw-goto-story" title="Back to Story">← Story</button>
         </div>
         <div class="sw-wb-list" id="sw-pl-list"></div>
       </div>
       <div class="sw-panel" id="sw-panel-brainstorm">
         <div class="sw-wb-toolbar">
           <button type="button" class="sw-btn" id="sw-brain-docx">DOCX</button>
+          <button type="button" class="sw-btn sw-goto-story" title="Back to Story">← Story</button>
         </div>
         <div class="sw-brainstorm"><textarea id="sw-brainstorm" placeholder="Ideas, threads, questions…"></textarea></div>
       </div>
       <div class="sw-panel" id="sw-panel-timeline">
         <div class="sw-wb-toolbar">
           <button type="button" class="sw-btn sw-btn-primary" id="sw-tl-add">+ Event</button>
+          <button type="button" class="sw-btn sw-goto-story" title="Back to Story">← Story</button>
           <span style="font-size:0.78rem;color:var(--sw-muted)">Story-order timeline (not chapter order)</span>
         </div>
         <div class="sw-timeline-list" id="sw-timeline-list"></div>
@@ -1377,6 +1381,7 @@
         <div class="sw-wb-toolbar">
           <button type="button" class="sw-btn sw-btn-primary" id="sw-relmap-add">+ Relationship</button>
           <button type="button" class="sw-btn" id="sw-rel-graph-toggle">Graph view</button>
+          <button type="button" class="sw-btn sw-goto-story" title="Back to Story">← Story</button>
           <span style="font-size:0.78rem;color:var(--sw-muted)">Ally, rival, family, and other ties</span>
         </div>
         <div id="sw-rel-graph-panel" style="display:none">
@@ -1394,6 +1399,7 @@
           <button type="button" class="sw-btn sw-btn-primary" id="sw-series-set">Set series name</button>
           <button type="button" class="sw-btn" id="sw-series-link">Mark as book in series</button>
           <button type="button" class="sw-btn" id="sw-series-bridge">Import bible snapshot</button>
+          <button type="button" class="sw-btn sw-goto-story" title="Back to Story">← Story</button>
           <span style="font-size:0.78rem;color:var(--sw-muted)">Snapshot copy only — not live sync</span>
         </div>
         <div class="sw-wb-list" id="sw-series-list"></div>
@@ -1401,6 +1407,7 @@
       <div class="sw-panel" id="sw-panel-glossary">
         <div class="sw-wb-toolbar">
           <button type="button" class="sw-btn sw-btn-primary" id="sw-gloss-add">+ Term</button>
+          <button type="button" class="sw-btn sw-goto-story" title="Back to Story">← Story</button>
           <span style="font-size:0.78rem;color:var(--sw-muted)">Personal glossary for invented words</span>
         </div>
         <div class="sw-wb-list" id="sw-gloss-list"></div>
@@ -1620,18 +1627,13 @@
   let diskAutoSaveTimer = null;
   var DISK_AUTOSAVE_MS = 45000; // auto-save to linked file after idle when dirty
 
-  var IDB_HANDLES = 'handles'; // FileSystemFileHandle per project (Chromium)
-
   function openIdb() {
     return new Promise(function (resolve, reject) {
-      const req = indexedDB.open(IDB_NAME, 2);
-      req.onupgradeneeded = function (ev) {
+      const req = indexedDB.open(IDB_NAME, 1);
+      req.onupgradeneeded = function () {
         const db = req.result;
         if (!db.objectStoreNames.contains(IDB_STORE)) {
           db.createObjectStore(IDB_STORE, { keyPath: 'id' });
-        }
-        if (!db.objectStoreNames.contains(IDB_HANDLES)) {
-          db.createObjectStore(IDB_HANDLES, { keyPath: 'projectId' });
         }
       };
       req.onsuccess = function () { resolve(req.result); };
@@ -1681,108 +1683,6 @@
         req.onerror = function () { reject(req.error); };
       });
     });
-  }
-
-  /** Persist FileSystemFileHandle so reopen can restore the link (Chrome/Edge). */
-  function idbPutHandle(projectId, handle) {
-    if (!projectId || !handle) return Promise.resolve();
-    return openIdb().then(function (db) {
-      if (!db.objectStoreNames.contains(IDB_HANDLES)) return;
-      return new Promise(function (resolve, reject) {
-        try {
-          const tx = db.transaction(IDB_HANDLES, 'readwrite');
-          tx.objectStore(IDB_HANDLES).put({
-            projectId: projectId,
-            handle: handle,
-            name: handle.name || diskFileName || '',
-            savedAt: new Date().toISOString()
-          });
-          tx.oncomplete = function () { resolve(); };
-          tx.onerror = function () { reject(tx.error); };
-        } catch (e) { resolve(); }
-      });
-    }).catch(function () {});
-  }
-
-  function idbGetHandle(projectId) {
-    if (!projectId) return Promise.resolve(null);
-    return openIdb().then(function (db) {
-      if (!db.objectStoreNames.contains(IDB_HANDLES)) return null;
-      return new Promise(function (resolve, reject) {
-        const tx = db.transaction(IDB_HANDLES, 'readonly');
-        const req = tx.objectStore(IDB_HANDLES).get(projectId);
-        req.onsuccess = function () { resolve(req.result || null); };
-        req.onerror = function () { resolve(null); };
-      });
-    }).catch(function () { return null; });
-  }
-
-  function idbDeleteHandle(projectId) {
-    if (!projectId) return Promise.resolve();
-    return openIdb().then(function (db) {
-      if (!db.objectStoreNames.contains(IDB_HANDLES)) return;
-      return new Promise(function (resolve) {
-        const tx = db.transaction(IDB_HANDLES, 'readwrite');
-        tx.objectStore(IDB_HANDLES).delete(projectId);
-        tx.oncomplete = function () { resolve(); };
-        tx.onerror = function () { resolve(); };
-      });
-    }).catch(function () {});
-  }
-
-  /**
-   * Restore linked file after reload. Chromium can keep the handle in IDB;
-   * permission may be 'granted' still, or 'prompt' (one click on Save re-authorizes — no file picker).
-   */
-  async function restoreFileHandleForProject(projectId) {
-    fileHandle = null;
-    if (!projectId || typeof window.showSaveFilePicker !== 'function') return false;
-    try {
-      var rec = await idbGetHandle(projectId);
-      if (!rec || !rec.handle) return false;
-      var handle = rec.handle;
-      if (rec.name) diskFileName = rec.name;
-      else if (handle.name) diskFileName = handle.name;
-      var perm = 'granted';
-      if (handle.queryPermission) {
-        perm = await handle.queryPermission({ mode: 'readwrite' });
-      }
-      if (perm === 'granted') {
-        fileHandle = handle;
-        updateDiskSaveLabel();
-        return true;
-      }
-      // Keep handle so Save / Ctrl+S can requestPermission under a user gesture
-      if (perm === 'prompt') {
-        fileHandle = handle;
-        updateDiskSaveLabel();
-        return 'prompt';
-      }
-      // denied — drop stored handle
-      await idbDeleteHandle(projectId);
-      fileHandle = null;
-      return false;
-    } catch (e) {
-      fileHandle = null;
-      return false;
-    }
-  }
-
-  async function ensureFileHandlePermission() {
-    if (!fileHandle) return false;
-    try {
-      var perm = 'granted';
-      if (fileHandle.queryPermission) {
-        perm = await fileHandle.queryPermission({ mode: 'readwrite' });
-      }
-      if (perm === 'granted') return true;
-      if (perm === 'prompt' && fileHandle.requestPermission) {
-        perm = await fileHandle.requestPermission({ mode: 'readwrite' });
-      }
-      return perm === 'granted';
-    } catch (e) {
-      return false;
-    }
   }
 
   function readMeta() {
@@ -1870,14 +1770,14 @@
   function maybeRelinkTip() {
     try {
       if (typeof window.showSaveFilePicker !== 'function') return;
-      if (fileHandle) return; // restored from IndexedDB — may only need permission on first Save
+      if (fileHandle) return;
       if (!(diskFileName || lastDiskSavedAt)) return;
       var key = 'storywriter-relink-tip';
       var day = new Date().toISOString().slice(0, 10);
       if (sessionStorage.getItem(key) === day) return;
       sessionStorage.setItem(key, day);
-      toast('No file linked — Save disk once to link “' +
-        (diskFileName || 'your project') + '” for Ctrl/Cmd+S');
+      toast('File link dropped after reload — Save disk to re-link “' +
+        (diskFileName || 'your project') + '”');
     } catch (e) {}
   }
 
@@ -2219,6 +2119,8 @@
     meta.currentId = id;
     writeMeta(meta);
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+    // Switching projects clears linked handle (handle is per session/file)
+    fileHandle = null;
     if (meta.lastDiskProjectId === id && meta.lastDiskSavedAt) {
       lastDiskSavedAt = meta.lastDiskSavedAt;
       diskFileName = meta.lastDiskFileName || '';
@@ -2227,11 +2129,6 @@
       diskFileName = '';
     }
     projectDirty = false;
-    // Restore disk link from IndexedDB (Chrome/Edge) — may need one Save click to re-authorize
-    var restored = await restoreFileHandleForProject(id);
-    if (restored === true && meta.lastDiskSavedAt) {
-      lastDiskSavedAt = meta.lastDiskSavedAt;
-    }
     updateProjectLabel();
     updateDiskSaveLabel();
     return true;
@@ -2336,7 +2233,7 @@
         await persistToIdbPromise();
         var ok = await loadProjectById(btn.dataset.id);
         closeModal();
-        if (ok) { refreshUI(); updateDiskSaveLabel(); toast('Opened project'); }
+        if (ok) { fileHandle = null; updateDiskSaveLabel(); refreshUI(); toast('Opened project'); }
         else toast('Could not open');
       };
     });
@@ -2400,9 +2297,6 @@
       meta.lastDiskProjectId = currentProjectId;
       writeMeta(meta);
     } catch (e) {}
-    if (fileHandle && currentProjectId) {
-      idbPutHandle(currentProjectId, fileHandle);
-    }
     updateDiskSaveLabel();
     updateProjectLabel();
   }
@@ -2443,20 +2337,28 @@
     await persistToIdbPromise();
     var blob = new Blob([buildProjectPayload()], { type: 'application/json' });
 
-    // Word-style: reuse existing / restored file handle when possible
+    // Word-style: reuse existing file handle when possible
     if (!forcePicker && fileHandle && window.showSaveFilePicker) {
       try {
-        var ok = await ensureFileHandlePermission();
+        var ok = true;
+        if (fileHandle.queryPermission) {
+          var perm = await fileHandle.queryPermission({ mode: 'readwrite' });
+          if (perm !== 'granted') {
+            if (fileHandle.requestPermission) {
+              perm = await fileHandle.requestPermission({ mode: 'readwrite' });
+            }
+            ok = perm === 'granted';
+          }
+        }
         if (ok) {
           await writeToFileHandle(fileHandle);
           noteDiskSaveSuccess(fileHandle.name || diskFileName);
           if (!quiet) toast('Saved' + (fileHandle.name ? ' · ' + fileHandle.name : ''));
           return;
         }
-        // Permission denied — fall through to picker
-        if (!quiet) toast('Permission needed — pick the file once more');
       } catch (e) {
-        if (!quiet) toast('Could not write linked file — choose the file again');
+        fileHandle = null;
+        if (!quiet) toast('Could not write linked file — choose Save again');
       }
     }
 
@@ -2504,7 +2406,6 @@
         var text = await file.text();
         await importProjectJson(text, file.name, { fromDiskHandle: true, fileLastModified: file.lastModified });
         diskFileName = fileHandle.name || file.name || '';
-        if (currentProjectId) idbPutHandle(currentProjectId, fileHandle);
         updateDiskSaveLabel();
         toast('Opened · ' + diskFileName + ' — Ctrl/Cmd+S updates this file');
         return;
@@ -2929,14 +2830,27 @@
     saveCurrent();
     $$('.sw-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
     $$('.sw-panel').forEach(p => p.classList.toggle('active', p.id === 'sw-panel-' + name));
-    if (name === 'story') loadIntoEditor();
+    ROOT.classList.toggle('sw-on-world-tab', name !== 'story');
+    var navLabel = document.getElementById('sw-story-nav-label');
+    if (navLabel) {
+      var labels = { locations:'Locations', characters:'Characters', religions:'Religions', planets:'Planets',
+        brainstorm:'Brainstorm', timeline:'Timeline', relations:'Relations', series:'Series', glossary:'Glossary' };
+      navLabel.textContent = labels[name] || name;
+    }
+    if (name === 'story') {
+      loadIntoEditor();
+      state.viewMode = state.viewMode === 'cork' ? 'cork' : 'write';
+      if (typeof setViewMode === 'function') setViewMode();
+    }
     if (name === 'locations') renderLocations();
     if (name === 'characters') renderCharacters();
     if (name === 'religions') renderReligions();
     if (name === 'planets') renderPlanets();
-    if (name === 'brainstorm') $('#sw-brainstorm').value = state.brainstorm || '';
+    if (name === 'brainstorm') { var b = $('#sw-brainstorm'); if (b) b.value = state.brainstorm || ''; }
     if (name === 'timeline') renderTimeline();
     if (name === 'relations') renderRelations();
+    if (name === 'series' && typeof renderSeries === 'function') renderSeries();
+    if (name === 'glossary' && typeof renderGlossary === 'function') renderGlossary();
   }
 
   function exec(cmd, val) { document.execCommand(cmd, false, val); editor.focus(); onEditorInput(); }
@@ -4455,6 +4369,22 @@ function exportTxt() {
     };
   });
   $$('.sw-tab').forEach(t => t.addEventListener('click', () => switchTab(t.dataset.tab)));
+
+  // Story navigation from world tabs
+  ROOT.addEventListener('click', function (e) {
+    var btn = e.target.closest('.sw-goto-story');
+    if (!btn || !ROOT.contains(btn)) return;
+    e.preventDefault();
+    if (typeof switchTab === 'function') switchTab('story');
+    if (typeof setViewMode === 'function') {
+      state.viewMode = 'write';
+      var cmp = document.getElementById('sw-compare');
+      if (cmp) cmp.classList.remove('active');
+      if (writeView) writeView.style.display = '';
+      setViewMode();
+    }
+  });
+
   $('#sw-loc-add').onclick = () => editLocation(null);
   $('#sw-loc-docx').onclick = () => saveListDocx('Locations', state.locations, [['Type','kind'],['Description','description'],['Notes','notes']], 'locations.docx');
   $('#sw-char-add').onclick = () => editCharacter(null);
@@ -6071,7 +6001,7 @@ function exportTxt() {
       cmp.classList.add('active');
       document.getElementById('sw-compare-a').textContent = stripHtml(a ? a.content : '');
       document.getElementById('sw-compare-b').textContent = stripHtml(b ? b.content : '');
-      toast('Comparing — click Write to return');
+      toast('Comparing — click Story to return');
     };
   }
 
@@ -6220,7 +6150,7 @@ function exportTxt() {
   function togglePastePlain() {
     state.pastePlain = !state.pastePlain;
     save();
-    var btn = document.getElementById('sw-paste-plain') || document.getElementById('sw-paste-plain-btn');
+    var btn = document.getElementById('sw-paste-plain-btn');
     if (btn) btn.style.outline = state.pastePlain ? '2px solid var(--sw-ok)' : '';
     toast(state.pastePlain ? 'Paste as plain text on' : 'Paste as plain text off');
   }
@@ -6604,10 +6534,9 @@ function exportTxt() {
     if (byId('sw-find-btn')) byId('sw-find-btn').onclick = openFindReplace;
     if (byId('sw-hl-btn')) byId('sw-hl-btn').onclick = openHighlightMenu;
     if (byId('sw-stats-btn')) byId('sw-stats-btn').onclick = showStats;
-    var pasteBtn = byId('sw-paste-plain') || byId('sw-paste-plain-btn');
-    if (pasteBtn) {
-      pasteBtn.onclick = togglePastePlain;
-      if (state.pastePlain !== false) pasteBtn.style.outline = '2px solid var(--sw-ok)';
+    if (byId('sw-paste-plain-btn')) {
+      byId('sw-paste-plain-btn').onclick = togglePastePlain;
+      if (state.pastePlain) byId('sw-paste-plain-btn').style.outline = '2px solid var(--sw-ok)';
     }
     if (byId('sw-rev-btn')) byId('sw-rev-btn').onclick = toggleRevision;
     if (byId('sw-compare-btn')) byId('sw-compare-btn').onclick = openCompare;
