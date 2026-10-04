@@ -918,6 +918,30 @@
     #sw-dashboard .sw-ach-name { font-weight: 600; margin-bottom: 4px; }
     #sw-dashboard .sw-ach-msg { font-size: 0.84rem; color: var(--sw-muted); line-height: 1.45; }
     #sw-dashboard .sw-ach-when { font-size: 0.72rem; color: var(--sw-muted); margin-top: 6px; }
+
+    #sw-dashboard .sw-ach-row{display:flex;gap:12px;align-items:flex-start}
+    #sw-dashboard .sw-ach-icon{
+      flex-shrink:0;width:40px;height:40px;border-radius:10px;
+      display:flex;align-items:center;justify-content:center;font-size:1.25rem;
+      background:color-mix(in srgb, var(--sw-accent) 14%, var(--sw-paper));
+      border:1px solid color-mix(in srgb, var(--sw-accent) 28%, var(--sw-border));
+    }
+    #sw-dashboard .sw-ach-body{flex:1;min-width:0}
+    #sw-dashboard .sw-ach-empty{text-align:center;padding:28px 16px;color:var(--sw-muted);font-size:0.9rem;line-height:1.5}
+    #sw-root .sw-capsule .sw-btn{display:inline-flex;align-items:center;gap:5px}
+    #sw-root .sw-cap-ico{width:16px;height:16px;flex-shrink:0;opacity:0.9}
+    #sw-root .sw-cap-ico svg{width:16px;height:16px;display:block}
+    #sw-dashboard .sw-prompt-card{
+      margin:0 0 16px;padding:14px 16px;border-radius:12px;
+      border:1px solid var(--sw-border);background:var(--sw-paper)
+    }
+    #sw-dashboard .sw-prompt-card h3{
+      margin:0 0 6px;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.04em;color:var(--sw-muted)
+    }
+    #sw-dashboard .sw-prompt-text{
+      font-family:"EB Garamond",Georgia,serif;font-size:1.15rem;line-height:1.45;margin:0 0 10px;color:var(--sw-ink)
+    }
+
     #sw-dashboard .sw-dash-today-card { cursor: default; }
     #sw-dashboard #sw-dash-words-card { cursor: pointer; }
     #sw-dashboard #sw-dash-words-card:hover { border-color: var(--sw-accent-soft); }
@@ -1794,10 +1818,10 @@
 
   <!-- Capsule floating bar -->
   <div class="sw-capsule" id="sw-capsule">
-    <button type="button" class="sw-btn" id="sw-cap-home" title="Author home">Home</button>
-    <button type="button" class="sw-btn" id="sw-cap-chapters" title="Toggle chapters">Chapters</button>
-    <button type="button" class="sw-btn" id="sw-cap-focus" title="Focus Mode">Focus</button>
-    <button type="button" class="sw-btn" id="sw-cap-tools" title="Tools menu">Tools ▾</button>
+    <button type="button" class="sw-btn" id="sw-cap-home" title="Author home"><span class="sw-cap-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 10.5L12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1v-9.5z"/></svg></span>Home</button>
+    <button type="button" class="sw-btn" id="sw-cap-chapters" title="Toggle chapters"><span class="sw-cap-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 4h10a2 2 0 0 1 2 2v14l-7-3-7 3V6a2 2 0 0 1 2-2z"/><path d="M19 5h1a2 2 0 0 1 2 2v13"/></svg></span>Chapters</button>
+    <button type="button" class="sw-btn" id="sw-cap-focus" title="Focus Mode"><span class="sw-cap-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M17 5l2-2M5 19l2-2"/></svg></span>Focus</button>
+    <button type="button" class="sw-btn" id="sw-cap-tools" title="Tools menu"><span class="sw-cap-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L4 17.4V20h2.6l5.7-5.3a4 4 0 0 0 5.4-5.4l-2.1 2.1-2.9-2.9 2.1-2.1z"/></svg></span>Tools ▾</button>
     <div class="sw-capsule-menu" id="sw-capsule-menu">
       <div class="sw-cap-label">Write</div>
       <button type="button" data-cap="find">Find &amp; replace</button>
@@ -2534,7 +2558,7 @@
     applyTheme();
     applyFontSize();
     ROOT.classList.toggle('sw-typewriter', !!state.typewriter);
-    if (state.typewriter) { ensureGamify(); state.gamify.focusUsed = true; }
+    if (state.typewriter) { ensureGamify(); state.gamify.focusUsed = true; try { checkAchievements(); } catch (e) {} }
     if (state.pinnedRef) ROOT.classList.add('sw-ref-open');
     else ROOT.classList.remove('sw-ref-open');
     renderChapters();
@@ -3818,112 +3842,87 @@
   var LEVEL_TITLES = ['Inkdrop', 'Page Spark', 'Quiet Quill', 'Dawn Draft', 'First Candle', 'Warm Hearth', 'Open Window', 'Morning Desk', 'Steady Lamp', 'Soft Thunder', 'River Start', 'Pathfinder', 'Map Corner', 'Story Seed', 'Root Word', 'Green Shoot', 'Early Bloom', 'Field Note', 'Trail Marker', 'Campfire', 'Night Watch', 'Second Wind', 'Deep Ink', 'Long Page', 'Wide Margin', 'Spine Light', 'Chapter Air', 'Plot Thread', 'Scene Weaver', 'Arc Keeper', 'Voice Finder', 'Echo Room', 'Name Giver', 'World Tiller', 'Sky Draft', 'Stone Step', 'Bridge Word', 'Harbor Line', 'Tide Writer', 'Star Margin', 'Forge Quiet', 'Anvil Hour', 'Glass Hour', 'Silver Draft', 'Gold Margin', 'Iron Plot', 'Copper Scene', 'Amber Arc', 'Jade Note', 'Obsidian Page', 'North Star', 'South Wind', 'East Gate', 'West Road', 'True North', 'Deep Well', 'High Shelf', 'Long Shelf', 'Full Shelf', 'Open Atlas', 'Quiet Epic', 'Loud Whisper', 'Soft Roar', 'Patient Hand', 'Brave Cut', 'Kind Edit', 'Honest Pass', 'Clear Eye', 'Warm Critic', 'Cool Head', 'Midnight Oil', 'Noon Light', 'Dusk Line', 'Dawn Again', 'Return Desk', 'Habit Flame', 'Streak Keeper', 'Day Builder', 'Week Weaver', 'Month Maker', 'Season Pen', 'Year Dream', 'Life Page', 'Legacy Draft', 'Reader Hope', 'Shelf Ready', 'Binding Near', 'Title Glow', 'Dedication', 'Epilogue Light', 'Encore Ink', 'New Blot', 'Second Book', 'Third Fire', 'Fourth Tide', 'Fifth Horizon', 'Series Heart', 'Saga Breath', 'Myth Seed', 'Legend Draft', 'Master Quiet', 'Craft Elder', 'Story Steward', 'Word Guardian', 'Ink Sovereign', 'Page Monarch', 'Desk Legend', 'Final Flourish', 'Everwriter', 'Storywright', 'Chronicler', 'Mythmaker', 'Worldwright', 'Talekeeper', 'Endpaper'];
 
   var ACHIEVEMENTS = [
-{ id: 'open_desk', name: 'Open Desk', msg: 'You opened the desk. The story can wait — but it is glad you are here.', when: 'always' },
-{ id: 'words_50', name: 'First Footsteps', msg: 'You have written 50 words in this novel. That is real labor, quietly done.', when: 'words:50' },
-{ id: 'words_100', name: 'Hundred Sparks', msg: 'You have written 100 words in this novel. That is real labor, quietly done.', when: 'words:100' },
-{ id: 'words_200', name: 'Warming Up', msg: 'You have written 200 words in this novel. That is real labor, quietly done.', when: 'words:200' },
-{ id: 'words_350', name: 'Ink Rising', msg: 'You have written 350 words in this novel. That is real labor, quietly done.', when: 'words:350' },
-{ id: 'words_500', name: 'Half a Thousand', msg: 'You have written 500 words in this novel. That is real labor, quietly done.', when: 'words:500' },
-{ id: 'words_750', name: 'Three Quarters', msg: 'You have written 750 words in this novel. That is real labor, quietly done.', when: 'words:750' },
-{ id: 'words_1000', name: 'Thousand Voices', msg: 'You have written 1,000 words in this novel. That is real labor, quietly done.', when: 'words:1000' },
-{ id: 'words_1250', name: 'Beyond a Thousand', msg: 'You have written 1,250 words in this novel. That is real labor, quietly done.', when: 'words:1250' },
-{ id: 'words_1500', name: 'Page Turner', msg: 'You have written 1,500 words in this novel. That is real labor, quietly done.', when: 'words:1500' },
-{ id: 'words_1750', name: 'Steady Hand', msg: 'You have written 1,750 words in this novel. That is real labor, quietly done.', when: 'words:1750' },
-{ id: 'words_2000', name: 'Two Thousand', msg: 'You have written 2,000 words in this novel. That is real labor, quietly done.', when: 'words:2000' },
-{ id: 'words_2500', name: 'Chapter Breath', msg: 'You have written 2,500 words in this novel. That is real labor, quietly done.', when: 'words:2500' },
-{ id: 'words_3000', name: 'Three Thousand', msg: 'You have written 3,000 words in this novel. That is real labor, quietly done.', when: 'words:3000' },
-{ id: 'words_3500', name: 'Deep Current', msg: 'You have written 3,500 words in this novel. That is real labor, quietly done.', when: 'words:3500' },
-{ id: 'words_4000', name: 'Four Thousand', msg: 'You have written 4,000 words in this novel. That is real labor, quietly done.', when: 'words:4000' },
-{ id: 'words_4500', name: 'Near Five', msg: 'You have written 4,500 words in this novel. That is real labor, quietly done.', when: 'words:4500' },
-{ id: 'words_5000', name: 'Five Thousand', msg: 'You have written 5,000 words in this novel. That is real labor, quietly done.', when: 'words:5000' },
-{ id: 'words_6000', name: 'Six Thousand', msg: 'You have written 6,000 words in this novel. That is real labor, quietly done.', when: 'words:6000' },
-{ id: 'words_7000', name: 'Seven Thousand', msg: 'You have written 7,000 words in this novel. That is real labor, quietly done.', when: 'words:7000' },
-{ id: 'words_8000', name: 'Eight Thousand', msg: 'You have written 8,000 words in this novel. That is real labor, quietly done.', when: 'words:8000' },
-{ id: 'words_9000', name: 'Nine Thousand', msg: 'You have written 9,000 words in this novel. That is real labor, quietly done.', when: 'words:9000' },
-{ id: 'words_10000', name: 'Ten Thousand', msg: 'You have written 10,000 words in this novel. That is real labor, quietly done.', when: 'words:10000' },
-{ id: 'words_12000', name: 'Twelve Thousand', msg: 'You have written 12,000 words in this novel. That is real labor, quietly done.', when: 'words:12000' },
-{ id: 'words_15000', name: 'Fifteen Thousand', msg: 'You have written 15,000 words in this novel. That is real labor, quietly done.', when: 'words:15000' },
-{ id: 'words_18000', name: 'Eighteen Thousand', msg: 'You have written 18,000 words in this novel. That is real labor, quietly done.', when: 'words:18000' },
-{ id: 'words_20000', name: 'Twenty Thousand', msg: 'You have written 20,000 words in this novel. That is real labor, quietly done.', when: 'words:20000' },
-{ id: 'words_25000', name: 'Twenty-Five Thousand', msg: 'You have written 25,000 words in this novel. That is real labor, quietly done.', when: 'words:25000' },
-{ id: 'words_30000', name: 'Thirty Thousand', msg: 'You have written 30,000 words in this novel. That is real labor, quietly done.', when: 'words:30000' },
-{ id: 'words_35000', name: 'Thirty-Five Thousand', msg: 'You have written 35,000 words in this novel. That is real labor, quietly done.', when: 'words:35000' },
-{ id: 'words_40000', name: 'Forty Thousand', msg: 'You have written 40,000 words in this novel. That is real labor, quietly done.', when: 'words:40000' },
-{ id: 'words_45000', name: 'Forty-Five Thousand', msg: 'You have written 45,000 words in this novel. That is real labor, quietly done.', when: 'words:45000' },
-{ id: 'words_50000', name: 'Fifty Thousand', msg: 'You have written 50,000 words in this novel. That is real labor, quietly done.', when: 'words:50000' },
-{ id: 'words_55000', name: 'Fifty-Five Thousand', msg: 'You have written 55,000 words in this novel. That is real labor, quietly done.', when: 'words:55000' },
-{ id: 'words_60000', name: 'Sixty Thousand', msg: 'You have written 60,000 words in this novel. That is real labor, quietly done.', when: 'words:60000' },
-{ id: 'words_65000', name: 'Sixty-Five Thousand', msg: 'You have written 65,000 words in this novel. That is real labor, quietly done.', when: 'words:65000' },
-{ id: 'words_70000', name: 'Seventy Thousand', msg: 'You have written 70,000 words in this novel. That is real labor, quietly done.', when: 'words:70000' },
-{ id: 'words_75000', name: 'Seventy-Five Thousand', msg: 'You have written 75,000 words in this novel. That is real labor, quietly done.', when: 'words:75000' },
-{ id: 'words_80000', name: 'Novel Spine', msg: 'You have written 80,000 words in this novel. That is real labor, quietly done.', when: 'words:80000' },
-{ id: 'words_90000', name: 'Ninety Thousand', msg: 'You have written 90,000 words in this novel. That is real labor, quietly done.', when: 'words:90000' },
-{ id: 'words_100000', name: 'Hundred Thousand', msg: 'You have written 100,000 words in this novel. That is real labor, quietly done.', when: 'words:100000' },
-{ id: 'words_120000', name: 'Epic Stretch', msg: 'You have written 120,000 words in this novel. That is real labor, quietly done.', when: 'words:120000' },
-{ id: 'words_150000', name: 'Saga Depth', msg: 'You have written 150,000 words in this novel. That is real labor, quietly done.', when: 'words:150000' },
-{ id: 'chars_1', name: 'First Soul', msg: 'You named a character. Someone new now walks your pages.', when: 'characters:1' },
-{ id: 'chars_2', name: 'Two Lives', msg: 'A second character joins the stage. Tension can breathe.', when: 'characters:2' },
-{ id: 'chars_3', name: 'Small Cast', msg: 'Three characters. A triangle of want and will.', when: 'characters:3' },
-{ id: 'chars_5', name: 'Ensemble Rising', msg: 'Five characters. Your world is getting crowded in the best way.', when: 'characters:5' },
-{ id: 'chars_8', name: 'Crowded Room', msg: 'Eight characters. Keep their voices distinct.', when: 'characters:8' },
-{ id: 'chars_12', name: 'Company of Twelve', msg: 'Twelve souls. You are building a living cast.', when: 'characters:12' },
-{ id: 'chars_20', name: 'Village of Voices', msg: 'Twenty characters. A village could live on your page.', when: 'characters:20' },
-{ id: 'locs_1', name: 'First Place', msg: 'You pinned a location. The story has somewhere to stand.', when: 'locations:1' },
-{ id: 'locs_2', name: 'Two Horizons', msg: 'A second place. Maps begin with two points.', when: 'locations:2' },
-{ id: 'locs_3', name: 'Third Landmark', msg: 'Three locations. Routes and journeys can form.', when: 'locations:3' },
-{ id: 'locs_5', name: 'Cartographer', msg: 'Five places. You are drawing a small world.', when: 'locations:5' },
-{ id: 'locs_10', name: 'Atlas Seed', msg: 'Ten locations. An atlas is no longer a dream.', when: 'locations:10' },
-{ id: 'relig_1', name: 'First Faith', msg: 'You invented a religion. Belief is a powerful engine on the page.', when: 'religions:1' },
-{ id: 'relig_2', name: 'Two Creeds', msg: 'Two faiths. Conflict and comfort can share a sky.', when: 'religions:2' },
-{ id: 'relig_3', name: 'Pantheon Sketch', msg: 'Three religions. Doctrine can drive plot.', when: 'religions:3' },
-{ id: 'planets_1', name: 'First World', msg: 'You added a planet. Space just got personal.', when: 'planets:1' },
-{ id: 'planets_2', name: 'Binary System', msg: 'Two planets. Travel, exile, and longing have room.', when: 'planets:2' },
-{ id: 'planets_3', name: 'Near Star', msg: 'Three planets. A small system of stories.', when: 'planets:3' },
-{ id: 'scenes_1', name: 'Scene One', msg: 'Your first scene exists. Everything grows from this.', when: 'scenes:1' },
-{ id: 'scenes_3', name: 'Three Scenes', msg: 'Three scenes. Rhythm is forming.', when: 'scenes:3' },
-{ id: 'scenes_5', name: 'Five Scenes', msg: 'Five scenes. You are sequencing a story.', when: 'scenes:5' },
-{ id: 'scenes_10', name: 'Ten Scenes', msg: 'Ten scenes. The spine of a short book.', when: 'scenes:10' },
-{ id: 'scenes_20', name: 'Twenty Scenes', msg: 'Twenty scenes. Structure is your friend.', when: 'scenes:20' },
-{ id: 'scenes_40', name: 'Forty Scenes', msg: 'Forty scenes. Patience is a craft skill.', when: 'scenes:40' },
-{ id: 'chapters_2', name: 'Second Chapter', msg: 'A second chapter. The road continues.', when: 'chapters:2' },
-{ id: 'chapters_3', name: 'Third Chapter', msg: 'Three chapters. Arc space is opening.', when: 'chapters:3' },
-{ id: 'chapters_5', name: 'Five Chapters', msg: 'Five chapters. A real middle can exist.', when: 'chapters:5' },
-{ id: 'chapters_10', name: 'Ten Chapters', msg: 'Ten chapters. Novel shape is visible.', when: 'chapters:10' },
-{ id: 'chapters_15', name: 'Fifteen Chapters', msg: 'Fifteen chapters. Endurance meets design.', when: 'chapters:15' },
-{ id: 'chapters_25', name: 'Twenty-Five Chapters', msg: 'Twenty-five chapters. You are building a long house.', when: 'chapters:25' },
-{ id: 'done_scenes_1', name: 'First Finish Line', msg: 'You marked a scene Done. Completion is a practice.', when: 'doneScenes:1' },
-{ id: 'done_scenes_3', name: 'Three Done', msg: 'Three scenes Done. You know how to close.', when: 'doneScenes:3' },
-{ id: 'done_scenes_5', name: 'Five Done', msg: 'Five scenes Done. Revision energy is real.', when: 'doneScenes:5' },
-{ id: 'done_scenes_10', name: 'Ten Done', msg: 'Ten scenes Done. Your manuscript is ripening.', when: 'doneScenes:10' },
-{ id: 'revise_scenes_1', name: 'Needs Another Pass', msg: 'You marked a scene Revise. Honesty about the draft is strength.', when: 'reviseScenes:1' },
-{ id: 'revise_scenes_3', name: 'Revision Habit', msg: 'Three scenes marked Revise. You are editing with intention.', when: 'reviseScenes:3' },
-{ id: 'timeline_1', name: 'First Beat', msg: 'You placed a timeline event. Story-order is clearer now.', when: 'timeline:1' },
-{ id: 'timeline_5', name: 'Beat Sheet', msg: 'Five timeline events. Causality is on the board.', when: 'timeline:5' },
-{ id: 'rel_1', name: 'First Tie', msg: 'You recorded a relationship. People do not float alone.', when: 'relationships:1' },
-{ id: 'rel_5', name: 'Web of Ties', msg: 'Five relationships. The social map is living.', when: 'relationships:5' },
-{ id: 'gloss_1', name: 'First Coinage', msg: 'You added a glossary term. Language is world-building.', when: 'glossary:1' },
-{ id: 'gloss_5', name: 'Lexicon Seed', msg: 'Five glossary terms. Readers will thank future-you.', when: 'glossary:5' },
-{ id: 'brain_1', name: 'Scratch Pad', msg: 'Brainstorm notes exist. Messy thinking is allowed here.', when: 'brainstorm' },
-{ id: 'thread_1', name: 'Open Thread', msg: 'You tracked an open thread. Loose ends are tools.', when: 'threads:1' },
-{ id: 'snap_1', name: 'Safety Net', msg: 'You took a snapshot. Future cuts are less frightening.', when: 'snapshots:1' },
-{ id: 'note_1', name: 'Margin Note', msg: 'A scene note that is not in the prose. Side thoughts count.', when: 'comments:1' },
-{ id: 'series_1', name: 'Series Name', msg: 'You named a series. Ambition has a label.', when: 'series' },
-{ id: 'cover_1', name: 'Cover Art', msg: 'A cover image sits on this project. It looks like a book already.', when: 'cover' },
-{ id: 'goal_set', name: 'Aim Set', msg: 'You set a session or draft goal. Direction helps the hand.', when: 'goalSet' },
-{ id: 'focus_1', name: 'Focus Mode', msg: 'You entered Focus Mode. The noise can wait.', when: 'focusUsed' },
-{ id: 'project_done', name: 'Book Finished', msg: 'You marked this novel Done. Congratulations — a rare finish line.', when: 'projectDone' },
-{ id: 'streak_3', name: 'Three-Day Flame', msg: 'A three-day writing streak. Showing up is the skill.', when: 'streak:3' },
-{ id: 'streak_7', name: 'Week of Fire', msg: 'Seven days in a row. The desk is becoming home.', when: 'streak:7' },
-{ id: 'streak_14', name: 'Two-Week Tide', msg: 'Fourteen days. Habit is forming under your feet.', when: 'streak:14' },
-{ id: 'streak_30', name: 'Month of Ink', msg: 'Thirty days of streak. This is discipline with a soft face.', when: 'streak:30' },
-{ id: 'mention_1', name: 'Name on the Page', msg: 'You used an @ mention. Continuity just got easier.', when: 'mentions:1' },
-{ id: 'multi_proj', name: 'Second Shelf', msg: 'More than one project lives here. A writer’s shelf grows.', when: 'projects:2' },
-{ id: 'multi_proj5', name: 'Busy Shelf', msg: 'Five projects. You keep more than one fire lit.', when: 'projects:5' }
+{ id: 'open_desk', icon: '✍️', name: 'Open Desk', msg: 'You opened the desk. The story can wait — but it is glad you are here.', when: 'always' },
+{ id: 'words_50', icon: '🌱', name: 'First Footsteps', msg: 'You have written 50 words in this novel. That is real labor, quietly done.', when: 'words:50' },
+{ id: 'words_100', icon: '✨', name: 'Hundred Sparks', msg: 'You have written 100 words in this novel. That is real labor, quietly done.', when: 'words:100' },
+{ id: 'words_200', icon: '🔥', name: 'Warming Up', msg: 'You have written 200 words in this novel. That is real labor, quietly done.', when: 'words:200' },
+{ id: 'words_350', icon: '💧', name: 'Ink Rising', msg: 'You have written 350 words in this novel. That is real labor, quietly done.', when: 'words:350' },
+{ id: 'words_500', icon: '📖', name: 'Half a Thousand', msg: 'You have written 500 words in this novel. That is real labor, quietly done.', when: 'words:500' },
+{ id: 'words_750', icon: '🪶', name: 'Three Quarters', msg: 'You have written 750 words in this novel. That is real labor, quietly done.', when: 'words:750' },
+{ id: 'words_1000', icon: '📣', name: 'Thousand Voices', msg: 'You have written 1,000 words in this novel. That is real labor, quietly done.', when: 'words:1000' },
+{ id: 'words_1250', icon: '🏔️', name: 'Beyond a Thousand', msg: 'You have written 1,250 words in this novel. That is real labor, quietly done.', when: 'words:1250' },
+{ id: 'words_1500', icon: '📑', name: 'Page Turner', msg: 'You have written 1,500 words in this novel. That is real labor, quietly done.', when: 'words:1500' },
+{ id: 'words_1750', icon: '✋', name: 'Steady Hand', msg: 'You have written 1,750 words in this novel. That is real labor, quietly done.', when: 'words:1750' },
+{ id: 'words_2000', icon: '2️⃣', name: 'Two Thousand', msg: 'You have written 2,000 words in this novel. That is real labor, quietly done.', when: 'words:2000' },
+{ id: 'words_2500', icon: '🫁', name: 'Chapter Breath', msg: 'You have written 2,500 words in this novel. That is real labor, quietly done.', when: 'words:2500' },
+{ id: 'words_3000', icon: '🌊', name: 'Three Thousand', msg: 'You have written 3,000 words in this novel. That is real labor, quietly done.', when: 'words:3000' },
+{ id: 'words_3500', icon: '🌀', name: 'Deep Current', msg: 'You have written 3,500 words in this novel. That is real labor, quietly done.', when: 'words:3500' },
+{ id: 'words_4000', icon: '4️⃣', name: 'Four Thousand', msg: 'You have written 4,000 words in this novel. That is real labor, quietly done.', when: 'words:4000' },
+{ id: 'words_4500', icon: '🎯', name: 'Near Five', msg: 'You have written 4,500 words in this novel. That is real labor, quietly done.', when: 'words:4500' },
+{ id: 'words_5000', icon: '⭐', name: 'Five Thousand', msg: 'You have written 5,000 words in this novel. A short story’s worth of work.', when: 'words:5000' },
+{ id: 'words_7500', icon: '🚀', name: 'Seven-Five', msg: 'You have written 7,500 words. The middle of the road is still a road.', when: 'words:7500' },
+{ id: 'words_10000', icon: '🔟', name: 'Ten Thousand', msg: 'You have written 10,000 words. A novella is in sight.', when: 'words:10000' },
+{ id: 'words_15000', icon: '📚', name: 'Fifteen Thousand', msg: 'You have written 15,000 words. The novel is taking shape.', when: 'words:15000' },
+{ id: 'words_20000', icon: '🏛️', name: 'Twenty Thousand', msg: 'You have written 20,000 words. Foundations under the story.', when: 'words:20000' },
+{ id: 'words_25000', icon: '🌲', name: 'Quarter Novel', msg: 'You have written 25,000 words. A quarter of a standard novel.', when: 'words:25000' },
+{ id: 'words_30000', icon: '🌙', name: 'Thirty Thousand', msg: 'You have written 30,000 words. The world holds more of your ink.', when: 'words:30000' },
+{ id: 'words_40000', icon: '🌅', name: 'Forty Thousand', msg: 'You have written 40,000 words. Halfway is not a myth.', when: 'words:40000' },
+{ id: 'words_50000', icon: '🏅', name: 'Fifty Thousand', msg: 'You have written 50,000 words. NaNo territory — earned, not borrowed.', when: 'words:50000' },
+{ id: 'words_60000', icon: '💎', name: 'Sixty Thousand', msg: 'You have written 60,000 words. A full short novel lives here.', when: 'words:60000' },
+{ id: 'words_70000', icon: '👑', name: 'Seventy Thousand', msg: 'You have written 70,000 words. Trade paperback weight approaches.', when: 'words:70000' },
+{ id: 'words_80000', icon: '📖', name: 'Eighty Thousand', msg: 'You have written 80,000 words. A classic novel length.', when: 'words:80000' },
+{ id: 'words_100000', icon: '🏆', name: 'Hundred Thousand', msg: 'You have written 100,000 words. Epic scale — and still a draft is a draft.', when: 'words:100000' },
+{ id: 'char_1', icon: '👤', name: 'First Character', msg: 'You named a character. Someone to care about just arrived.', when: 'characters:1' },
+{ id: 'char_3', icon: '👥', name: 'Cast of Three', msg: 'Three characters on the board. Relationships can begin.', when: 'characters:3' },
+{ id: 'char_5', icon: '🎭', name: 'Ensemble', msg: 'Five characters. The stage is getting crowded in a good way.', when: 'characters:5' },
+{ id: 'char_10', icon: '🎬', name: 'Crowded Stage', msg: 'Ten characters. You are managing a cast.', when: 'characters:10' },
+{ id: 'loc_1', icon: '📍', name: 'First Place', msg: 'A location exists. Setting is no longer abstract.', when: 'locations:1' },
+{ id: 'loc_3', icon: '🗺️', name: 'Map Pins', msg: 'Three locations. The map is starting to matter.', when: 'locations:3' },
+{ id: 'loc_5', icon: '🌍', name: 'World Tour', msg: 'Five locations. Geography serves the plot.', when: 'locations:5' },
+{ id: 'rel_1', icon: '🙏', name: 'Belief System', msg: 'A religion or belief entry exists. Culture has texture.', when: 'religions:1' },
+{ id: 'planet_1', icon: '🪐', name: 'New World', msg: 'A planet (or realm) entry exists. Scope expands.', when: 'planets:1' },
+{ id: 'scene_1', icon: '🎬', name: 'First Scene', msg: 'You created a scene. Stories move in units of attention.', when: 'scenes:1' },
+{ id: 'scene_5', icon: '🎞️', name: 'Five Scenes', msg: 'Five scenes. Momentum is a sequence.', when: 'scenes:5' },
+{ id: 'scene_10', icon: '📽️', name: 'Ten Scenes', msg: 'Ten scenes. Structure is no longer theoretical.', when: 'scenes:10' },
+{ id: 'scene_25', icon: '🧩', name: 'Twenty-Five Scenes', msg: 'Twenty-five scenes. A real outline in motion.', when: 'scenes:25' },
+{ id: 'ch_2', icon: '📗', name: 'Second Chapter', msg: 'Two chapters. The book has a turn.', when: 'chapters:2' },
+{ id: 'ch_5', icon: '📘', name: 'Five Chapters', msg: 'Five chapters. Architecture is visible.', when: 'chapters:5' },
+{ id: 'ch_10', icon: '📙', name: 'Ten Chapters', msg: 'Ten chapters. A serious spine.', when: 'chapters:10' },
+{ id: 'done_1', icon: '✅', name: 'Scene Done', msg: 'You marked a scene Done. Closure is a skill.', when: 'doneScenes:1' },
+{ id: 'done_5', icon: '☑️', name: 'Five Done', msg: 'Five scenes marked Done. Progress you can point to.', when: 'doneScenes:5' },
+{ id: 'done_10', icon: '🎉', name: 'Ten Done', msg: 'Ten scenes Done. The finish line moves closer.', when: 'doneScenes:10' },
+{ id: 'revise_1', icon: '✏️', name: 'Revision Flag', msg: 'A scene marked Revise. Honest drafting continues.', when: 'reviseScenes:1' },
+{ id: 'tl_1', icon: '⏳', name: 'Timeline Dot', msg: 'A timeline event exists. Chronology has a home.', when: 'timeline:1' },
+{ id: 'tl_5', icon: '📅', name: 'Timeline Thread', msg: 'Five timeline events. Cause and effect can be checked.', when: 'timeline:5' },
+{ id: 'relship_1', icon: '💞', name: 'First Bond', msg: 'A relationship entry exists. People connect on purpose.', when: 'relationships:1' },
+{ id: 'relship_5', icon: '🕸️', name: 'Web of Ties', msg: 'Five relationships. The graph is getting interesting.', when: 'relationships:5' },
+{ id: 'gloss_1', icon: '📝', name: 'Glossary Seed', msg: 'A glossary term exists. Shared language begins.', when: 'glossary:1' },
+{ id: 'gloss_5', icon: '📗', name: 'Glossary Shelf', msg: 'Five glossary terms. Readers will thank future-you.', when: 'glossary:5' },
+{ id: 'brain_1', icon: '💡', name: 'Scratch Pad', msg: 'Brainstorm notes exist. Messy thinking is allowed here.', when: 'brainstorm' },
+{ id: 'thread_1', icon: '🧵', name: 'Open Thread', msg: 'You tracked an open thread. Loose ends are tools.', when: 'threads:1' },
+{ id: 'snap_1', icon: '💾', name: 'Safety Net', msg: 'You took a snapshot. Future cuts are less frightening.', when: 'snapshots:1' },
+{ id: 'note_1', icon: '📌', name: 'Margin Note', msg: 'A scene note that is not in the prose. Side thoughts count.', when: 'comments:1' },
+{ id: 'series_1', icon: '📚', name: 'Series Name', msg: 'You named a series. Ambition has a label.', when: 'series' },
+{ id: 'cover_1', icon: '🖼️', name: 'Cover Art', msg: 'A cover image sits on this project. It looks like a book already.', when: 'cover' },
+{ id: 'goal_set', icon: '🎯', name: 'Aim Set', msg: 'You set a session or draft goal. Direction helps the hand.', when: 'goalSet' },
+{ id: 'focus_1', icon: '🧘', name: 'Focus Mode', msg: 'You entered Focus Mode. The noise can wait.', when: 'focusUsed' },
+{ id: 'project_done', icon: '🏁', name: 'Book Finished', msg: 'You marked this novel Done. Congratulations — a rare finish line.', when: 'projectDone' },
+{ id: 'streak_3', icon: '🔥', name: 'Three-Day Flame', msg: 'A three-day writing streak. Showing up is the skill.', when: 'streak:3' },
+{ id: 'streak_7', icon: '🔥', name: 'Week of Fire', msg: 'Seven days in a row. The desk is becoming home.', when: 'streak:7' },
+{ id: 'streak_14', icon: '🌊', name: 'Two-Week Tide', msg: 'Fourteen days. Habit is forming under your feet.', when: 'streak:14' },
+{ id: 'streak_30', icon: '📜', name: 'Month of Ink', msg: 'Thirty days of streak. This is discipline with a soft face.', when: 'streak:30' },
+{ id: 'mention_1', icon: '@', name: 'Name on the Page', msg: 'You used an @ mention. Continuity just got easier.', when: 'mentions:1' },
+{ id: 'multi_proj', icon: '📂', name: 'Second Shelf', msg: 'More than one project lives here. A writer’s shelf grows.', when: 'projects:2' },
+{ id: 'multi_proj5', icon: '🗄️', name: 'Busy Shelf', msg: 'Five projects. You keep more than one fire lit.', when: 'projects:5' },
+{ id: 'export_1', icon: '📤', name: 'First Export', msg: 'You exported a manuscript file. The draft left the browser.', when: 'exportUsed' },
+{ id: 'design_1', icon: '🎨', name: 'Book Design', msg: 'You opened the design studio. Form meets story.', when: 'designUsed' },
+{ id: 'timer_1', icon: '⏱️', name: 'Timed Session', msg: 'You ran a focus timer. Minutes can be a gentle cage.', when: 'timerUsed' },
+{ id: 'prompt_1', icon: '🎲', name: 'Prompt Accepted', msg: 'You used a daily writing prompt. Permission to start messy.', when: 'promptUsed' }
   ];
 
   function ensureGamify() {
     if (!state.gamify || typeof state.gamify !== 'object') {
-      state.gamify = { unlocked: {}, recent: [], level: 0, celebratedDone: false, focusUsed: false, mentionUsed: false };
+      state.gamify = { unlocked: {}, recent: [], level: 0, celebratedDone: false, focusUsed: false, mentionUsed: false, exportUsed: false, designUsed: false, timerUsed: false, promptUsed: false };
     }
     if (!state.gamify.unlocked) state.gamify.unlocked = {};
     if (!state.gamify.recent) state.gamify.recent = [];
@@ -3953,7 +3952,8 @@
     var projects = 1;
     try {
       var meta = readMeta();
-      projects = (meta.list || []).length || 1;
+      projects = Math.max(1, (meta.list || []).length || 1);
+      if (typeof currentProjectId !== 'undefined' && currentProjectId && !(meta.list || []).some(function (x) { return x.id === currentProjectId; })) projects++;
     } catch (e) {}
     return {
       words: words,
@@ -3980,6 +3980,10 @@
       streak: streak,
       mentions: !!(state.gamify && state.gamify.mentionUsed),
       projects: projects,
+      exportUsed: !!(state.gamify && state.gamify.exportUsed),
+      designUsed: !!(state.gamify && state.gamify.designUsed),
+      timerUsed: !!(state.gamify && state.gamify.timerUsed),
+      promptUsed: !!(state.gamify && state.gamify.promptUsed),
       always: true
     };
   }
@@ -3992,6 +3996,10 @@
     if (when === 'goalSet') return !!stats.goalSet;
     if (when === 'focusUsed') return !!stats.focusUsed;
     if (when === 'projectDone') return !!stats.projectDone;
+    if (when === 'exportUsed') return !!stats.exportUsed;
+    if (when === 'designUsed') return !!stats.designUsed;
+    if (when === 'timerUsed') return !!stats.timerUsed;
+    if (when === 'promptUsed') return !!stats.promptUsed;
     var parts = when.split(':');
     var key = parts[0];
     var n = parseInt(parts[1], 10) || 0;
@@ -4083,7 +4091,8 @@
     fireConfetti();
     openModal(
       '<h3>Achievement · Level ' + item.level + '</h3>' +
-      '<p style="font-size:1.15rem;font-weight:600;margin:0 0 8px;font-family:EB Garamond,Georgia,serif">' +
+      '<p style="font-size:2rem;margin:0 0 6px;text-align:center">' + (item.ach.icon || '🏅') + '</p>' +
+      '<p style="font-size:1.15rem;font-weight:600;margin:0 0 8px;font-family:EB Garamond,Georgia,serif;text-align:center">' +
       escapeHtml(item.ach.name) + '</p>' +
       '<p style="line-height:1.55;margin:0 0 8px">' + escapeHtml(item.ach.msg) + '</p>' +
       '<p style="font-size:0.85rem;color:var(--sw-muted);margin:0">Title: ' + escapeHtml(levelTitleFor(item.level)) + '</p>' +
@@ -4149,19 +4158,83 @@
     var unlocked = state.gamify.unlocked || {};
     var n = Object.keys(unlocked).length;
     var total = ACHIEVEMENTS.length;
-    var rows = ACHIEVEMENTS.map(function (ach) {
-      var on = !!unlocked[ach.id];
+    var earned = ACHIEVEMENTS.filter(function (ach) { return !!unlocked[ach.id]; });
+    earned.sort(function (a, b) {
+      return String(unlocked[b.id] || '').localeCompare(String(unlocked[a.id] || ''));
+    });
+    var rows = earned.map(function (ach) {
       var when = unlocked[ach.id];
-      return '<div class="sw-ach-row' + (on ? ' on' : ' locked') + '">' +
-        '<div class="sw-ach-name">' + (on ? escapeHtml(ach.name) : '???') + '</div>' +
-        '<div class="sw-ach-msg">' + (on ? escapeHtml(ach.msg) : 'Keep writing and building your world — this one stays a surprise until you earn it.') + '</div>' +
-        (on && when ? '<div class="sw-ach-when">' + escapeHtml(String(when).slice(0, 10)) + '</div>' : '') +
-        '</div>';
+      return '<div class="sw-ach-row on">' +
+        '<div class="sw-ach-icon" aria-hidden="true">' + (ach.icon || '🏅') + '</div>' +
+        '<div class="sw-ach-body">' +
+        '<div class="sw-ach-name">' + escapeHtml(ach.name) + '</div>' +
+        '<div class="sw-ach-msg">' + escapeHtml(ach.msg) + '</div>' +
+        (when ? '<div class="sw-ach-when">Unlocked ' + escapeHtml(String(when).slice(0, 10)) + '</div>' : '') +
+        '</div></div>';
     }).join('');
     el.innerHTML =
-      '<p class="sw-ach-summary">You are <strong>Level ' + n + '</strong> — <em>' + escapeHtml(levelTitleFor(Math.max(1, n))) +
-      '</em>. ' + n + ' of ' + total + ' achievements unlocked. Locked ones stay hidden by name so the surprise stays intact.</p>' +
-      '<div class="sw-ach-list">' + rows + '</div>';
+      '<p class="sw-ach-summary">You are <strong>Level ' + Math.max(1, n) + '</strong> — <em>' + escapeHtml(levelTitleFor(Math.max(1, n))) +
+      '</em>. <strong>' + n + '</strong> of ' + total + ' achievements unlocked. Unachieved ones stay hidden.</p>' +
+      (earned.length ? '<div class="sw-ach-list">' + rows + '</div>' :
+        '<div class="sw-ach-empty">No achievements yet. Write, add a character, take a snapshot — unlocks appear here when earned.</div>');
+  }
+
+
+  var DAILY_PROMPTS = [
+    'Write a scene where your protagonist loses something small but meaningful.',
+    'Describe a room through the eyes of someone who is afraid to enter it.',
+    'Two characters argue about a memory they both lived — and remember differently.',
+    'Start with weather that mirrors a secret your character will not say.',
+    'Write only dialogue for a full page — no tags, no action beats.',
+    'A secondary character makes a choice that forces the hero’s hand.',
+    'Describe a meal that reveals class, culture, or tension at the table.',
+    'Your character receives a message they cannot answer honestly.',
+    'Write the same moment twice: once as hope, once as dread.',
+    'An object from chapter one returns with a new meaning.',
+    'Someone tells the truth and it makes everything worse.',
+    'A quiet walk becomes the most important conversation in the book.',
+    'Write a scene with a hard time limit (five minutes on the clock in-story).',
+    'Your antagonist is kind to someone the hero loves.',
+    'A plan fails for a boring, human reason — not a twist.'
+  ];
+  function dailyPromptIndex() {
+    var d = new Date();
+    var key = d.getFullYear() * 1000 + (d.getMonth() + 1) * 32 + d.getDate();
+    return key % DAILY_PROMPTS.length;
+  }
+  function renderDailyPromptCard() {
+    var host = document.getElementById('sw-dpanel-projects');
+    if (!host) return;
+    var existing = document.getElementById('sw-daily-prompt');
+    if (existing) existing.remove();
+    var card = document.createElement('div');
+    card.id = 'sw-daily-prompt';
+    card.className = 'sw-prompt-card';
+    var prompt = DAILY_PROMPTS[dailyPromptIndex()];
+    card.innerHTML = '<h3>Today’s writing prompt</h3>' +
+      '<p class="sw-prompt-text">' + escapeHtml(prompt) + '</p>' +
+      '<div style="display:flex;flex-wrap:wrap;gap:6px">' +
+      '<button type="button" class="sw-btn sw-btn-primary" id="sw-prompt-use">Use in brainstorm</button>' +
+      '<button type="button" class="sw-btn" id="sw-prompt-shuffle">Another prompt</button></div>';
+    var first = host.firstChild;
+    host.insertBefore(card, first);
+    var use = document.getElementById('sw-prompt-use');
+    if (use) use.onclick = function () {
+      ensureGamify();
+      state.gamify.promptUsed = true;
+      state.brainstorm = (state.brainstorm ? state.brainstorm + '\n\n' : '') + 'Prompt: ' + prompt + '\n';
+      try { if (typeof save === 'function') save(); } catch (e) {}
+      try { checkAchievements(); } catch (e) {}
+      var tab = document.querySelector('.sw-tab[data-tab="brainstorm"]');
+      if (tab) tab.click();
+      toast('Prompt added to brainstorm');
+    };
+    var sh = document.getElementById('sw-prompt-shuffle');
+    if (sh) sh.onclick = function () {
+      prompt = DAILY_PROMPTS[Math.floor(Math.random() * DAILY_PROMPTS.length)];
+      var p = card.querySelector('.sw-prompt-text');
+      if (p) p.textContent = prompt;
+    };
   }
 
   // ----- Corkboard -----
@@ -4357,6 +4430,11 @@
     sel.removeAllRanges();
     sel.addRange(nr);
     acEl.classList.remove('open');
+    try {
+      ensureGamify();
+      state.gamify.mentionUsed = true;
+      if (typeof checkAchievements === 'function') checkAchievements();
+    } catch (e) {}
     onEditorInput();
   }
   function checkAtTrigger() {
@@ -5180,6 +5258,8 @@
   }
 
     async function exportDocx(designOpts) {
+    try{ensureGamify();state.gamify.exportUsed=true;checkAchievements({silent:true})}catch(e){}
+    try{ensureGamify();state.gamify.exportUsed=true;checkAchievements({silent:true})}catch(e){}
     if (!window.docx) { toast('DOCX library not loaded'); return; }
     const { Document, Packer, Paragraph, TextRun, PageBreak, AlignmentType, ImageRun } = window.docx;
     var design = designOpts || null;
@@ -6663,6 +6743,7 @@ function exportTxt() {
     saveCurrent();
     try { await persistToIdbPromise(); } catch (e) {}
     ROOT.classList.add('sw-show-dash');
+    try { if (typeof renderDailyPromptCard === 'function') renderDailyPromptCard(); } catch (e) {}
     var pen = getPenName();
     var hello = document.getElementById('sw-dash-hello');
     var sub = document.getElementById('sw-dash-sub');
@@ -8481,7 +8562,7 @@ function exportTxt() {
       return;
     }
     if (pomoLeft <= 0) pomoLeft = pomoTotal;
-    pomoRunning = true;
+    pomoRunning = true; try{ensureGamify();state.gamify.timerUsed=true;checkAchievements({silent:true})}catch(e){};
     updatePomoDisplay();
     toast('Focus timer running — ' + formatPomo(pomoLeft));
     pomoTimer = setInterval(function () {
@@ -10523,6 +10604,7 @@ function exportTxt() {
   }
 
   async function openDesignStudio(id) {
+    try{ensureGamify();state.gamify.designUsed=true;checkAchievements({silent:true})}catch(e){}
     var design = getDesign(id);
     if (!design) { toast('Design not found'); return; }
     activeDesignId = id;
@@ -10825,6 +10907,7 @@ function exportTxt() {
         a.download = 'book.epub';
         a.click();
       }
+      try{ensureGamify();state.gamify.exportUsed=true;checkAchievements()}catch(e){}
       toast('EPUB downloaded');
     } catch (e) {
       toast('EPUB failed');
