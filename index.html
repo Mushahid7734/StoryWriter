@@ -2261,6 +2261,7 @@
   }
 
   function updateWordcount() {
+    try { if (typeof ensureDailySessionReset === 'function') ensureDailySessionReset({ silent: true }); } catch (e) {}
     const sc = getActiveScene();
     const w = sc ? wordCount(sc.content) : 0;
     const tot = totalWords();
@@ -2410,7 +2411,8 @@
       });
       if (!ch.status) ch.status = 'draft';
     });
-    if (!state.goals) state.goals = { sessionTarget: 500, sessionBase: 0, draftTarget: 0 };
+    if (!state.goals) state.goals = { sessionTarget: 500, sessionBase: 0, draftTarget: 0, sessionDate: '' };
+    if (state.goals.sessionDate == null) state.goals.sessionDate = '';
     if (!state.openThreads) state.openThreads = [];
     if (!state.timeline) state.timeline = [];
     if (!state.relationships) state.relationships = [];
@@ -7604,7 +7606,7 @@ function exportTxt() {
       '<input type="checkbox" id="m-autocap"' + (state.autoCapitalize ? ' checked' : '') + '> Auto-capitalize sentences (off by default; skips Mr., i.e., initials)</label>' +
       '<label style="display:flex;align-items:center;gap:8px;margin:6px 0 10px;font-size:0.88rem">' +
       '<input type="checkbox" id="m-pasteplain"' + (state.pastePlain !== false ? ' checked' : '') + '> Paste as plain text (recommended)</label>' +
-      '<p style="font-size:0.82rem;color:var(--sw-muted)">Session count starts from when you last reset or loaded the project. All data stays offline in this browser.</p>' +
+      '<p style="font-size:0.82rem;color:var(--sw-muted)">Today’s session target resets automatically each local midnight. Manual reset sets the baseline to your current word count. All data stays offline in this browser.</p>' +
       '<div class="sw-modal-actions">' +
       '<button type="button" class="sw-btn" id="m-reset-session">Reset session count</button>' +
       '<button type="button" class="sw-btn" id="m-cancel">Cancel</button>' +
@@ -7612,7 +7614,8 @@ function exportTxt() {
     $('#m-cancel').onclick = closeModal;
     $('#m-reset-session').onclick = () => {
       state.goals.sessionBase = totalWords();
-      save(); updateWordcount(); toast('Session reset');
+      state.goals.sessionDate = todayKey();
+      save(); updateWordcount(); toast('Today’s session count reset');
     };
     $('#m-save').onclick = () => {
       state.goals.sessionTarget = parseInt($('#m-session').value, 10) || 500;
@@ -8917,6 +8920,7 @@ function exportTxt() {
     var streakEl = document.getElementById('sw-streak');
     var streakTxt = streakEl ? streakEl.textContent.replace('Streak: ', '') : '0';
 
+    try { ensureDailySessionReset({ silent: true }); } catch (e) {}
     var sessionTarget = (state.goals && state.goals.sessionTarget) || 500;
     var sessionBase = (state.goals && state.goals.sessionBase) || 0;
     var sessionNow = Math.max(0, (typeof totalWords === 'function' ? totalWords() : 0) - sessionBase);
@@ -9973,33 +9977,67 @@ function exportTxt() {
   }
 
 
-  // ----- Streak -----
-  function todayKey() {
-    var d = new Date();
+  // ----- Daily session target + streak (local calendar days) -----
+  function todayKey(d) {
+    d = d || new Date();
     return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
   }
-  function recordStreakProgress() {
+  /** Reset "today" word counter at local midnight so session target refreshes each day. */
+  function ensureDailySessionReset(opts) {
+    opts = opts || {};
+    if (!state.goals) state.goals = { sessionTarget: 500, sessionBase: 0, draftTarget: 0, sessionDate: '' };
+    var today = todayKey();
+    if (state.goals.sessionDate === today) return false;
+    var tot = 0;
+    try { tot = typeof totalWords === 'function' ? totalWords() : 0; } catch (e) { tot = 0; }
+    state.goals.sessionBase = tot;
+    state.goals.sessionDate = today;
+    if (!opts.silent) {
+      try {
+        if (typeof updateWordcount === 'function') updateWordcount();
+      } catch (e) {}
+    }
+    return true;
+  }
+  function ensureStreakShape() {
     if (!state.streak) state.streak = { days: {}, lastDate: '' };
-    if (!state.gamify) state.gamify = { unlocked: {}, recent: [], level: 0, celebratedDone: false }; ensureGamify();
-    if (!state.streak.days) state.streak.days = {};
+    if (Array.isArray(state.streak.days)) {
+      var map = {};
+      state.streak.days.forEach(function (d) {
+        if (typeof d === 'string' && d) map[d] = map[d] || 1;
+      });
+      state.streak.days = map;
+    }
+    if (!state.streak.days || typeof state.streak.days !== 'object') state.streak.days = {};
+  }
+  function recordStreakProgress() {
+    ensureDailySessionReset({ silent: true });
+    ensureStreakShape();
+    try { if (!state.gamify) ensureGamify(); } catch (e) {}
     var k = todayKey();
-    var w = totalWords();
-    if (!state.streak.days[k]) state.streak.days[k] = 0;
-    // mark day active if any writing session words > 0 today relative to session base is weak;
-    // instead: if manuscript has content and user saved, count day when session > 0
+    var w = 0;
+    try { w = totalWords(); } catch (e) { w = 0; }
     var session = Math.max(0, w - (state.goals.sessionBase || 0));
-    if (session > 0) state.streak.days[k] = Math.max(state.streak.days[k], session);
-    state.streak.lastDate = k;
+    if (session > 0) {
+      state.streak.days[k] = Math.max(state.streak.days[k] || 0, session);
+      state.streak.lastDate = k;
+    }
     updateStreakUI();
   }
+  /** Consecutive active days. If today has no words yet, count through yesterday so morning UI is not zero. */
   function currentStreakCount() {
-    if (!state.streak || !state.streak.days) return 0;
-    var count = 0;
+    ensureStreakShape();
+    var days = state.streak.days;
     var d = new Date();
-    for (var i = 0; i < 366; i++) {
-      var k = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-      if (state.streak.days[k] && state.streak.days[k] > 0) count++;
-      else if (i > 0) break;
+    var today = todayKey(d);
+    if (!(days[today] > 0)) {
+      d.setDate(d.getDate() - 1);
+    }
+    var count = 0;
+    for (var i = 0; i < 400; i++) {
+      var k = todayKey(d);
+      if (days[k] && days[k] > 0) count++;
+      else break;
       d.setDate(d.getDate() - 1);
     }
     return count;
@@ -10009,6 +10047,8 @@ function exportTxt() {
     if (!el) return;
     el.innerHTML = 'Streak: <strong>' + currentStreakCount() + '</strong>d';
   }
+  function updateStreakDisplay() { updateStreakUI(); }
+  function recordStreakIfNeeded() { recordStreakProgress(); }
 
   // ----- Pomodoro (full implementation later; these aliases keep early wiring happy) -----
   var pomoLeft = 25 * 60;
@@ -10568,53 +10608,8 @@ function exportTxt() {
   var pomoLeft = 25 * 60;
   var pomoRunning = false;
 
-  function todayStr() {
-    var d = new Date();
-    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-  }
+  // (streak helpers defined earlier: ensureDailySessionReset, recordStreakProgress, currentStreakCount)
 
-  function updateStreakDisplay() {
-    if (!state.streak) state.streak = { days: {}, lastDate: '' };
-    if (!state.gamify) state.gamify = { unlocked: {}, recent: [], level: 0, celebratedDone: false }; ensureGamify();
-    if (Array.isArray(state.streak.days)) {
-      var m = {}; state.streak.days.forEach(function (d) { m[d] = 1; }); state.streak.days = m;
-    }
-    if (!state.streak.days) state.streak.days = {};
-    var el = document.getElementById('sw-streak');
-    if (!el) return;
-    var count = 0;
-    var d = new Date();
-    for (var i = 0; i < 400; i++) {
-      var key = d.toISOString().slice(0, 10);
-      if (state.streak.days[key]) count++;
-      else if (i > 0) break;
-      d.setDate(d.getDate() - 1);
-    }
-    el.innerHTML = 'Streak: <strong>' + count + '</strong>';
-  }
-
-  function recordStreakIfNeeded() {
-    if (!state.streak) state.streak = { days: [], lastDate: '' };
-    var t = todayStr();
-    if (state.streak.lastDate === t) return;
-    // only record if wrote something today (called from save when words increase)
-    var words = totalWords();
-    if (words <= 0) return;
-    if (state.streak.days.indexOf(t) === -1) state.streak.days.push(t);
-    // keep last 365
-    state.streak.days = state.streak.days.slice(-365);
-    state.streak.lastDate = t;
-    // trim broken streaks for display count: count consecutive days ending today
-    var count = 0;
-    var cur = new Date();
-    for (var i = 0; i < 400; i++) {
-      var key = cur.getFullYear() + '-' + String(cur.getMonth() + 1).padStart(2, '0') + '-' + String(cur.getDate()).padStart(2, '0');
-      if (state.streak.days.indexOf(key) >= 0) count++;
-      else break;
-      cur.setDate(cur.getDate() - 1);
-    }
-    updateStreakDisplay();
-  }
 
   var pomoTotal = 25 * 60;
   function formatPomo(sec) {
@@ -13043,8 +13038,12 @@ function exportTxt() {
     } catch (e) {
       load();
     }
-    if (!state.goals.sessionBase && state.goals.sessionBase !== 0) state.goals.sessionBase = totalWords();
+    if (!state.goals) state.goals = { sessionTarget: 500, sessionBase: 0, draftTarget: 0, sessionDate: '' };
+    try { ensureDailySessionReset({ silent: true }); } catch (e) {
+      if (!state.goals.sessionBase && state.goals.sessionBase !== 0) state.goals.sessionBase = totalWords();
+    }
     if (!state.openThreads) state.openThreads = [];
+    try { ensureStreakShape(); updateStreakUI(); } catch (e) {}
     refreshUI();
     updateProjectLabel();
     try { if (currentProjectId) await restoreFileHandleForProject(currentProjectId); } catch (e) {}
@@ -13058,6 +13057,20 @@ function exportTxt() {
   } catch (e) {}
 
     try { wireCapsule(); } catch (e) { console.warn(e); }
+    // Refresh today's target if the calendar day rolls over while the app stays open
+    try {
+      if (!window.__swDailySessionTimer) {
+        window.__swDailySessionTimer = setInterval(function () {
+          try {
+            if (typeof ensureDailySessionReset === 'function' && ensureDailySessionReset({ silent: true })) {
+              if (typeof updateWordcount === 'function') updateWordcount();
+              if (typeof updateStreakUI === 'function') updateStreakUI();
+              if (ROOT.classList.contains('sw-show-dash') && typeof showDashboard === 'function') showDashboard();
+            }
+          } catch (err) {}
+        }, 60000);
+      }
+    } catch (e) {}
     try { if (typeof wireTimerPanel === 'function') wireTimerPanel(); } catch (e) {}
     try { if (typeof wireGoogleDrive === 'function') wireGoogleDrive(); } catch (e) {}
 
