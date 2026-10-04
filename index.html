@@ -2875,32 +2875,23 @@
   }
 
   async function maybeOfferCrashRecovery() {
+    // Intentionally silent: browser draft is already the working copy in IndexedDB.
+    // No blocking dialog on every load — use Save disk when you want the file updated.
     try {
       var meta = readMeta();
       if (!meta.lastDiskSavedAt || !meta.lastDiskProjectId) return;
+      if (currentProjectId !== meta.lastDiskProjectId) return;
       var rec = await idbGet(meta.lastDiskProjectId);
       if (!rec || !rec.updatedAt) return;
       var idbT = new Date(rec.updatedAt).getTime();
       var diskT = new Date(meta.lastDiskSavedAt).getTime();
       if (isNaN(idbT) || isNaN(diskT)) return;
-      if (idbT <= diskT + 3000) return;
-      if (currentProjectId !== meta.lastDiskProjectId) return;
-      var ok = await swConfirm(
-        'Recover unsaved changes?\n\n' +
-        'This browser draft is newer than the last disk save' +
-        (meta.lastDiskFileName ? ' (' + meta.lastDiskFileName + ')' : '') + '.\n\n' +
-        'OK = keep browser draft (then Save disk to update the file).\n' +
-        'Cancel = leave as-is.'
-      );
-      if (ok) {
+      if (idbT > diskT + 3000) {
         projectDirty = true;
-        updateProjectLabel();
-        updateDiskSaveLabel();
-        toast('Recovered draft — Save disk to write the file');
+        if (typeof updateDiskSaveLabel === 'function') updateDiskSaveLabel();
       }
     } catch (e) {}
   }
-
   function applyTheme() {
     ROOT.setAttribute('data-theme', state.theme || 'parchment');
   }
@@ -10958,7 +10949,7 @@ function exportTxt() {
     try { if (typeof wireGoogleDrive === 'function') wireGoogleDrive(); } catch (e) {}
 
     setTimeout(async function () {
-      try { await maybeOfferCrashRecovery(); } catch (e) {}
+      /* recovery dialog removed — draft lives in IndexedDB */
       try { maybeRelinkTip(); } catch (e) {}
       // Dashboard first so the desk is visible under the dialog
       try { showDashboard(); } catch (e) {}
