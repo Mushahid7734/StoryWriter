@@ -28,7 +28,7 @@
   <meta name="twitter:description" content="Free offline writing app for indie authors. Draft chapters and scenes, build characters and locations, export DOCX, and work privately in your browser. Built by Mason Carter.">
   <meta name="twitter:image" content="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjV9D2HW9oqVHk_aaHaaiEIKPFOyjX1xmzqEyEOLmcric5JLEJzg5uo-Xuu4d4vH2hZSCXCaR6t1YefMpOgT7fsMb-w3WHs7oZwm5zs3j9E9a4GVDJJtJULoBQYfCUVnutGGX1AG4AwI-RISZyC309kXwR9za_dthVHpv49j3c1eDR_4Ym-j4xsDX1_So7m/s1600-rw/bTlle%20-%20Removed.jpg">
 
-  <meta name="theme-color" content="#5c4a32">
+  <meta name="theme-color" content="#3d4f5f">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -73,24 +73,24 @@
       width: 100%;
       height: 100%;
       overflow: hidden;
-      background: #f0ebe3;
+      background: #ebe6df;
     }
     /* All themes tuned for long writing sessions: no pure black/white,
        warmer paper, softer contrast, reduced blue glare on dark modes */
     #sw-root {
-      --sw-bg: #f0ebe3;
-      --sw-paper: #f6f1e8;
-      --sw-ink: #3a342c;
-      --sw-muted: #7a7060;
-      --sw-accent: #6a5a42;
-      --sw-accent-soft: #8a7a5e;
-      --sw-border: #d8cfc0;
-      --sw-panel: #e8e0d2;
-      --sw-hover: #ddd4c4;
-      --sw-tag: #4a6a7a;
+      --sw-bg: #ebe6df;
+      --sw-paper: #f7f4ef;
+      --sw-ink: #2a2e33;
+      --sw-muted: #6b727a;
+      --sw-accent: #3d4f5f;
+      --sw-accent-soft: #5a6e7e;
+      --sw-border: #d4cdc3;
+      --sw-panel: #e4ddd4;
+      --sw-hover: #dcd5cb;
+      --sw-tag: #3a5f6f;
       --sw-tag-bg: #e4ebe8;
       --sw-danger: #9a5040;
-      --sw-ok: #4a7a5a;
+      --sw-ok: #3d6b4f;
       --sw-sidebar-w: 240px;
       --sw-font-size: 16px;
       --sw-radius: 8px;
@@ -891,6 +891,26 @@
     #sw-dashboard .sw-dash-sub {
       color: var(--sw-muted); font-size: 0.92rem; margin: 0 0 22px;
     }
+    #sw-dashboard .sw-dash-current-novel{
+      background:var(--sw-paper);border:1px solid var(--sw-border);border-radius:12px;
+      padding:14px 16px;margin:0 0 12px;
+      display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;
+    }
+    #sw-dashboard .sw-dash-current-info{flex:1;min-width:min(100%,180px)}
+    #sw-dashboard .sw-dash-current-label{
+      font-size:0.68rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--sw-muted);font-weight:600;
+    }
+    #sw-dashboard .sw-dash-current-title{
+      font-family:"EB Garamond",Georgia,serif;font-size:1.25rem;font-weight:600;margin:4px 0 2px;
+    }
+    #sw-dashboard .sw-dash-current-meta{font-size:0.78rem;color:var(--sw-muted)}
+    #sw-dashboard .sw-dash-current-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+    #sw-dashboard .sw-dash-current-actions .sw-btn{min-height:40px;padding:8px 14px}
+    #sw-dashboard .sw-dash-level-bar{
+      height:6px;background:var(--sw-border);border-radius:3px;overflow:hidden;margin:8px 0 4px;
+    }
+    #sw-dashboard .sw-dash-level-fill{height:100%;background:var(--sw-accent);width:0;transition:width .25s}
+    #sw-dashboard .sw-recent-ico{margin-right:2px}
     #sw-dashboard .sw-dash-levels {
       margin: 0 0 16px; padding: 14px; border-radius: 12px;
       border: 1px solid var(--sw-border); background: var(--sw-paper);
@@ -1007,7 +1027,7 @@
       display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px;
     }
     #sw-dashboard .sw-proj-grid {
-      display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px;
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px;
     }
     #sw-dashboard .sw-proj-card {
       background: var(--sw-paper); border: 1px solid var(--sw-border); border-radius: 12px;
@@ -1019,10 +1039,19 @@
     }
     #sw-dashboard .sw-proj-card.current { outline: 2px solid var(--sw-accent); }
     #sw-dashboard .sw-proj-cover {
-      height: 110px; background: linear-gradient(135deg, var(--sw-panel), var(--sw-hover));
+      /* Book-like portrait cover ~ width:height = 1 : 1.6 */
+      aspect-ratio: 1 / 1.6;
+      width: 100%;
+      height: auto;
+      min-height: 0;
+      background: linear-gradient(135deg, var(--sw-panel), var(--sw-hover));
       display: flex; align-items: center; justify-content: center;
       font-family: "EB Garamond", Georgia, serif; font-size: 2rem; color: var(--sw-accent);
-      background-size: cover; background-position: center;
+      background-size: cover; background-position: center; background-repeat: no-repeat;
+    }
+    #sw-dashboard .sw-proj-cover.has-image {
+      font-size: 0;
+      color: transparent;
     }
     #sw-dashboard .sw-proj-body { padding: 10px 12px 12px; flex: 1; display: flex; flex-direction: column; gap: 4px; }
     #sw-dashboard .sw-proj-body h4 {
@@ -1187,18 +1216,28 @@
     }
 
 
-    /* Dashboard tabs + Progress + Designer studio */
+    /* Dashboard tabs — same pill style as PaperQuill */
     #sw-dashboard .sw-dash-tabs {
-      display: flex; gap: 4px; margin-bottom: 16px; flex-wrap: wrap;
-      border-bottom: 1px solid var(--sw-border); padding-bottom: 8px;
+      display: flex; gap: 4px; flex-wrap: wrap; margin: 16px 0 14px; padding: 5px;
+      background: var(--sw-panel); border: 1px solid var(--sw-border); border-radius: 14px;
+      position: relative; z-index: 2;
     }
     #sw-dashboard .sw-dash-tabs button {
-      font: inherit; font-size: 0.82rem; font-weight: 500; padding: 6px 12px;
-      border: none; background: transparent; color: var(--sw-muted); cursor: pointer;
-      border-radius: 8px 8px 0 0; border-bottom: 2px solid transparent;
+      font: inherit; font-size: 0.82rem; font-weight: 500; padding: 9px 14px; min-height: 42px;
+      border: 1px solid transparent; background: transparent; color: var(--sw-muted);
+      border-radius: 999px; cursor: pointer; flex: 1 1 0; min-width: 5.5rem; text-align: center;
+      transition: background .15s, color .15s, border-color .15s, box-shadow .15s;
+      -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+    }
+    #sw-dashboard .sw-dash-tabs button:hover {
+      background: var(--sw-hover); color: var(--sw-ink);
+    }
+    #sw-dashboard .sw-dash-tabs button:focus-visible {
+      outline: 2px solid var(--sw-accent); outline-offset: 2px;
     }
     #sw-dashboard .sw-dash-tabs button.active {
-      color: var(--sw-accent); border-bottom-color: var(--sw-accent); font-weight: 600;
+      background: var(--sw-accent); color: var(--sw-paper); border-color: var(--sw-accent);
+      font-weight: 600; box-shadow: 0 2px 8px color-mix(in srgb, var(--sw-accent) 35%, transparent);
     }
     #sw-dashboard .sw-dash-panel { display: none; }
     #sw-dashboard .sw-dash-panel.active { display: block; }
@@ -1335,7 +1374,7 @@
     @media (max-width: 899px) {
       #sw-root .sw-btn { min-height: 40px; padding: 8px 12px; }
       #sw-root .sw-capsule .sw-btn { min-height: 40px; padding: 8px 14px; }
-      #sw-dashboard .sw-dash-tabs button { min-height: 40px; padding: 8px 14px; }
+      #sw-dashboard .sw-dash-tabs button { min-height: 42px; padding: 9px 14px; }
     }
     #sw-root .sw-empty-state {
       text-align: center; padding: 36px 20px; border: 1px dashed var(--sw-border);
@@ -1349,7 +1388,7 @@
     @media (max-width: 600px) {
       #sw-dashboard .sw-proj-card.pinned { grid-template-columns: 1fr; }
     }
-    #sw-dashboard .sw-proj-card.pinned .sw-proj-cover { height: 100%; min-height: 110px; }
+    #sw-dashboard .sw-proj-card.pinned .sw-proj-cover { aspect-ratio: 1 / 1.6; height: auto; min-height: 0; }
     #sw-dashboard .sw-pin-badge {
       font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.04em;
       color: var(--sw-ok); font-weight: 600;
@@ -1373,20 +1412,46 @@
     }
 
 
+    /* Free-forever card — same treatment as PaperQuill */
+    #sw-dashboard .sw-free-card,
     #sw-dashboard .sw-free-promise {
-      background: var(--sw-paper);
-      border: 1px solid var(--sw-border);
-      border-left: 4px solid var(--sw-ok);
-      border-radius: 10px;
-      padding: 12px 14px;
-      margin: 0 0 16px;
-      font-size: 0.9rem;
-      line-height: 1.55;
+      position: relative; overflow: hidden; border-radius: 16px;
+      padding: 20px 18px 18px; margin: 0 0 14px;
+      border: 1px solid color-mix(in srgb, var(--sw-accent) 28%, var(--sw-border));
+      background:
+        radial-gradient(120% 80% at 100% 0%, color-mix(in srgb, var(--sw-ok) 14%, transparent), transparent 55%),
+        linear-gradient(145deg,
+          color-mix(in srgb, var(--sw-accent) 12%, var(--sw-paper)) 0%,
+          var(--sw-paper) 55%,
+          color-mix(in srgb, var(--sw-ok) 6%, var(--sw-paper)) 100%);
+      box-shadow: 0 8px 24px color-mix(in srgb, var(--sw-accent) 10%, transparent);
+      font-size: 0.9rem; line-height: 1.55; color: var(--sw-ink);
     }
-    #sw-dashboard .sw-free-promise strong { color: var(--sw-ok); }
-    #sw-dashboard .sw-free-promise a {
-      color: var(--sw-accent);
-      font-weight: 500;
+    #sw-dashboard .sw-free-card::before,
+    #sw-dashboard .sw-free-promise::before {
+      content: ''; position: absolute; inset: 0 auto 0 0; width: 4px;
+      border-radius: 16px 0 0 16px;
+      background: linear-gradient(180deg, var(--sw-accent), var(--sw-ok));
+    }
+    #sw-dashboard .sw-free-kicker {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 0.68rem; font-weight: 700; letter-spacing: 0.06em;
+      text-transform: uppercase; color: var(--sw-accent); margin: 0 0 8px;
+    }
+    #sw-dashboard .sw-free-card h3,
+    #sw-dashboard .sw-free-promise h3 {
+      font-family: "EB Garamond", Georgia, serif; font-size: 1.25rem; font-weight: 600;
+      margin: 0 0 8px; line-height: 1.3; color: var(--sw-ink);
+    }
+    #sw-dashboard .sw-free-card p,
+    #sw-dashboard .sw-free-promise p {
+      margin: 0 0 8px; font-size: 0.86rem; line-height: 1.55; color: var(--sw-ink);
+    }
+    #sw-dashboard .sw-free-actions {
+      display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px;
+    }
+    #sw-dashboard .sw-free-actions a.sw-btn {
+      text-decoration: none; display: inline-flex; align-items: center; justify-content: center;
     }
     #sw-dashboard .sw-support-card h3 {
       margin: 0 0 10px;
@@ -1656,13 +1721,16 @@
       <p class="sw-dash-hello" id="sw-dash-hello">Welcome</p>
       <p class="sw-dash-sub" id="sw-dash-sub">Your free offline writing desk</p>
       <div class="sw-dash-stats" id="sw-dash-stats"></div>
-      <div class="sw-free-promise" role="note">
-        <strong>Promise to be free forever.</strong> No pricing, no tiers.
-        Support by <a href="https://www.authormasoncarter.com/p/books-series.html" target="_blank" rel="noopener noreferrer">buying my books</a>.
-        Leave a review or see the roadmap at the
-        <a href="https://www.authormasoncarter.com/2026/09/storywriter-free-offline-writing-app.html" target="_blank" rel="noopener noreferrer">project page</a>.
-        · <a href="https://www.authormasoncarter.com/p/privacy-policy-for-storywriter.html" target="_blank" rel="noopener noreferrer">Privacy</a>
-        · <a href="https://www.authormasoncarter.com/p/terms-of-service-for-storywriter.html" target="_blank" rel="noopener noreferrer">Terms</a>
+      <div class="sw-free-card" id="sw-free-forever" role="note">
+        <div class="sw-free-kicker">✦ Our promise</div>
+        <h3>Free forever</h3>
+        <p>StoryWriter stays free — no paywall on the writing desk, no account required for local drafts. Support by buying the books if you can.</p>
+        <div class="sw-free-actions">
+          <a class="sw-btn sw-btn-primary" href="https://www.authormasoncarter.com/p/books-series.html" target="_blank" rel="noopener noreferrer">Buy the books</a>
+          <a class="sw-btn" href="https://www.authormasoncarter.com/2026/09/storywriter-free-offline-writing-app.html" target="_blank" rel="noopener noreferrer">Project page · bugs &amp; ideas</a>
+          <a class="sw-btn" href="https://www.authormasoncarter.com/p/privacy-policy-for-storywriter.html" target="_blank" rel="noopener noreferrer">Privacy</a>
+          <a class="sw-btn" href="https://www.authormasoncarter.com/p/terms-of-service-for-storywriter.html" target="_blank" rel="noopener noreferrer">Terms</a>
+        </div>
       </div>
       <div class="sw-dash-tabs" id="sw-dash-tabs">
         <button type="button" class="active" data-dtab="projects">Projects</button>
@@ -1721,30 +1789,32 @@
             <a href="https://www.authormasoncarter.com/p/terms-of-service-for-storywriter.html" target="_blank" rel="noopener noreferrer">Terms of Service</a>
           </p>
         </div>
-        <div class="sw-support-card">
+        <div class="sw-free-card" style="margin-bottom:12px">
+          <div class="sw-free-kicker">✦ Our promise</div>
           <h3>StoryWriter stays free</h3>
-          <p style="margin:0 0 10px"><strong>Promise to be free forever.</strong> No pricing. No tiers. No accounts. Built by Mason Carter for indie authors who want a private offline desk.</p>
-          <p style="margin:0 0 12px;color:var(--sw-muted);font-size:0.88rem">Projects stay in this browser unless you use Save disk / Open disk. Export DOCX, design print layouts, or export EPUB &amp; PDF from Designs.</p>
-          <div id="sw-storage-info" style="margin:0 0 14px;padding:10px 12px;border:1px solid var(--sw-border);border-radius:8px;background:var(--sw-bg);font-size:0.86rem">
-            <strong style="display:block;margin-bottom:4px">Browser storage (offline)</strong>
+          <p>No pricing. No tiers. No accounts. Built by Mason Carter for indie authors who want a private offline desk.</p>
+          <p>Projects stay in this browser unless you use Save disk / Open disk. Export DOCX, design print layouts, or export EPUB &amp; PDF from Designs.</p>
+          <div class="sw-free-actions">
+            <a class="sw-btn sw-btn-primary" href="https://www.authormasoncarter.com/p/books-series.html" target="_blank" rel="noopener noreferrer">Buy the books</a>
+            <a class="sw-btn" href="https://www.authormasoncarter.com/2026/09/storywriter-free-offline-writing-app.html" target="_blank" rel="noopener noreferrer">Project page · bugs &amp; ideas</a>
+          </div>
+        </div>
+        <div class="sw-support-card">
+          <h3>Browser storage (offline)</h3>
+          <div id="sw-storage-info" style="margin:0 0 8px;font-size:0.86rem">
             <span id="sw-storage-text" style="color:var(--sw-muted)">Checking…</span>
             <p style="margin:8px 0 8px;font-size:0.8rem;color:var(--sw-muted)">Large covers and design snapshots use the most space. Prefer Save disk for backups. This app has no server — data never leaves your device unless you export or save a file.</p>
             <button type="button" class="sw-btn" id="sw-compact-storage">Compact storage</button>
           </div>
-          <p style="margin:0 0 8px">You can support development by buying my books:</p>
-          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px">
-            <a class="sw-btn sw-btn-primary" href="https://www.authormasoncarter.com/p/books-series.html" target="_blank" rel="noopener noreferrer" style="text-decoration:none">Buy books to support development</a>
-          </div>
-          <p style="margin:0 0 8px">Leave a review, suggest features, or see the roadmap &amp; changelog:</p>
-          <div style="display:flex;flex-wrap:wrap;gap:8px">
-            <a class="sw-btn" href="https://www.authormasoncarter.com/2026/09/storywriter-free-offline-writing-app.html" target="_blank" rel="noopener noreferrer" style="text-decoration:none">Review · roadmap · changelog</a>
-          </div>
         </div>
       </div>
-      <div class="sw-free-promise" id="sw-dash-footer-promise" style="margin-top:20px">
-        <strong>Free forever.</strong> No pricing, no tiers.
-        Support by <a href="https://www.authormasoncarter.com/p/books-series.html" target="_blank" rel="noopener noreferrer">buying books</a>
-        · <a href="https://www.authormasoncarter.com/2026/09/storywriter-free-offline-writing-app.html" target="_blank" rel="noopener noreferrer">Review &amp; roadmap</a>
+      <div class="sw-free-card" id="sw-dash-footer-promise" style="margin-top:20px">
+        <div class="sw-free-kicker">✦ Free forever</div>
+        <p style="margin:0 0 4px">No pricing, no tiers. Support by buying the books if you can.</p>
+        <div class="sw-free-actions">
+          <a class="sw-btn sw-btn-primary" href="https://www.authormasoncarter.com/p/books-series.html" target="_blank" rel="noopener noreferrer">Buy the books</a>
+          <a class="sw-btn" href="https://www.authormasoncarter.com/2026/09/storywriter-free-offline-writing-app.html" target="_blank" rel="noopener noreferrer">Review &amp; roadmap</a>
+        </div>
       </div>
     </div>
   </div>
@@ -3834,83 +3904,109 @@
   // ----- Achievements, levels & confetti -----
   var LEVEL_TITLES = ['Inkdrop', 'Page Spark', 'Quiet Quill', 'Dawn Draft', 'First Candle', 'Warm Hearth', 'Open Window', 'Morning Desk', 'Steady Lamp', 'Soft Thunder', 'River Start', 'Pathfinder', 'Map Corner', 'Story Seed', 'Root Word', 'Green Shoot', 'Early Bloom', 'Field Note', 'Trail Marker', 'Campfire', 'Night Watch', 'Second Wind', 'Deep Ink', 'Long Page', 'Wide Margin', 'Spine Light', 'Chapter Air', 'Plot Thread', 'Scene Weaver', 'Arc Keeper', 'Voice Finder', 'Echo Room', 'Name Giver', 'World Tiller', 'Sky Draft', 'Stone Step', 'Bridge Word', 'Harbor Line', 'Tide Writer', 'Star Margin', 'Forge Quiet', 'Anvil Hour', 'Glass Hour', 'Silver Draft', 'Gold Margin', 'Iron Plot', 'Copper Scene', 'Amber Arc', 'Jade Note', 'Obsidian Page', 'North Star', 'South Wind', 'East Gate', 'West Road', 'True North', 'Deep Well', 'High Shelf', 'Long Shelf', 'Full Shelf', 'Open Atlas', 'Quiet Epic', 'Loud Whisper', 'Soft Roar', 'Patient Hand', 'Brave Cut', 'Kind Edit', 'Honest Pass', 'Clear Eye', 'Warm Critic', 'Cool Head', 'Midnight Oil', 'Noon Light', 'Dusk Line', 'Dawn Again', 'Return Desk', 'Habit Flame', 'Streak Keeper', 'Day Builder', 'Week Weaver', 'Month Maker', 'Season Pen', 'Year Dream', 'Life Page', 'Legacy Draft', 'Reader Hope', 'Shelf Ready', 'Binding Near', 'Title Glow', 'Dedication', 'Epilogue Light', 'Encore Ink', 'New Blot', 'Second Book', 'Third Fire', 'Fourth Tide', 'Fifth Horizon', 'Series Heart', 'Saga Breath', 'Myth Seed', 'Legend Draft', 'Master Quiet', 'Craft Elder', 'Story Steward', 'Word Guardian', 'Ink Sovereign', 'Page Monarch', 'Desk Legend', 'Final Flourish', 'Everwriter', 'Storywright', 'Chronicler', 'Mythmaker', 'Worldwright', 'Talekeeper', 'Endpaper'];
 
+  /* 100 achievements — unique names & messages; unlock via evalAchievement(when) */
   var ACHIEVEMENTS = [
-{ id: 'open_desk', icon: '✍️', name: 'Open Desk', msg: 'You opened the desk. The story can wait — but it is glad you are here.', when: 'always' },
-{ id: 'words_50', icon: '🌱', name: 'First Footsteps', msg: 'You have written 50 words in this novel. That is real labor, quietly done.', when: 'words:50' },
-{ id: 'words_100', icon: '✨', name: 'Hundred Sparks', msg: 'You have written 100 words in this novel. That is real labor, quietly done.', when: 'words:100' },
-{ id: 'words_200', icon: '🔥', name: 'Warming Up', msg: 'You have written 200 words in this novel. That is real labor, quietly done.', when: 'words:200' },
-{ id: 'words_350', icon: '💧', name: 'Ink Rising', msg: 'You have written 350 words in this novel. That is real labor, quietly done.', when: 'words:350' },
-{ id: 'words_500', icon: '📖', name: 'Half a Thousand', msg: 'You have written 500 words in this novel. That is real labor, quietly done.', when: 'words:500' },
-{ id: 'words_750', icon: '🪶', name: 'Three Quarters', msg: 'You have written 750 words in this novel. That is real labor, quietly done.', when: 'words:750' },
-{ id: 'words_1000', icon: '📣', name: 'Thousand Voices', msg: 'You have written 1,000 words in this novel. That is real labor, quietly done.', when: 'words:1000' },
-{ id: 'words_1250', icon: '🏔️', name: 'Beyond a Thousand', msg: 'You have written 1,250 words in this novel. That is real labor, quietly done.', when: 'words:1250' },
-{ id: 'words_1500', icon: '📑', name: 'Page Turner', msg: 'You have written 1,500 words in this novel. That is real labor, quietly done.', when: 'words:1500' },
-{ id: 'words_1750', icon: '✋', name: 'Steady Hand', msg: 'You have written 1,750 words in this novel. That is real labor, quietly done.', when: 'words:1750' },
-{ id: 'words_2000', icon: '2️⃣', name: 'Two Thousand', msg: 'You have written 2,000 words in this novel. That is real labor, quietly done.', when: 'words:2000' },
-{ id: 'words_2500', icon: '🫁', name: 'Chapter Breath', msg: 'You have written 2,500 words in this novel. That is real labor, quietly done.', when: 'words:2500' },
-{ id: 'words_3000', icon: '🌊', name: 'Three Thousand', msg: 'You have written 3,000 words in this novel. That is real labor, quietly done.', when: 'words:3000' },
-{ id: 'words_3500', icon: '🌀', name: 'Deep Current', msg: 'You have written 3,500 words in this novel. That is real labor, quietly done.', when: 'words:3500' },
-{ id: 'words_4000', icon: '4️⃣', name: 'Four Thousand', msg: 'You have written 4,000 words in this novel. That is real labor, quietly done.', when: 'words:4000' },
-{ id: 'words_4500', icon: '🎯', name: 'Near Five', msg: 'You have written 4,500 words in this novel. That is real labor, quietly done.', when: 'words:4500' },
-{ id: 'words_5000', icon: '⭐', name: 'Five Thousand', msg: 'You have written 5,000 words in this novel. A short story’s worth of work.', when: 'words:5000' },
-{ id: 'words_7500', icon: '🚀', name: 'Seven-Five', msg: 'You have written 7,500 words. The middle of the road is still a road.', when: 'words:7500' },
-{ id: 'words_10000', icon: '🔟', name: 'Ten Thousand', msg: 'You have written 10,000 words. A novella is in sight.', when: 'words:10000' },
-{ id: 'words_15000', icon: '📚', name: 'Fifteen Thousand', msg: 'You have written 15,000 words. The novel is taking shape.', when: 'words:15000' },
-{ id: 'words_20000', icon: '🏛️', name: 'Twenty Thousand', msg: 'You have written 20,000 words. Foundations under the story.', when: 'words:20000' },
-{ id: 'words_25000', icon: '🌲', name: 'Quarter Novel', msg: 'You have written 25,000 words. A quarter of a standard novel.', when: 'words:25000' },
-{ id: 'words_30000', icon: '🌙', name: 'Thirty Thousand', msg: 'You have written 30,000 words. The world holds more of your ink.', when: 'words:30000' },
-{ id: 'words_40000', icon: '🌅', name: 'Forty Thousand', msg: 'You have written 40,000 words. Halfway is not a myth.', when: 'words:40000' },
-{ id: 'words_50000', icon: '🏅', name: 'Fifty Thousand', msg: 'You have written 50,000 words. NaNo territory — earned, not borrowed.', when: 'words:50000' },
-{ id: 'words_60000', icon: '💎', name: 'Sixty Thousand', msg: 'You have written 60,000 words. A full short novel lives here.', when: 'words:60000' },
-{ id: 'words_70000', icon: '👑', name: 'Seventy Thousand', msg: 'You have written 70,000 words. Trade paperback weight approaches.', when: 'words:70000' },
-{ id: 'words_80000', icon: '📖', name: 'Eighty Thousand', msg: 'You have written 80,000 words. A classic novel length.', when: 'words:80000' },
-{ id: 'words_100000', icon: '🏆', name: 'Hundred Thousand', msg: 'You have written 100,000 words. Epic scale — and still a draft is a draft.', when: 'words:100000' },
+{ id: 'open_desk', icon: '✍️', name: 'Open Desk', msg: 'You opened StoryWriter. The blank page is optional; showing up is not.', when: 'always' },
+{ id: 'words_25', icon: '🪶', name: 'First Strokes', msg: 'Twenty-five words on the page. Ink has begun.', when: 'words:25' },
+{ id: 'words_50', icon: '🌱', name: 'First Footsteps', msg: 'Fifty words. A scene can start from less than this.', when: 'words:50' },
+{ id: 'words_100', icon: '✨', name: 'Hundred Sparks', msg: 'One hundred words. Momentum prefers small starts.', when: 'words:100' },
+{ id: 'words_250', icon: '🔥', name: 'Warming Up', msg: 'Two hundred fifty words. The desk is awake.', when: 'words:250' },
+{ id: 'words_500', icon: '📖', name: 'Half a Thousand', msg: 'Five hundred words — a solid session for many writers.', when: 'words:500' },
+{ id: 'words_750', icon: '💧', name: 'Ink Rising', msg: 'Seven hundred fifty words. The current is picking up.', when: 'words:750' },
+{ id: 'words_1000', icon: '📣', name: 'Thousand Voices', msg: 'One thousand words in this novel. Real labor, quietly done.', when: 'words:1000' },
+{ id: 'words_1500', icon: '📑', name: 'Page Stack', msg: 'Fifteen hundred words. Chapters notice this kind of pile.', when: 'words:1500' },
+{ id: 'words_2000', icon: '🏔️', name: 'Two Thousand', msg: 'Two thousand words. The hill is climbable.', when: 'words:2000' },
+{ id: 'words_3000', icon: '🌊', name: 'Three Thousand', msg: 'Three thousand words. Depth without drama.', when: 'words:3000' },
+{ id: 'words_5000', icon: '⭐', name: 'Five Thousand', msg: 'Five thousand words — short-story territory, earned.', when: 'words:5000' },
+{ id: 'words_7500', icon: '🚀', name: 'Seven-Five', msg: 'Seventy-five hundred words. The middle of the road is still a road.', when: 'words:7500' },
+{ id: 'words_10000', icon: '🔟', name: 'Ten Thousand', msg: 'Ten thousand words. A novella is no longer abstract.', when: 'words:10000' },
+{ id: 'words_15000', icon: '📚', name: 'Fifteen Thousand', msg: 'Fifteen thousand words. Shape is forming under the draft.', when: 'words:15000' },
+{ id: 'words_20000', icon: '🏛️', name: 'Twenty Thousand', msg: 'Twenty thousand words. Foundations, not decoration.', when: 'words:20000' },
+{ id: 'words_25000', icon: '🌲', name: 'Quarter Novel', msg: 'Twenty-five thousand words — about a quarter of a standard novel.', when: 'words:25000' },
+{ id: 'words_30000', icon: '🌙', name: 'Thirty Thousand', msg: 'Thirty thousand words. The world holds more of your ink.', when: 'words:30000' },
+{ id: 'words_40000', icon: '🌅', name: 'Forty Thousand', msg: 'Forty thousand words. Halfway is not a myth.', when: 'words:40000' },
+{ id: 'words_50000', icon: '🏅', name: 'Fifty Thousand', msg: 'Fifty thousand words. NaNo weight — earned, not borrowed.', when: 'words:50000' },
+{ id: 'words_60000', icon: '💎', name: 'Sixty Thousand', msg: 'Sixty thousand words. A full short novel lives here.', when: 'words:60000' },
+{ id: 'words_70000', icon: '👑', name: 'Seventy Thousand', msg: 'Seventy thousand words. Trade-paperback weight approaches.', when: 'words:70000' },
+{ id: 'words_80000', icon: '📕', name: 'Eighty Thousand', msg: 'Eighty thousand words. Classic novel length.', when: 'words:80000' },
+{ id: 'words_100000', icon: '🏆', name: 'Hundred Thousand', msg: 'One hundred thousand words. Epic scale — and still a draft is a draft.', when: 'words:100000' },
 { id: 'char_1', icon: '👤', name: 'First Character', msg: 'You named a character. Someone to care about just arrived.', when: 'characters:1' },
-{ id: 'char_3', icon: '👥', name: 'Cast of Three', msg: 'Three characters on the board. Relationships can begin.', when: 'characters:3' },
-{ id: 'char_5', icon: '🎭', name: 'Ensemble', msg: 'Five characters. The stage is getting crowded in a good way.', when: 'characters:5' },
-{ id: 'char_10', icon: '🎬', name: 'Crowded Stage', msg: 'Ten characters. You are managing a cast.', when: 'characters:10' },
+{ id: 'char_2', icon: '🫂', name: 'Second Soul', msg: 'Two characters. Conflict and care need at least this many.', when: 'characters:2' },
+{ id: 'char_3', icon: '👥', name: 'Cast of Three', msg: 'Three characters. Relationships can begin in earnest.', when: 'characters:3' },
+{ id: 'char_5', icon: '🎭', name: 'Ensemble', msg: 'Five characters. The stage is crowded in a good way.', when: 'characters:5' },
+{ id: 'char_8', icon: '🎪', name: 'Crowded Wings', msg: 'Eight characters. Someone will steal a scene soon.', when: 'characters:8' },
+{ id: 'char_12', icon: '🎬', name: 'Full Cast', msg: 'Twelve characters. You are managing a company.', when: 'characters:12' },
 { id: 'loc_1', icon: '📍', name: 'First Place', msg: 'A location exists. Setting is no longer abstract.', when: 'locations:1' },
-{ id: 'loc_3', icon: '🗺️', name: 'Map Pins', msg: 'Three locations. The map is starting to matter.', when: 'locations:3' },
-{ id: 'loc_5', icon: '🌍', name: 'World Tour', msg: 'Five locations. Geography serves the plot.', when: 'locations:5' },
-{ id: 'rel_1', icon: '🙏', name: 'Belief System', msg: 'A religion or belief entry exists. Culture has texture.', when: 'religions:1' },
-{ id: 'planet_1', icon: '🪐', name: 'New World', msg: 'A planet (or realm) entry exists. Scope expands.', when: 'planets:1' },
+{ id: 'loc_2', icon: '🧭', name: 'Second Pin', msg: 'Two places on the map. Travel becomes possible.', when: 'locations:2' },
+{ id: 'loc_3', icon: '🗺️', name: 'Map Pins', msg: 'Three locations. Geography starts to matter.', when: 'locations:3' },
+{ id: 'loc_5', icon: '🌍', name: 'World Tour', msg: 'Five locations. Place serves plot.', when: 'locations:5' },
+{ id: 'loc_8', icon: '🏯', name: 'Atlas Edge', msg: 'Eight locations. The atlas is getting useful.', when: 'locations:8' },
+{ id: 'rel_1', icon: '🙏', name: 'Belief System', msg: 'A religion or belief entry. Culture has texture.', when: 'religions:1' },
+{ id: 'rel_3', icon: '🕊️', name: 'Many Faiths', msg: 'Three belief systems. Worldviews can collide.', when: 'religions:3' },
+{ id: 'planet_1', icon: '🪐', name: 'New World', msg: 'A planet or realm entry. Scope expands.', when: 'planets:1' },
+{ id: 'planet_3', icon: '🌌', name: 'Sky Map', msg: 'Three worlds or realms. Cosmology is a tool.', when: 'planets:3' },
 { id: 'scene_1', icon: '🎬', name: 'First Scene', msg: 'You created a scene. Stories move in units of attention.', when: 'scenes:1' },
-{ id: 'scene_5', icon: '🎞️', name: 'Five Scenes', msg: 'Five scenes. Momentum is a sequence.', when: 'scenes:5' },
-{ id: 'scene_10', icon: '📽️', name: 'Ten Scenes', msg: 'Ten scenes. Structure is no longer theoretical.', when: 'scenes:10' },
-{ id: 'scene_25', icon: '🧩', name: 'Twenty-Five Scenes', msg: 'Twenty-five scenes. A real outline in motion.', when: 'scenes:25' },
+{ id: 'scene_3', icon: '🎞️', name: 'Three Beats', msg: 'Three scenes. Sequence starts to feel like story.', when: 'scenes:3' },
+{ id: 'scene_5', icon: '📽️', name: 'Five Scenes', msg: 'Five scenes. Momentum is a sequence.', when: 'scenes:5' },
+{ id: 'scene_10', icon: '🧩', name: 'Ten Scenes', msg: 'Ten scenes. Structure is no longer theoretical.', when: 'scenes:10' },
+{ id: 'scene_20', icon: '🧱', name: 'Twenty Scenes', msg: 'Twenty scenes. Architecture under the draft.', when: 'scenes:20' },
+{ id: 'scene_40', icon: '🏗️', name: 'Forty Scenes', msg: 'Forty scenes. A serious outline in motion.', when: 'scenes:40' },
 { id: 'ch_2', icon: '📗', name: 'Second Chapter', msg: 'Two chapters. The book has a turn.', when: 'chapters:2' },
-{ id: 'ch_5', icon: '📘', name: 'Five Chapters', msg: 'Five chapters. Architecture is visible.', when: 'chapters:5' },
-{ id: 'ch_10', icon: '📙', name: 'Ten Chapters', msg: 'Ten chapters. A serious spine.', when: 'chapters:10' },
+{ id: 'ch_3', icon: '📘', name: 'Third Act Door', msg: 'Three chapters. The spine is visible.', when: 'chapters:3' },
+{ id: 'ch_5', icon: '📙', name: 'Five Chapters', msg: 'Five chapters. Architecture shows.', when: 'chapters:5' },
+{ id: 'ch_8', icon: '📓', name: 'Eight Chapters', msg: 'Eight chapters. The novel has rooms.', when: 'chapters:8' },
+{ id: 'ch_12', icon: '📒', name: 'Twelve Chapters', msg: 'Twelve chapters. A serious spine.', when: 'chapters:12' },
+{ id: 'ch_20', icon: '📚', name: 'Twenty Chapters', msg: 'Twenty chapters. Epic-scale scaffolding.', when: 'chapters:20' },
 { id: 'done_1', icon: '✅', name: 'Scene Done', msg: 'You marked a scene Done. Closure is a skill.', when: 'doneScenes:1' },
-{ id: 'done_5', icon: '☑️', name: 'Five Done', msg: 'Five scenes marked Done. Progress you can point to.', when: 'doneScenes:5' },
-{ id: 'done_10', icon: '🎉', name: 'Ten Done', msg: 'Ten scenes Done. The finish line moves closer.', when: 'doneScenes:10' },
+{ id: 'done_3', icon: '☑️', name: 'Three Closed', msg: 'Three scenes marked Done. Progress you can point to.', when: 'doneScenes:3' },
+{ id: 'done_5', icon: '🎉', name: 'Five Closed', msg: 'Five scenes Done. The finish line moves closer.', when: 'doneScenes:5' },
+{ id: 'done_10', icon: '🏁', name: 'Ten Closed', msg: 'Ten scenes Done. Completion is a habit.', when: 'doneScenes:10' },
+{ id: 'done_25', icon: '🎖️', name: 'Twenty-Five Closed', msg: 'Twenty-five scenes Done. Rare and hard-earned.', when: 'doneScenes:25' },
 { id: 'revise_1', icon: '✏️', name: 'Revision Flag', msg: 'A scene marked Revise. Honest drafting continues.', when: 'reviseScenes:1' },
+{ id: 'revise_5', icon: '🔧', name: 'Revision Bench', msg: 'Five scenes flagged to revise. Craft over ego.', when: 'reviseScenes:5' },
 { id: 'tl_1', icon: '⏳', name: 'Timeline Dot', msg: 'A timeline event exists. Chronology has a home.', when: 'timeline:1' },
-{ id: 'tl_5', icon: '📅', name: 'Timeline Thread', msg: 'Five timeline events. Cause and effect can be checked.', when: 'timeline:5' },
-{ id: 'relship_1', icon: '💞', name: 'First Bond', msg: 'A relationship entry exists. People connect on purpose.', when: 'relationships:1' },
-{ id: 'relship_5', icon: '🕸️', name: 'Web of Ties', msg: 'Five relationships. The graph is getting interesting.', when: 'relationships:5' },
-{ id: 'gloss_1', icon: '📝', name: 'Glossary Seed', msg: 'A glossary term exists. Shared language begins.', when: 'glossary:1' },
-{ id: 'gloss_5', icon: '📗', name: 'Glossary Shelf', msg: 'Five glossary terms. Readers will thank future-you.', when: 'glossary:5' },
+{ id: 'tl_3', icon: '📅', name: 'Three Marks', msg: 'Three timeline events. Cause and effect can be checked.', when: 'timeline:3' },
+{ id: 'tl_8', icon: '🕰️', name: 'Timeline Thread', msg: 'Eight timeline events. History of the story is legible.', when: 'timeline:8' },
+{ id: 'relship_1', icon: '💞', name: 'First Bond', msg: 'A relationship entry. People connect on purpose.', when: 'relationships:1' },
+{ id: 'relship_3', icon: '🕸️', name: 'Tangled Three', msg: 'Three relationships. The graph is getting interesting.', when: 'relationships:3' },
+{ id: 'relship_6', icon: '🔗', name: 'Web of Ties', msg: 'Six relationships. Motives can pull in every direction.', when: 'relationships:6' },
+{ id: 'gloss_1', icon: '📝', name: 'Glossary Seed', msg: 'A glossary term. Shared language begins.', when: 'glossary:1' },
+{ id: 'gloss_3', icon: '📗', name: 'Three Terms', msg: 'Three glossary terms. Future readers (and you) will thank you.', when: 'glossary:3' },
+{ id: 'gloss_8', icon: '📖', name: 'Glossary Shelf', msg: 'Eight glossary terms. The invented language is real enough.', when: 'glossary:8' },
 { id: 'brain_1', icon: '💡', name: 'Scratch Pad', msg: 'Brainstorm notes exist. Messy thinking is allowed here.', when: 'brainstorm' },
 { id: 'thread_1', icon: '🧵', name: 'Open Thread', msg: 'You tracked an open thread. Loose ends are tools.', when: 'threads:1' },
+{ id: 'thread_3', icon: '🪢', name: 'Three Threads', msg: 'Three open threads. Tension has a shopping list.', when: 'threads:3' },
 { id: 'snap_1', icon: '💾', name: 'Safety Net', msg: 'You took a snapshot. Future cuts are less frightening.', when: 'snapshots:1' },
-{ id: 'note_1', icon: '📌', name: 'Margin Note', msg: 'A scene note that is not in the prose. Side thoughts count.', when: 'comments:1' },
+{ id: 'snap_5', icon: '🗂️', name: 'Snapshot Shelf', msg: 'Five snapshots. Time travel for drafts.', when: 'snapshots:5' },
+{ id: 'note_1', icon: '📌', name: 'Margin Note', msg: 'A scene note outside the prose. Side thoughts count.', when: 'comments:1' },
+{ id: 'note_5', icon: '🗒️', name: 'Note Board', msg: 'Five scene notes. The margins are working.', when: 'comments:5' },
 { id: 'series_1', icon: '📚', name: 'Series Name', msg: 'You named a series. Ambition has a label.', when: 'series' },
-{ id: 'cover_1', icon: '🖼️', name: 'Cover Art', msg: 'A cover image sits on this project. It looks like a book already.', when: 'cover' },
+{ id: 'cover_1', icon: '🖼️', name: 'Cover Art', msg: 'A cover image sits on this project. It already looks like a book.', when: 'cover' },
 { id: 'goal_set', icon: '🎯', name: 'Aim Set', msg: 'You set a session or draft goal. Direction helps the hand.', when: 'goalSet' },
+{ id: 'goal_hit', icon: '🏹', name: 'Target Hit', msg: 'You met today’s session target. Promises kept to yourself.', when: 'goalHit' },
 { id: 'focus_1', icon: '🧘', name: 'Focus Mode', msg: 'You entered Focus Mode. The noise can wait.', when: 'focusUsed' },
-{ id: 'project_done', icon: '🏁', name: 'Book Finished', msg: 'You marked this novel Done. Congratulations — a rare finish line.', when: 'projectDone' },
+{ id: 'project_done', icon: '🏁', name: 'Book Finished', msg: 'You marked this novel Done. A rare finish line.', when: 'projectDone' },
+{ id: 'streak_2', icon: '🔥', name: 'Two-Day Ember', msg: 'Two days in a row. Embers count.', when: 'streak:2' },
 { id: 'streak_3', icon: '🔥', name: 'Three-Day Flame', msg: 'A three-day writing streak. Showing up is the skill.', when: 'streak:3' },
 { id: 'streak_7', icon: '🔥', name: 'Week of Fire', msg: 'Seven days in a row. The desk is becoming home.', when: 'streak:7' },
 { id: 'streak_14', icon: '🌊', name: 'Two-Week Tide', msg: 'Fourteen days. Habit is forming under your feet.', when: 'streak:14' },
-{ id: 'streak_30', icon: '📜', name: 'Month of Ink', msg: 'Thirty days of streak. This is discipline with a soft face.', when: 'streak:30' },
+{ id: 'streak_21', icon: '🌙', name: 'Three-Week Tide', msg: 'Twenty-one days. The ritual is real.', when: 'streak:21' },
+{ id: 'streak_30', icon: '📜', name: 'Month of Ink', msg: 'Thirty days of streak. Discipline with a soft face.', when: 'streak:30' },
+{ id: 'streak_60', icon: '🏅', name: 'Two-Month Forge', msg: 'Sixty days. Identity as a writer hardens.', when: 'streak:60' },
 { id: 'mention_1', icon: '@', name: 'Name on the Page', msg: 'You used an @ mention. Continuity just got easier.', when: 'mentions:1' },
 { id: 'multi_proj', icon: '📂', name: 'Second Shelf', msg: 'More than one project lives here. A writer’s shelf grows.', when: 'projects:2' },
-{ id: 'multi_proj5', icon: '🗄️', name: 'Busy Shelf', msg: 'Five projects. You keep more than one fire lit.', when: 'projects:5' },
-{ id: 'export_1', icon: '📤', name: 'First Export', msg: 'You exported a manuscript file. The draft left the browser.', when: 'exportUsed' },
+{ id: 'multi_proj3', icon: '🗄️', name: 'Third Fire', msg: 'Three projects. You keep more than one fire lit.', when: 'projects:3' },
+{ id: 'multi_proj5', icon: '🏛️', name: 'Busy Shelf', msg: 'Five projects. Ambition with filing skills.', when: 'projects:5' },
+{ id: 'export_1', icon: '📤', name: 'First Export', msg: 'You exported a manuscript. The draft left the browser.', when: 'exportUsed' },
 { id: 'design_1', icon: '🎨', name: 'Book Design', msg: 'You opened the design studio. Form meets story.', when: 'designUsed' },
 { id: 'timer_1', icon: '⏱️', name: 'Timed Session', msg: 'You ran a focus timer. Minutes can be a gentle cage.', when: 'timerUsed' },
-{ id: 'prompt_1', icon: '🎲', name: 'Prompt Accepted', msg: 'You used a daily writing prompt. Permission to start messy.', when: 'promptUsed' }
+{ id: 'prompt_1', icon: '🎲', name: 'Prompt Accepted', msg: 'You used a daily writing prompt. Permission to start messy.', when: 'promptUsed' },
+{ id: 'session_1', icon: '☕', name: 'First Cup', msg: 'You logged a writing session toward today’s target.', when: 'sessionWords:1' },
+{ id: 'session_250', icon: '🫖', name: 'Second Cup', msg: 'Two hundred fifty words in today’s session.', when: 'sessionWords:250' },
+{ id: 'session_500', icon: '🏆', name: 'Session Strong', msg: 'Five hundred words in today’s session. A full cup.', when: 'sessionWords:500' },
+{ id: 'session_1000', icon: '🌋', name: 'Session Eruption', msg: 'One thousand words in a single day’s session.', when: 'sessionWords:1000' },
+{ id: 'syn_1', icon: '📋', name: 'Synopsis Seed', msg: 'A scene has a synopsis. Outline meets prose.', when: 'synopsis:1' },
+{ id: 'status_mix', icon: '🎚️', name: 'Status Palette', msg: 'You used draft, revise, and done statuses. Honest pipeline.', when: 'statusMix' }
   ];
 
   function ensureGamify() {
@@ -3924,14 +4020,18 @@
 
   function achievementStats() {
     var words = typeof totalWords === 'function' ? totalWords() : 0;
-    var scenes = 0, chapters = (state.chapters || []).length, doneScenes = 0, reviseScenes = 0, snaps = 0, comments = 0;
+    var scenes = 0, chapters = (state.chapters || []).length, doneScenes = 0, reviseScenes = 0, snapshots = 0, comments = 0;
+    var hasDraft = false, hasRevise = false, hasDone = false, synopsisCount = 0;
     (state.chapters || []).forEach(function (ch) {
       (ch.scenes || []).forEach(function (sc) {
         scenes++;
-        if ((sc.status || '') === 'done') doneScenes++;
-        if ((sc.status || '') === 'revise') reviseScenes++;
+        var st = (sc.status || 'draft').toLowerCase();
+        if (st === 'done') { doneScenes++; hasDone = true; }
+        else if (st === 'revise') { reviseScenes++; hasRevise = true; }
+        else { hasDraft = true; }
         snapshots += (sc.snapshots || []).length;
         comments += (sc.comments || []).length;
+        if (sc.synopsis && String(sc.synopsis).trim()) synopsisCount++;
       });
     });
     var streak = 0;
@@ -3944,9 +4044,21 @@
     } catch (e) {}
     var projects = 1;
     try {
-      var meta = readMeta();
-      projects = Math.max(1, (meta.list || []).length || 1);
-      if (typeof currentProjectId !== 'undefined' && currentProjectId && !(meta.list || []).some(function (x) { return x.id === currentProjectId; })) projects++;
+      if (window.__swProjectCountCache != null) projects = Math.max(1, window.__swProjectCountCache);
+      else {
+        var meta = readMeta();
+        projects = Math.max(1, (meta.list || []).length || 1);
+      }
+    } catch (e) {}
+    var sessionWords = 0;
+    try {
+      var base = (state.goals && state.goals.sessionBase) || 0;
+      sessionWords = Math.max(0, words - base);
+    } catch (e) {}
+    var goalHit = false;
+    try {
+      var tgt = (state.goals && state.goals.sessionTarget) || 0;
+      goalHit = tgt > 0 && sessionWords >= tgt;
     } catch (e) {}
     return {
       words: words,
@@ -3968,6 +4080,7 @@
       series: !!(state.seriesName && String(state.seriesName).trim()),
       cover: !!state.coverImage,
       goalSet: !!(state.goals && ((state.goals.sessionTarget > 0) || (state.goals.draftTarget > 0))),
+      goalHit: goalHit,
       focusUsed: !!(state.gamify && state.gamify.focusUsed),
       projectDone: (state.projectStatus || '') === 'done',
       streak: streak,
@@ -3977,6 +4090,9 @@
       designUsed: !!(state.gamify && state.gamify.designUsed),
       timerUsed: !!(state.gamify && state.gamify.timerUsed),
       promptUsed: !!(state.gamify && state.gamify.promptUsed),
+      sessionWords: sessionWords,
+      synopsis: synopsisCount,
+      statusMix: !!(hasDraft && hasRevise && hasDone),
       always: true
     };
   }
@@ -3987,12 +4103,14 @@
     if (when === 'series') return !!stats.series;
     if (when === 'cover') return !!stats.cover;
     if (when === 'goalSet') return !!stats.goalSet;
+    if (when === 'goalHit') return !!stats.goalHit;
     if (when === 'focusUsed') return !!stats.focusUsed;
     if (when === 'projectDone') return !!stats.projectDone;
     if (when === 'exportUsed') return !!stats.exportUsed;
     if (when === 'designUsed') return !!stats.designUsed;
     if (when === 'timerUsed') return !!stats.timerUsed;
     if (when === 'promptUsed') return !!stats.promptUsed;
+    if (when === 'statusMix') return !!stats.statusMix;
     var parts = when.split(':');
     var key = parts[0];
     var n = parseInt(parts[1], 10) || 0;
@@ -4012,8 +4130,10 @@
     if (key === 'snapshots') return stats.snapshots >= n;
     if (key === 'comments') return stats.comments >= n;
     if (key === 'streak') return stats.streak >= n;
-    if (key === 'mentions') return stats.mentions;
+    if (key === 'mentions') return !!stats.mentions;
     if (key === 'projects') return stats.projects >= n;
+    if (key === 'sessionWords') return stats.sessionWords >= n;
+    if (key === 'synopsis') return stats.synopsis >= n;
     return false;
   }
 
@@ -4106,24 +4226,30 @@
     var newly = [];
     ACHIEVEMENTS.forEach(function (ach) {
       if (state.gamify.unlocked[ach.id]) return;
-      if (evalAchievement(ach.when, stats)) {
-        state.gamify.unlocked[ach.id] = new Date().toISOString();
-        state.gamify.recent = [ach.id].concat(state.gamify.recent.filter(function (x) { return x !== ach.id; })).slice(0, 12);
-        newly.push(ach);
-      }
+      try {
+        if (evalAchievement(ach.when, stats)) {
+          state.gamify.unlocked[ach.id] = new Date().toISOString();
+          state.gamify.recent = [ach.id].concat(state.gamify.recent.filter(function (x) { return x !== ach.id; })).slice(0, 12);
+          newly.push(ach);
+        }
+      } catch (e) { console.warn('ach eval', ach.id, e); }
     });
     if (newly.length) {
       var base = Object.keys(state.gamify.unlocked).length - newly.length;
       state.gamify.level = Object.keys(state.gamify.unlocked).length;
       try {
-        // Persist without re-entering achievement checks
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
         if (typeof persistToIdb === 'function') persistToIdb();
       } catch (e) {}
+      // Celebrate unless silent — but always toast a brief note when silent unlocks stack
       if (!opts.silent) {
         newly.forEach(function (ach, i) {
           celebrateAchievement(ach, base + i + 1);
         });
+      } else if (newly.length === 1) {
+        try { toast((newly[0].icon || '🏅') + ' ' + newly[0].name); } catch (e) {}
+      } else if (newly.length > 1) {
+        try { toast(newly.length + ' achievements unlocked'); } catch (e) {}
       }
     }
     return newly;
@@ -6860,6 +6986,13 @@
     save();
     checkAtTrigger();
     if (state.typewriter) scrollCaretToCenter();
+    // Debounced achievement check while typing (save() also schedules one)
+    try {
+      clearTimeout(window.__swAchTypeTimer);
+      window.__swAchTypeTimer = setTimeout(function () {
+        try { checkAchievements({ silent: true }); } catch (e) {}
+      }, 900);
+    } catch (e) {}
   }
   editor.addEventListener('input', onEditorInput);
   editor.addEventListener('keyup', (e) => {
@@ -8897,6 +9030,7 @@ function exportTxt() {
       list = (await idbAll()).sort(function (a, b) {
         return (b.updatedAt || '').localeCompare(a.updatedAt || '');
       });
+      try { window.__swProjectCountCache = list.length; } catch (e) {}
       var metaPin = readMeta();
       var lastId = metaPin.lastOpenedId || metaPin.currentId || currentProjectId;
       if (lastId) {
@@ -8910,6 +9044,7 @@ function exportTxt() {
       list = (readMeta().list || []).map(function (x) {
         return { id: x.id, name: x.name, updatedAt: x.updatedAt, state: {} };
       });
+      try { window.__swProjectCountCache = list.length; } catch (e2) {}
     }
 
     var totalWordsAll = 0;
@@ -8979,16 +9114,52 @@ function exportTxt() {
       todayEl.parentNode.insertBefore(levelWrap, todayEl.nextSibling);
     }
     if (levelWrap) {
-      var lv = state.gamify.level || Object.keys(state.gamify.unlocked || {}).length || 0;
+      var lv = Object.keys(state.gamify.unlocked || {}).length || 0;
+      state.gamify.level = lv;
+      var title = levelTitleFor(Math.max(1, lv || 1));
+      var totalAch = ACHIEVEMENTS.length;
       var recent = (state.gamify.recent || []).slice(0, 3).map(function (id) {
         var a = getAchievementById(id);
-        return a ? '<span class="sw-recent-ach">' + escapeHtml(a.name) + '</span>' : '';
+        if (!a) return '';
+        return '<span class="sw-recent-ach" title="' + escapeHtml(a.msg || '') + '">' +
+          '<span class="sw-recent-ico">' + (a.icon || '🏅') + '</span> ' + escapeHtml(a.name) + '</span>';
       }).filter(Boolean).join('');
+      var curName = escapeHtml(currentProjectName || 'Untitled novel');
+      var curWords = (typeof totalWords === 'function' ? totalWords() : 0).toLocaleString();
       levelWrap.innerHTML =
-        '<div class="sw-dash-level-head"><strong>Level ' + lv + ' · ' + escapeHtml(levelTitleFor(Math.max(1, lv))) + '</strong>' +
-        '<span>' + lv + ' achievements · open the Achievements tab for the full journey</span></div>' +
-        (recent ? '<div class="sw-recent-achs"><span class="sw-recent-label">Recent</span>' + recent + '</div>' :
-          '<p class="sw-level-next">Write, add a character, place a location — milestones will appear here as you earn them.</p>');
+        '<div class="sw-dash-current-novel">' +
+          '<div class="sw-dash-current-info">' +
+            '<div class="sw-dash-current-label">Current novel</div>' +
+            '<div class="sw-dash-current-title">' + curName + '</div>' +
+            '<div class="sw-dash-current-meta">' + curWords + ' words · switch novels in Projects below</div>' +
+          '</div>' +
+          '<div class="sw-dash-current-actions">' +
+            '<button type="button" class="sw-btn sw-btn-primary" id="sw-dash-open-desk">Open desk</button>' +
+          '</div>' +
+        '</div>' +
+        '<div class="sw-dash-level-head">' +
+          '<strong>Level ' + Math.max(1, lv) + ' · ' + escapeHtml(title) + '</strong>' +
+          '<span>' + lv + ' / ' + totalAch + ' achievements · full list in Achievements tab</span>' +
+        '</div>' +
+        '<div class="sw-dash-level-bar"><div class="sw-dash-level-fill" style="width:' +
+          Math.min(100, Math.round((lv / Math.max(1, totalAch)) * 100)) + '%"></div></div>' +
+        (recent
+          ? '<div class="sw-recent-achs"><span class="sw-recent-label">Recent</span>' + recent + '</div>'
+          : '<p class="sw-level-next">Write, add a character, place a location — milestones appear here as you earn them.</p>');
+    }
+    var openDeskBtn = document.getElementById('sw-dash-open-desk');
+    if (openDeskBtn) {
+      openDeskBtn.onclick = function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        try {
+          if (typeof hideDashboard === 'function') hideDashboard();
+          else ROOT.classList.remove('sw-show-dash');
+        } catch (err) {
+          ROOT.classList.remove('sw-show-dash');
+        }
+        try { if (typeof refreshUI === 'function') refreshUI(); } catch (err) {}
+      };
     }
     var wcard = document.getElementById('sw-dash-words-card');
     if (wcard) wcard.onclick = function () {
@@ -9037,7 +9208,7 @@ function exportTxt() {
       var isCur = p.id === currentProjectId ? ' current' : '';
       var isPin = (p.id === lastId2) ? ' pinned' : '';
       return '<div class="sw-proj-card' + isCur + isPin + '" data-id="' + p.id + '">' +
-        '<div class="sw-proj-cover" style="' + coverStyle + '">' + (cover ? '' : escapeHtml(coverInitials(p.name))) + '</div>' +
+        '<div class="sw-proj-cover' + (cover ? ' has-image' : '') + '" style="' + coverStyle + '">' + (cover ? '' : escapeHtml(coverInitials(p.name))) + '</div>' +
         '<div class="sw-proj-body">' +
         '<h4>' + escapeHtml(p.name || 'Untitled') + '</h4>' +
         (isPin ? '<div class="sw-pin-badge">Last opened · Continue here</div>' : '') +
