@@ -1198,9 +1198,6 @@
     }
 
 
-    @media (min-width: 900px) {
-      #sw-root .sw-tab.sw-tab-world { display: none; }
-    }
 
 
     /* Secondary tools available via Capsule → Tools */
@@ -1460,6 +1457,175 @@
     }
 
   </style>
+<style id="sw-additions-css">
+    /* Corkboard: lanes, toolbar, cards */
+    #sw-root .sw-corkboard { padding: 0; }
+    #sw-root .sw-corkboard.active { display: block; }
+    #sw-root .sw-cork-toolbar {
+      position: sticky; top: 0; z-index: 5; background: var(--sw-bg);
+      padding: 10px 16px 8px; border-bottom: 1px solid var(--sw-border);
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    #sw-root .sw-cork-row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+    #sw-root .sw-cork-seg { display: inline-flex; border: 1px solid var(--sw-border); border-radius: 6px; overflow: hidden; }
+    #sw-root .sw-cork-seg button {
+      font: inherit; font-size: 0.78rem; font-weight: 500; padding: 4px 10px; border: 0; cursor: pointer;
+      background: var(--sw-paper); color: var(--sw-ink);
+    }
+    #sw-root .sw-cork-seg button.on { background: var(--sw-accent); color: var(--sw-paper); }
+    #sw-root .sw-cork-totals { margin-left: auto; font-size: 0.75rem; color: var(--sw-muted); }
+    #sw-root .sw-cork-filters input.sw-inp { width: 180px; padding: 4px 8px; font-size: 0.8rem; }
+    #sw-root .sw-cork-filters select.sw-sel { width: auto; min-width: 104px; padding: 4px 6px; font-size: 0.78rem; }
+    #sw-root .sw-cork-legend { display: inline-flex; gap: 5px; margin: 0 4px; }
+    #sw-root .sw-cork-dot {
+      width: 18px; height: 18px; border-radius: 50%; padding: 0; cursor: pointer; display: inline-flex;
+      align-items: center; justify-content: center; border: 2px solid transparent;
+      background: var(--c, var(--sw-border));
+    }
+    #sw-root .sw-cork-dot.on { border-color: var(--sw-ink); box-shadow: inset 0 0 0 2px var(--sw-paper); }
+    #sw-root .sw-cork-dot.none { background: var(--sw-paper); border-color: var(--sw-border); color: var(--sw-muted); font-size: 13px; line-height: 1; }
+    #sw-root .sw-cork-dot.none.on { border-color: var(--sw-ink); box-shadow: none; }
+    #sw-root .sw-cork-swatches { display: flex; gap: 8px; flex-wrap: wrap; }
+    #sw-root .sw-cork-swatches .sw-cork-dot { width: 28px; height: 28px; }
+    #sw-root .sw-cork-labrow { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+    #sw-root .sw-cork-actions {
+      display: flex; gap: 6px; flex-wrap: wrap; margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--sw-border);
+    }
+    #sw-root .sw-cork-lanes { padding: 10px 16px 48px; display: flex; flex-direction: column; gap: 22px; }
+    #sw-root .sw-cork-lane-head {
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+      padding: 2px 0 8px; margin-bottom: 10px; border-bottom: 1px solid var(--sw-border);
+    }
+    #sw-root .sw-cork-lane.is-active .sw-cork-lane-head { border-bottom-color: var(--sw-accent-soft); }
+    #sw-root .sw-cork-lane.drop-lane .sw-cork-lane-head { border-bottom-color: var(--sw-accent); border-bottom-width: 2px; }
+    #sw-root .sw-cork-lane-title {
+      font-family: "EB Garamond", Georgia, serif; font-size: 1.15rem; font-weight: 600; color: var(--sw-ink);
+      background: transparent; border: 1px solid transparent; border-radius: 6px; padding: 2px 6px;
+      flex: 0 1 300px; min-width: 120px;
+    }
+    #sw-root .sw-cork-lane-title:hover, #sw-root .sw-cork-lane-title:focus { border-color: var(--sw-border); background: var(--sw-paper); outline: none; }
+    #sw-root .sw-cork-lane-meta { font-size: 0.75rem; color: var(--sw-muted); }
+    #sw-root .sw-cork-lane-actions { margin-left: auto; display: inline-flex; gap: 6px; }
+    #sw-root .sw-cork-bar { display: block; height: 4px; background: var(--sw-border); border-radius: 2px; overflow: hidden; }
+    #sw-root .sw-cork-lane-head .sw-cork-bar { width: 90px; }
+    #sw-root .sw-cork-card .sw-cork-bar { margin-top: 2px; }
+    #sw-root .sw-cork-bar i { display: block; height: 100%; background: var(--sw-ok); }
+    #sw-root .sw-cork-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px;
+      align-content: start; min-height: 56px; border-radius: 8px;
+    }
+    #sw-root .sw-cork-grid.drop-empty { outline: 2px dashed var(--sw-accent-soft); outline-offset: 2px; }
+    #sw-root .sw-cork-empty {
+      grid-column: 1 / -1; color: var(--sw-muted); font-size: 0.82rem; text-align: center; padding: 16px;
+      border: 1px dashed var(--sw-border); border-radius: 8px;
+    }
+    #sw-root .sw-cork-card {
+      cursor: default; padding: 10px; min-height: 0; display: flex; flex-direction: column; gap: 6px; position: relative;
+    }
+    #sw-root .sw-cork-card.is-active { box-shadow: 0 0 0 2px var(--sw-accent-soft); }
+    #sw-root .sw-cork-card.is-dragging { opacity: 0.35; }
+    #sw-root .sw-cork-card.drop-before { box-shadow: -6px 0 0 0 var(--sw-accent); }
+    #sw-root .sw-cork-card.drop-after { box-shadow: 6px 0 0 0 var(--sw-accent); }
+    #sw-root .sw-cork-card-top { display: flex; align-items: center; gap: 4px; }
+    #sw-root .sw-cork-handle, #sw-root .sw-cork-more {
+      border: 0; background: transparent; color: var(--sw-muted); font-size: 1rem; line-height: 1;
+      padding: 3px 5px; border-radius: 4px; cursor: grab; touch-action: none;
+    }
+    #sw-root .sw-cork-more { cursor: pointer; touch-action: manipulation; font-weight: 700; }
+    #sw-root .sw-cork-handle:hover, #sw-root .sw-cork-more:hover { background: var(--sw-hover); color: var(--sw-ink); }
+    #sw-root .sw-cork-handle:focus-visible, #sw-root .sw-cork-more:focus-visible,
+    #sw-root .sw-cork-stbtn:focus-visible, #sw-root .sw-cork-dot:focus-visible { outline: 2px solid var(--sw-accent); outline-offset: 1px; }
+    #sw-root .sw-cork-title {
+      flex: 1; min-width: 0; font-family: "EB Garamond", Georgia, serif; font-size: 0.98rem; font-weight: 600;
+      color: var(--sw-ink); background: transparent; border: 1px solid transparent; border-radius: 4px; padding: 2px 4px;
+      text-overflow: ellipsis;
+    }
+    #sw-root .sw-cork-title:hover, #sw-root .sw-cork-title:focus,
+    #sw-root .sw-cork-syn:hover, #sw-root .sw-cork-syn:focus { border-color: var(--sw-border); background: var(--sw-bg); outline: none; }
+    #sw-root .sw-cork-syn {
+      width: 100%; resize: none; font: inherit; font-size: 0.8rem; line-height: 1.4; color: var(--sw-muted);
+      background: transparent; border: 1px solid transparent; border-radius: 4px; padding: 3px 4px; min-height: 40px; overflow: auto;
+    }
+    #sw-root .sw-cork-syn:focus { color: var(--sw-ink); }
+    #sw-root .sw-cork-syn::placeholder { font-style: italic; opacity: 0.7; }
+    #sw-root .sw-cork-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+    #sw-root .sw-cork-tags span {
+      font-size: 0.68rem; padding: 1px 7px; border-radius: 999px; background: var(--sw-tag-bg); color: var(--sw-tag);
+    }
+    #sw-root .sw-cork-card .sw-cork-meta { margin-top: 2px; }
+    #sw-root .sw-cork-stbtn { cursor: pointer; font-family: inherit; }
+    #sw-root .sw-cork-lab { font-size: 0.7rem; font-weight: 600; color: var(--c); }
+    #sw-root .sw-cork-ghost {
+      position: fixed; z-index: 10060; pointer-events: none; opacity: 0.94; transform: rotate(1.2deg);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.3); border-color: var(--sw-accent-soft);
+    }
+    #sw-root.sw-cork-dragging, #sw-root.sw-cork-dragging * { cursor: grabbing !important; user-select: none; -webkit-user-select: none; }
+    @media (max-width: 640px) {
+      #sw-root .sw-cork-toolbar { padding: 8px 10px; }
+      #sw-root .sw-cork-lanes { padding: 8px 10px 48px; }
+      #sw-root .sw-cork-grid { grid-template-columns: 1fr; }
+      #sw-root .sw-cork-filters input.sw-inp { width: 100%; }
+      #sw-root .sw-cork-totals { margin-left: 0; width: 100%; }
+    }
+    /* Toast with an action */
+    #sw-root .sw-toast.sw-act.show { pointer-events: auto; }
+    #sw-root .sw-toast-act {
+      margin-left: 8px; font: inherit; font-weight: 600; font-size: 0.8rem; background: transparent; color: inherit;
+      border: 1px solid currentColor; border-radius: 4px; padding: 1px 9px; cursor: pointer;
+    }
+    /* Recycle bin, import, backups */
+    #sw-root .sw-bin-row { display: flex; gap: 6px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--sw-border); }
+    #sw-root .sw-bin-row span { display: block; font-size: 0.75rem; color: var(--sw-muted); }
+    #sw-root .sw-imp-sum { font-weight: 600; margin: 6px 0; }
+    #sw-root .sw-imp-list {
+      max-height: 150px; overflow: auto; border: 1px solid var(--sw-border); border-radius: 6px;
+      padding: 6px 8px; font-size: 0.8rem; margin-bottom: 10px; line-height: 1.5;
+    }
+    #sw-root .sw-imp-opt { display: flex; gap: 6px; align-items: center; margin: 4px 0; font-size: 0.85rem; }
+    #sw-root .sw-bk-list > div { padding: 7px 0; border-bottom: 1px solid var(--sw-border); font-size: 0.85rem; }
+    #sw-root .sw-bk-list strong { display: block; }
+    #sw-root .sw-bk-list span { color: var(--sw-muted); font-size: 0.8rem; }
+    #sw-root .sw-save-chip {
+      font: inherit; font-size: 0.68rem; color: var(--sw-muted); background: transparent; border: 0; padding: 2px 4px;
+      cursor: pointer; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; border-radius: 4px;
+    }
+    #sw-root .sw-save-chip:hover { background: var(--sw-hover); color: var(--sw-ink); }
+    #sw-root .sw-bin-btn { display: inline-flex; align-items: center; gap: 5px; }
+    #sw-root .sw-bin-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
+    #sw-root .sw-bin-count {
+      min-width: 18px; padding: 0 5px; border-radius: 999px; font-size: 0.68rem; line-height: 17px; text-align: center;
+      background: var(--sw-border); color: var(--sw-muted);
+    }
+    #sw-root .sw-bin-btn.has-items .sw-bin-count { background: var(--sw-accent); color: var(--sw-paper); }
+    #sw-root .sw-save-chip.warn { color: #b98a2e; }
+    #sw-root .sw-bk-help p { margin: 6px 0 0; font-size: 0.78rem; color: var(--sw-muted); line-height: 1.45; }
+    #sw-root .sw-tabs .sw-tab { flex-shrink: 0; }
+    /* Welcome card and tour */
+    #sw-root .sw-welcome {
+      border: 1px solid var(--sw-border); border-radius: 10px; padding: 14px 16px; background: var(--sw-paper); margin: 12px 0;
+    }
+    #sw-root .sw-welcome h3 { margin: 0 0 4px; font-family: "EB Garamond", Georgia, serif; font-size: 1.15rem; }
+    #sw-root .sw-welcome p { margin: 0 0 10px; font-size: 0.88rem; color: var(--sw-muted); line-height: 1.5; }
+    #sw-root .sw-welcome-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    #sw-root .sw-tour { position: fixed; inset: 0; z-index: 10080; pointer-events: none; }
+    #sw-root .sw-tour.nospot { background: rgba(20, 22, 26, 0.5); pointer-events: auto; }
+    #sw-root .sw-tour-spot {
+      position: fixed; border-radius: 8px; box-shadow: 0 0 0 9999px rgba(20, 22, 26, 0.55);
+      border: 2px solid var(--sw-paper); pointer-events: none;
+    }
+    #sw-root .sw-tour-card {
+      position: fixed; width: min(340px, calc(100vw - 20px)); background: var(--sw-paper); color: var(--sw-ink);
+      border: 1px solid var(--sw-border); border-radius: 10px; padding: 14px 16px; pointer-events: auto;
+      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.3);
+    }
+    #sw-root .sw-tour-card h4 { margin: 0 0 4px; font-family: "EB Garamond", Georgia, serif; font-size: 1.1rem; }
+    #sw-root .sw-tour-card p { margin: 0 0 12px; font-size: 0.86rem; line-height: 1.5; color: var(--sw-muted); }
+    #sw-root .sw-tour-nav { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    #sw-root .sw-tour-count { font-size: 0.72rem; color: var(--sw-muted); }
+    #sw-root .sw-tour-btns { display: inline-flex; gap: 6px; }
+    @media (prefers-reduced-motion: reduce) { #sw-root .sw-cork-ghost { transform: none; } }
+    @media print { #sw-root .sw-tour, #sw-root .sw-cork-ghost { display: none !important; } }
+</style>
 </head>
 <body>
 <div id="sw-seo-blurb" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">
@@ -1484,6 +1650,7 @@
     <button type="button" class="sw-btn sw-btn-icon" id="sw-font-down" title="Smaller">A−</button>
     <button type="button" class="sw-btn sw-btn-icon" id="sw-font-up" title="Larger">A+</button>
     <div class="sw-top-sep"></div>
+    <button type="button" class="sw-btn sw-bin-btn" id="sw-bin-btn" title="Recycle bin (0 items)" aria-label="Recycle bin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg><span class="sw-bin-count" id="sw-bin-count">0</span></button>
     <button type="button" class="sw-btn" id="sw-disk-save" title="Save to linked file (Ctrl/Cmd+S). First time chooses a file.">Save disk</button>
     <button type="button" class="sw-btn" id="sw-disk-open" title="Open a project JSON from disk">Open disk</button>
     <button type="button" class="sw-btn" id="sw-disk-save-as" title="Save as a new file">Save as</button>
@@ -1496,11 +1663,15 @@
         <button type="button" data-export="txt">Plain text</button>
         <button type="button" data-export="html">HTML (ebook-ish)</button>
         <button type="button" data-export="json">Full project JSON</button>
+        <button type="button" data-export2="epub">EPUB (e-readers)</button>
+        <button type="button" data-export2="pdf">PDF (print to file)</button>
+        <button type="button" data-export2="md">Markdown</button>
       </div>
     </div>
     <button type="button" class="sw-btn" id="sw-install-btn" title="Install as app" style="display:none">Install app</button>
     <span id="sw-project-label" style="font-size:0.75rem;color:var(--sw-muted);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="Current project"></span>
     <span id="sw-disk-status" style="font-size:0.68rem;color:var(--sw-muted);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="Disk save status"></span>
+    <button type="button" id="sw-save-chip" class="sw-save-chip" title="Your writing saves automatically in this browser. Click for backup options.">Auto-saves in this browser</button>
     <div class="sw-goal-wrap" title="Session goal" style="margin-left:auto">
       <span id="sw-goal-label">0/500</span>
       <div class="sw-goal-bar"><div class="sw-goal-fill" id="sw-goal-fill"></div></div>
@@ -1732,6 +1903,16 @@
           <a class="sw-btn" href="https://www.authormasoncarter.com/p/terms-of-service-for-storywriter.html" target="_blank" rel="noopener noreferrer">Terms</a>
         </div>
       </div>
+      <div class="sw-welcome" id="sw-dash-welcome" style="display:none">
+        <h3>New to StoryWriter?</h3>
+        <p>Bring a manuscript you already have, or look around with a small sample novel. Everything stays on your device.</p>
+        <div class="sw-welcome-actions">
+          <button type="button" class="sw-btn sw-btn-primary" id="sw-wel-import">Import my manuscript</button>
+          <button type="button" class="sw-btn" id="sw-wel-sample">Open the sample novel</button>
+          <button type="button" class="sw-btn" id="sw-wel-tour">Take a one-minute tour</button>
+          <button type="button" class="sw-btn" id="sw-wel-dismiss">Dismiss</button>
+        </div>
+      </div>
       <div class="sw-dash-tabs" id="sw-dash-tabs">
         <button type="button" class="active" data-dtab="projects">Projects</button>
         <button type="button" data-dtab="progress">Progress</button>
@@ -1760,6 +1941,9 @@
         <div class="sw-dash-actions">
           <button type="button" class="sw-btn sw-btn-primary" id="sw-dash-new">+ New novel</button>
           <button type="button" class="sw-btn" id="sw-dash-open-disk">Open disk</button>
+          <button type="button" class="sw-btn" id="sw-dash-import">Import manuscript</button>
+          <button type="button" class="sw-btn" id="sw-dash-backup">Backups</button>
+          <button type="button" class="sw-btn" id="sw-dash-tour">Take the tour</button>
           <button type="button" class="sw-btn" id="sw-dash-notes">Notes / Brainstorm</button>
           <button type="button" class="sw-btn" id="sw-dash-penname">Pen name</button>
           <button type="button" class="sw-btn" id="sw-dash-continue">Continue writing</button>
@@ -1905,25 +2089,20 @@
       <button type="button" data-cap="snapshot">Take snapshot</button>
       <button type="button" data-cap="print">Design &amp; print book</button>
       <div class="sw-cap-sep"></div>
-      <div class="sw-cap-label">World</div>
-      <button type="button" data-cap="tab:characters">Characters</button>
-      <button type="button" data-cap="tab:locations">Locations</button>
-      <button type="button" data-cap="tab:religions">Religions</button>
-      <button type="button" data-cap="tab:planets">Planets</button>
-      <button type="button" data-cap="tab:timeline">Timeline</button>
-      <button type="button" data-cap="tab:relations">Relations &amp; graph</button>
-      <button type="button" data-cap="tab:series">Series</button>
-      <button type="button" data-cap="tab:glossary">Glossary</button>
+      <div class="sw-cap-label">More</div>
       <button type="button" data-cap="footnote">Insert footnote</button>
       <button type="button" data-cap="scenebreak">Scene break image</button>
       <button type="button" data-cap="copyitem">Copy to another novel</button>
-      <button type="button" data-cap="tab:brainstorm">Brainstorm</button>
       <div class="sw-cap-sep"></div>
       <div class="sw-cap-label">Project</div>
       <button type="button" data-cap="save">Save disk</button>
       <button type="button" data-cap="saveas">Save as…</button>
       <button type="button" data-cap="opendisk">Open disk</button>
       <button type="button" data-cap="restore">Restore JSON…</button>
+      <button type="button" data-cap2="import">Import manuscript…</button>
+      <button type="button" data-cap2="backup">Backups &amp; safety…</button>
+      <button type="button" data-cap2="sample">Open sample novel</button>
+      <button type="button" data-cap2="tour">Take the tour</button>
       <button type="button" data-cap="template">Template</button>
       <button type="button" data-cap="meta">Cover, genre &amp; status</button>
       <button type="button" data-cap="goals">Word goals</button>
@@ -2344,7 +2523,7 @@
 
   function save() {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state, function (k, v) { return (k === 'trash' && this === state) ? undefined : v; }));
       try {
         if (typeof checkLevelUp === 'function') {
           clearTimeout(window.__swAchTimer);
@@ -2380,6 +2559,7 @@
       meta.currentId = currentProjectId;
       writeMeta(meta);
       updateProjectLabel();
+      try { swNoteLocalSave(); } catch (e) {}
     }).catch(function () {});
   }
 
@@ -2738,6 +2918,7 @@
     }
 
     lastDiskSavedAt = new Date().toISOString();
+    try { swMarkBackup(); } catch (e) {}
     if (name) diskFileName = name;
     else if (fileHandle && fileHandle.name) diskFileName = fileHandle.name;
     clearDirty();
@@ -3165,7 +3346,9 @@
   }
   async function deleteChapter(id) {
     if (state.chapters.length <= 1) { toast('Keep at least one chapter'); return; }
-    if (!(await swConfirm('Delete this chapter and all its scenes?'))) return;
+    if (!(await swConfirm('Delete this chapter and all its scenes? You can restore it from the recycle bin.'))) return;
+    var delIdx = state.chapters.findIndex(c => c.id === id);
+    var delItem = delIdx >= 0 ? state.chapters[delIdx] : null;
     state.chapters = state.chapters.filter(c => c.id !== id);
     if (state.activeChapterId === id) {
       state.activeChapterId = state.chapters[0].id;
@@ -3175,11 +3358,19 @@
     renderChapters();
     save();
     markDirty();
+    corkFillIfLive();
+    if (delItem) {
+      var tid = swTrashPush({ type: 'chapter', index: delIdx, item: delItem });
+      save();
+      if (tid) swToastAction('Chapter deleted.', 'Undo', function () { if (swTrashRestore(tid)) toast('Chapter restored'); });
+    }
   }
   async function deleteScene(cid, sid) {
     const ch = state.chapters.find(c => c.id === cid);
     if (!ch || ch.scenes.length <= 1) { toast('Keep at least one scene'); return; }
-    if (!(await swConfirm('Delete this scene?'))) return;
+    if (!(await swConfirm('Delete this scene? You can restore it from the recycle bin.'))) return;
+    var delIdx = ch.scenes.findIndex(s => s.id === sid);
+    var delItem = delIdx >= 0 ? ch.scenes[delIdx] : null;
     ch.scenes = ch.scenes.filter(s => s.id !== sid);
     if (state.activeSceneId === sid) {
       state.activeSceneId = ch.scenes[0].id;
@@ -3188,6 +3379,12 @@
     renderChapters();
     save();
     markDirty();
+    corkFillIfLive();
+    if (delItem) {
+      var tid = swTrashPush({ type: 'scene', chapterId: cid, chapterTitle: ch.title, index: delIdx, item: delItem });
+      save();
+      if (tid) swToastAction('Scene deleted.', 'Undo', function () { if (swTrashRestore(tid)) toast('Scene restored'); });
+    }
   }
 
   
@@ -4221,6 +4418,7 @@
 
   function checkAchievements(opts) {
     opts = opts || {};
+    if (state.isSample) return [];
     ensureGamify();
     var stats = achievementStats();
     var newly = [];
@@ -6469,27 +6667,732 @@
     if (ch) ch.onclick = openGenrePromptPicker;
   }
 
-  // ----- Corkboard -----
-  function renderCorkboard() {
-    const ch = getActiveChapter();
-    corkboard.innerHTML = '';
-    (ch ? ch.scenes : []).forEach(sc => {
-      const card = document.createElement('div');
-      card.className = 'sw-cork-card';
-      var st = (sc.status || 'draft').toLowerCase();
-      if (st !== 'revise' && st !== 'done') st = 'draft';
-      var stLabel = st === 'done' ? 'Done' : (st === 'revise' ? 'Revise' : 'Draft');
-      card.innerHTML = '<h4>' + escapeHtml(sc.title) + '</h4><p>' + escapeHtml(sc.synopsis || 'No synopsis') + '</p>' +
-        '<div class="sw-cork-meta">' +
-        '<span class="sw-cork-chip ' + st + '">' + stLabel + '</span>' +
-        '<span class="sw-cork-words">' + wordCount(sc.content) + ' words</span></div>';
-      card.addEventListener('click', () => {
-        state.viewMode = 'write';
-        setViewMode();
-        switchScene(ch.id, sc.id);
+  // ----- Corkboard (whole-book lanes, drag & drop, labels, filters, targets) -----
+  var corkUI;
+  var CORK_LABELS = [
+    { id: 'rose',   color: '#b0584c', name: 'Main plot' },
+    { id: 'amber',  color: '#b98a2e', name: 'Subplot' },
+    { id: 'green',  color: '#5b8a62', name: 'Character arc' },
+    { id: 'teal',   color: '#3f7f87', name: 'Setting' },
+    { id: 'blue',   color: '#4f6f9f', name: 'Backstory' },
+    { id: 'violet', color: '#7d5f99', name: 'Mystery' }
+  ];
+  var corkCache = {};
+  var corkDrag = null;
+
+  function corkS() {
+    if (!corkUI) corkUI = { scope: 'book', status: '', label: '', tag: '', character: '', q: '' };
+    return corkUI;
+  }
+  function corkEsc(s) { return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+  function corkTags(sc) { return Array.isArray(sc.tags) ? sc.tags : []; }
+  function corkLabelInfo(id) {
+    if (!id) return null;
+    for (var i = 0; i < CORK_LABELS.length; i++) {
+      if (CORK_LABELS[i].id === id) {
+        var custom = state.corkLabels && state.corkLabels[id];
+        return { id: id, color: CORK_LABELS[i].color, name: custom || CORK_LABELS[i].name };
+      }
+    }
+    return null;
+  }
+  function corkInfo(sc) {
+    var content = sc.content || '';
+    var c = corkCache[sc.id];
+    if (c && c.src === content) return c;
+    var plain = content.replace(/<br\s*\/?>/gi, ' ').replace(/<\/(p|div|h\d|li|blockquote)>/gi, ' ')
+      .replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+      .replace(/\s+/g, ' ').trim();
+    c = { src: content, plain: plain };
+    corkCache[sc.id] = c;
+    return c;
+  }
+  function corkAutoSyn(sc) {
+    var p = corkInfo(sc).plain;
+    if (!p) return '';
+    p = p.slice(0, 700);
+    var out = '', re = /[^.!?\u2026]+[.!?\u2026]+["\u201d\u2019')\]]*\s*/g, m;
+    while ((m = re.exec(p)) && out.length < 120) out += m[0];
+    if (!out) out = p;
+    out = out.trim();
+    if (out.length > 180) out = out.slice(0, 177).replace(/\s+\S*$/, '') + '\u2026';
+    return out;
+  }
+  function corkAllTags() {
+    var seen = {}, list = [];
+    state.chapters.forEach(function (ch) {
+      ch.scenes.forEach(function (sc) {
+        corkTags(sc).forEach(function (t) {
+          var k = String(t).toLowerCase();
+          if (!seen[k]) { seen[k] = 1; list.push(t); }
+        });
       });
-      corkboard.appendChild(card);
     });
+    return list.sort(function (a, b) { return a.toLowerCase() < b.toLowerCase() ? -1 : 1; });
+  }
+  function corkMatches(sc, st) {
+    if (st.status && (sc.status || 'draft') !== st.status) return false;
+    if (st.label === '_none') { if (sc.label) return false; }
+    else if (st.label && sc.label !== st.label) return false;
+    if (st.tag) {
+      var tl = st.tag.toLowerCase();
+      if (!corkTags(sc).some(function (t) { return String(t).toLowerCase() === tl; })) return false;
+    }
+    if (st.character) {
+      var cl = st.character.toLowerCase();
+      var inTags = corkTags(sc).some(function (t) { return String(t).toLowerCase() === cl; });
+      if (!inTags) {
+        var re = new RegExp('(^|[^\\w])' + corkEsc(st.character) + '([^\\w]|$)', 'i');
+        if (!re.test(corkInfo(sc).plain) && !re.test(sc.title || '') && !re.test(sc.synopsis || '')) return false;
+      }
+    }
+    if (st.q) {
+      var hay = ((sc.title || '') + ' ' + (sc.synopsis || '') + ' ' + corkTags(sc).join(' ') + ' ' + corkInfo(sc).plain).toLowerCase();
+      if (hay.indexOf(st.q.toLowerCase()) < 0) return false;
+    }
+    return true;
+  }
+  function corkAutosize(ta) {
+    ta.style.height = 'auto';
+    ta.style.height = Math.min(220, ta.scrollHeight + 2) + 'px';
+  }
+  function corkIsLive() { return state.viewMode === 'cork' && !!$('#sw-cork-lanes'); }
+  function corkFindScene(sid) {
+    for (var i = 0; i < state.chapters.length; i++) {
+      var ch = state.chapters[i];
+      var j = ch.scenes.findIndex(function (s) { return s.id === sid; });
+      if (j >= 0) return { ch: ch, sc: ch.scenes[j], idx: j };
+    }
+    return null;
+  }
+
+  function renderCorkboard() {
+    var prevTop = corkboard.scrollTop;
+    corkboard.innerHTML = '';
+    corkboard.appendChild(corkBuildToolbar());
+    var lanes = document.createElement('div');
+    lanes.className = 'sw-cork-lanes';
+    lanes.id = 'sw-cork-lanes';
+    corkboard.appendChild(lanes);
+    corkFillLanes();
+    corkboard.scrollTop = prevTop;
+  }
+
+  function corkFillLanes() {
+    var lanes = $('#sw-cork-lanes');
+    if (!lanes) return;
+    var st = corkS();
+    var chapters = st.scope === 'chapter' ? [getActiveChapter()] : state.chapters.slice();
+    lanes.innerHTML = '';
+    chapters.forEach(function (ch) { if (ch) lanes.appendChild(corkBuildLane(ch)); });
+    lanes.querySelectorAll('.sw-cork-syn').forEach(corkAutosize);
+    corkUpdateTotals();
+  }
+
+  function corkUpdateTotals() {
+    var el = $('#sw-cork-totals');
+    if (!el) return;
+    var scenes = 0, words = 0;
+    state.chapters.forEach(function (ch) { ch.scenes.forEach(function (sc) { scenes++; words += wordCount(sc.content); }); });
+    var t = scenes + ' scene' + (scenes === 1 ? '' : 's') + ' \u00b7 ' + words.toLocaleString() + ' words';
+    var goal = state.goals && +state.goals.draftTarget;
+    if (goal > 0) t += ' \u00b7 ' + Math.min(100, Math.round(words / goal * 100)) + '% of ' + goal.toLocaleString();
+    el.textContent = t;
+  }
+
+  function corkBuildToolbar() {
+    var st = corkS();
+    var bar = document.createElement('div');
+    bar.className = 'sw-cork-toolbar';
+    var tags = corkAllTags();
+    var chars = (state.characters || []).map(function (c) { return c && c.name; }).filter(Boolean);
+    function opt(v, label, cur) { return '<option value="' + escapeHtml(v) + '"' + (cur === v ? ' selected' : '') + '>' + escapeHtml(label) + '</option>'; }
+    var labelOpts = opt('', 'Any label', st.label) + opt('_none', 'No label', st.label) +
+      CORK_LABELS.map(function (l) { return opt(l.id, corkLabelInfo(l.id).name, st.label); }).join('');
+    var statusOpts = opt('', 'Any status', st.status) + opt('draft', 'Draft', st.status) + opt('revise', 'Revise', st.status) + opt('done', 'Done', st.status);
+    var tagOpts = opt('', 'Any tag', st.tag) + tags.map(function (t) { return opt(t, t, st.tag); }).join('');
+    var charOpts = opt('', 'Any character', st.character) + chars.map(function (c) { return opt(c, c, st.character); }).join('');
+    var legend = CORK_LABELS.map(function (l) {
+      var info = corkLabelInfo(l.id);
+      return '<button type="button" class="sw-cork-dot' + (st.label === l.id ? ' on' : '') + '" data-lab="' + l.id + '" style="--c:' + l.color + '" title="Filter: ' + escapeHtml(info.name) + '" aria-label="Filter by ' + escapeHtml(info.name) + '"></button>';
+    }).join('');
+    bar.innerHTML =
+      '<div class="sw-cork-row">' +
+        '<div class="sw-cork-seg" role="group" aria-label="Board scope">' +
+          '<button type="button" data-scope="book" class="' + (st.scope === 'book' ? 'on' : '') + '">Whole book</button>' +
+          '<button type="button" data-scope="chapter" class="' + (st.scope === 'chapter' ? 'on' : '') + '">This chapter</button>' +
+        '</div>' +
+        '<button type="button" class="sw-btn" id="sw-cork-addch">+ Chapter</button>' +
+        '<button type="button" class="sw-btn" id="sw-cork-labels" title="Name your label colours">Labels</button>' +
+        '<button type="button" class="sw-btn" id="sw-cork-fillsyn" title="Write a synopsis from the opening lines of every scene that has none">Fill empty synopses</button>' +
+        '<span class="sw-cork-totals" id="sw-cork-totals"></span>' +
+      '</div>' +
+      '<div class="sw-cork-row sw-cork-filters">' +
+        '<input class="sw-inp" id="sw-cork-q" type="search" placeholder="Search cards\u2026" aria-label="Search cards" value="' + escapeHtml(st.q) + '">' +
+        '<select class="sw-sel" id="sw-cork-fstatus" aria-label="Filter by status">' + statusOpts + '</select>' +
+        '<select class="sw-sel" id="sw-cork-flabel" aria-label="Filter by label">' + labelOpts + '</select>' +
+        '<select class="sw-sel" id="sw-cork-ftag" aria-label="Filter by tag">' + tagOpts + '</select>' +
+        '<select class="sw-sel" id="sw-cork-fchar" aria-label="Filter by character">' + charOpts + '</select>' +
+        '<span class="sw-cork-legend">' + legend + '</span>' +
+        '<button type="button" class="sw-btn" id="sw-cork-clear">Clear</button>' +
+      '</div>';
+    bar.querySelectorAll('[data-scope]').forEach(function (b) {
+      b.onclick = function () { st.scope = b.getAttribute('data-scope'); renderCorkboard(); };
+    });
+    bar.querySelector('#sw-cork-addch').onclick = function () { addChapter(); };
+    bar.querySelector('#sw-cork-labels').onclick = corkOpenLabels;
+    bar.querySelector('#sw-cork-fillsyn').onclick = corkFillSynopses;
+    var qEl = bar.querySelector('#sw-cork-q'), qTimer = null;
+    qEl.addEventListener('input', function () {
+      st.q = qEl.value.trim();
+      clearTimeout(qTimer);
+      qTimer = setTimeout(corkFillLanes, 140);
+    });
+    [['#sw-cork-fstatus', 'status'], ['#sw-cork-flabel', 'label'], ['#sw-cork-ftag', 'tag'], ['#sw-cork-fchar', 'character']].forEach(function (pair) {
+      var el = bar.querySelector(pair[0]);
+      el.addEventListener('change', function () { st[pair[1]] = el.value; if (pair[1] === 'label') renderCorkboard(); else corkFillLanes(); });
+    });
+    bar.querySelectorAll('[data-lab]').forEach(function (b) {
+      b.onclick = function () { var id = b.getAttribute('data-lab'); st.label = st.label === id ? '' : id; renderCorkboard(); };
+    });
+    bar.querySelector('#sw-cork-clear').onclick = function () { corkUI = null; renderCorkboard(); };
+    return bar;
+  }
+
+  function corkBuildLane(ch) {
+    var st = corkS();
+    var lane = document.createElement('section');
+    lane.className = 'sw-cork-lane' + (ch.id === state.activeChapterId ? ' is-active' : '');
+    lane.dataset.chapterId = ch.id;
+    var words = 0;
+    ch.scenes.forEach(function (sc) { words += wordCount(sc.content); });
+    var target = +ch.target > 0 ? +ch.target : 0;
+    var pct = target ? Math.min(100, Math.round(words / target * 100)) : 0;
+    var head = document.createElement('div');
+    head.className = 'sw-cork-lane-head';
+    head.innerHTML =
+      '<input class="sw-cork-lane-title" aria-label="Chapter title" value="' + escapeHtml(ch.title || '') + '">' +
+      '<span class="sw-cork-lane-meta">' + ch.scenes.length + ' scene' + (ch.scenes.length === 1 ? '' : 's') + ' \u00b7 ' + words.toLocaleString() + (target ? ' / ' + target.toLocaleString() : '') + ' words</span>' +
+      (target ? '<span class="sw-cork-bar" title="' + pct + '% of chapter target"><i style="width:' + pct + '%"></i></span>' : '') +
+      '<span class="sw-cork-lane-actions">' +
+        '<button type="button" class="sw-btn" data-act="target" title="Set a word target for this chapter">Target</button>' +
+        '<button type="button" class="sw-btn" data-act="addscene">+ Scene</button>' +
+        '<button type="button" class="sw-btn" data-act="open" title="Open this chapter in the editor">Open</button>' +
+      '</span>';
+    var titleEl = head.querySelector('.sw-cork-lane-title');
+    titleEl.addEventListener('change', function () {
+      var v = titleEl.value.trim();
+      if (!v) { titleEl.value = ch.title; return; }
+      ch.title = v;
+      if (ch.id === state.activeChapterId) chapterTitle.value = v;
+      renderChapters(); save(); markDirty();
+    });
+    titleEl.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); titleEl.blur(); } });
+    head.querySelector('[data-act="target"]').onclick = async function () {
+      var v = await swPrompt('Word target for this chapter (0 clears it)', target || '');
+      if (v === null) return;
+      var n = parseInt(v, 10);
+      ch.target = n > 0 ? n : 0;
+      save(); markDirty(); corkFillLanes();
+    };
+    head.querySelector('[data-act="addscene"]').onclick = function () { corkAddScene(ch.id); };
+    head.querySelector('[data-act="open"]').onclick = function () {
+      saveCurrent(); state.viewMode = 'write'; setViewMode(); switchChapter(ch.id);
+    };
+    lane.appendChild(head);
+    var grid = document.createElement('div');
+    grid.className = 'sw-cork-grid';
+    grid.dataset.chapterId = ch.id;
+    var shown = 0;
+    ch.scenes.forEach(function (sc) {
+      if (!corkMatches(sc, st)) return;
+      grid.appendChild(corkBuildCard(ch, sc));
+      shown++;
+    });
+    if (!shown) {
+      var em = document.createElement('div');
+      em.className = 'sw-cork-empty';
+      em.textContent = ch.scenes.length ? 'No cards match the filters.' : 'Empty chapter. Add a scene or drag a card here.';
+      grid.appendChild(em);
+    }
+    lane.appendChild(grid);
+    return lane;
+  }
+
+  function corkBuildCard(ch, sc) {
+    var st = String(sc.status || 'draft').toLowerCase();
+    if (st !== 'revise' && st !== 'done') st = 'draft';
+    var stLabel = st === 'done' ? 'Done' : (st === 'revise' ? 'Revise' : 'Draft');
+    var lab = corkLabelInfo(sc.label);
+    var words = wordCount(sc.content);
+    var target = +sc.target > 0 ? +sc.target : 0;
+    var pct = target ? Math.min(100, Math.round(words / target * 100)) : 0;
+    var auto = corkAutoSyn(sc);
+    var tags = corkTags(sc);
+    var card = document.createElement('div');
+    card.className = 'sw-cork-card' + (sc.id === state.activeSceneId && ch.id === state.activeChapterId ? ' is-active' : '');
+    card.dataset.sceneId = sc.id;
+    card.dataset.chapterId = ch.id;
+    if (lab) card.style.borderLeft = '5px solid ' + lab.color;
+    card.innerHTML =
+      '<div class="sw-cork-card-top">' +
+        '<button type="button" class="sw-cork-handle" aria-label="Move card: drag, or use the arrow keys" title="Drag to move (arrow keys work too)">\u283f</button>' +
+        '<input class="sw-cork-title" aria-label="Scene title" value="' + escapeHtml(sc.title || '') + '">' +
+        '<button type="button" class="sw-cork-more" aria-label="Card options" title="Label, tags, target, split, merge\u2026">\u22ef</button>' +
+      '</div>' +
+      '<textarea class="sw-cork-syn" rows="2" aria-label="Synopsis" placeholder="' + escapeHtml(auto || 'Add a synopsis\u2026') + '">' + escapeHtml(sc.synopsis || '') + '</textarea>' +
+      (tags.length ? '<div class="sw-cork-tags">' + tags.map(function (t) { return '<span>' + escapeHtml(t) + '</span>'; }).join('') + '</div>' : '') +
+      '<div class="sw-cork-meta">' +
+        '<button type="button" class="sw-cork-chip sw-cork-stbtn ' + st + '" title="Click to change status">' + stLabel + '</button>' +
+        '<span class="sw-cork-words">' + words.toLocaleString() + (target ? ' / ' + target.toLocaleString() : '') + ' words</span>' +
+        (lab ? '<span class="sw-cork-lab" style="--c:' + lab.color + '">' + escapeHtml(lab.name) + '</span>' : '') +
+      '</div>' +
+      (target ? '<div class="sw-cork-bar" title="' + pct + '% of scene target"><i style="width:' + pct + '%"></i></div>' : '');
+
+    var titleEl = card.querySelector('.sw-cork-title');
+    var synEl = card.querySelector('.sw-cork-syn');
+    titleEl.addEventListener('change', function () {
+      var v = titleEl.value.trim();
+      if (!v) { titleEl.value = sc.title || ''; return; }
+      sc.title = v;
+      if (getActiveScene() === sc) sceneTitle.value = v;
+      renderChapters(); save(); markDirty();
+    });
+    titleEl.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); titleEl.blur(); } });
+    synEl.addEventListener('input', function () { corkAutosize(synEl); });
+    synEl.addEventListener('change', function () {
+      var v = synEl.value.trim();
+      sc.synopsis = v;
+      if (getActiveScene() === sc) synopsisEl.value = v;
+      renderChapters(); save(); markDirty();
+    });
+    card.querySelector('.sw-cork-stbtn').addEventListener('click', function (e) {
+      e.stopPropagation();
+      var order = ['draft', 'revise', 'done'];
+      var next = order[(order.indexOf(st) + 1) % 3];
+      sc.status = next; ch.status = next;
+      if (getActiveScene() === sc) statusSel.value = next;
+      renderChapters(); save(); markDirty(); corkFillLanes();
+    });
+    card.querySelector('.sw-cork-more').addEventListener('click', function (e) {
+      e.stopPropagation();
+      corkOpenCardMenu(ch.id, sc.id);
+    });
+    var handle = card.querySelector('.sw-cork-handle');
+    handle.addEventListener('pointerdown', function (e) { corkStartDrag(e, card, handle); });
+    handle.addEventListener('keydown', function (e) {
+      var d = (e.key === 'ArrowLeft' || e.key === 'ArrowUp') ? -1 : ((e.key === 'ArrowRight' || e.key === 'ArrowDown') ? 1 : 0);
+      if (!d) return;
+      e.preventDefault();
+      corkNudge(sc.id, d);
+    });
+    card.addEventListener('click', function (e) {
+      if (e.target.closest('input, textarea, button, select')) return;
+      state.viewMode = 'write';
+      setViewMode();
+      switchScene(ch.id, sc.id);
+    });
+    return card;
+  }
+
+  // ---- Moving cards ----
+  function corkChapterById(id) { return state.chapters.find(function (c) { return c.id === id; }); }
+
+  function corkMoveScene(sid, toCid, beforeId, opts) {
+    opts = opts || {};
+    saveCurrent();
+    var found = corkFindScene(sid);
+    var to = corkChapterById(toCid);
+    if (!found || !to || beforeId === sid) return false;
+    var from = found.ch, sc = found.sc, oldIdx = found.idx;
+    var wasActive = (state.activeSceneId === sid);
+    from.scenes.splice(oldIdx, 1);
+    var placeholder = null;
+    if (!from.scenes.length && from !== to) {
+      placeholder = emptyScene('Scene 1');
+      from.scenes.push(placeholder);
+    }
+    var ti = beforeId ? to.scenes.findIndex(function (s) { return s.id === beforeId; }) : -1;
+    if (ti < 0) ti = to.scenes.length;
+    to.scenes.splice(ti, 0, sc);
+    if (from === to && ti === oldIdx) { corkFillIfLive(); return false; }
+    if (wasActive) state.activeChapterId = to.id;
+    renderChapters();
+    if (wasActive) loadIntoEditor();
+    save(); markDirty();
+    corkFillIfLive();
+    if (!opts.noUndo) {
+      var msg = from === to ? 'Scene moved.' : 'Scene moved to \u201c' + (to.title || 'chapter') + '\u201d.';
+      swToastAction(msg, 'Undo', function () {
+        var fc = corkChapterById(from.id);
+        if (!fc) return;
+        var others = fc.scenes.filter(function (s) { return s.id !== sid; });
+        var b = others[oldIdx];
+        corkMoveScene(sid, fc.id, b ? b.id : null, { noUndo: true });
+        if (placeholder) {
+          var pi = fc.scenes.indexOf(placeholder);
+          if (pi >= 0 && fc.scenes.length > 1 && !wordCount(placeholder.content)) {
+            fc.scenes.splice(pi, 1);
+            renderChapters(); save(); corkFillIfLive();
+          }
+        }
+      });
+    } else if (placeholder && !opts.quiet) {
+      toast('The chapter kept an empty scene');
+    }
+    return true;
+  }
+  function corkFillIfLive() { if (corkIsLive()) corkFillLanes(); }
+
+  function corkNudge(sid, dir) {
+    var flat = [];
+    state.chapters.forEach(function (c) { c.scenes.forEach(function (s) { flat.push({ c: c, s: s }); }); });
+    var pos = flat.findIndex(function (x) { return x.s.id === sid; });
+    var tgt = pos + dir;
+    if (pos < 0 || tgt < 0 || tgt >= flat.length) return;
+    var cur = flat[pos], t = flat[tgt];
+    if (dir < 0) {
+      if (t.c.id !== cur.c.id) corkMoveScene(sid, t.c.id, null, { noUndo: true, quiet: true });
+      else corkMoveScene(sid, t.c.id, t.s.id, { noUndo: true, quiet: true });
+    } else {
+      if (t.c.id !== cur.c.id) corkMoveScene(sid, t.c.id, t.s.id, { noUndo: true, quiet: true });
+      else {
+        var nxt = flat[tgt + 1];
+        corkMoveScene(sid, t.c.id, (nxt && nxt.c.id === t.c.id) ? nxt.s.id : null, { noUndo: true, quiet: true });
+      }
+    }
+    var h = corkboard.querySelector('.sw-cork-card[data-scene-id="' + sid + '"] .sw-cork-handle');
+    if (h) h.focus();
+  }
+
+  // ---- Pointer-based drag (mouse, pen and touch) ----
+  function corkStartDrag(e, card, handle) {
+    if (e.button != null && e.button !== 0) return;
+    if (corkDrag) return;
+    e.preventDefault();
+    var rect = card.getBoundingClientRect();
+    var ghost = card.cloneNode(true);
+    ghost.classList.add('sw-cork-ghost');
+    ghost.style.width = rect.width + 'px';
+    ghost.style.left = rect.left + 'px';
+    ghost.style.top = rect.top + 'px';
+    ROOT.appendChild(ghost);
+    card.classList.add('is-dragging');
+    ROOT.classList.add('sw-cork-dragging');
+    corkDrag = {
+      sid: card.dataset.sceneId, card: card, ghost: ghost, handle: handle, pid: e.pointerId,
+      dx: e.clientX - rect.left, dy: e.clientY - rect.top, x: e.clientX, y: e.clientY, target: null, timer: null
+    };
+    try { handle.setPointerCapture(e.pointerId); } catch (err) {}
+    handle.addEventListener('pointermove', corkDragMove);
+    handle.addEventListener('pointerup', corkDragEnd);
+    handle.addEventListener('pointercancel', corkDragCleanup);
+    document.addEventListener('keydown', corkDragKey, true);
+    corkDrag.timer = setInterval(corkAutoScroll, 30);
+    corkUpdateTarget();
+  }
+  function corkDragMove(e) {
+    var d = corkDrag;
+    if (!d) return;
+    d.x = e.clientX; d.y = e.clientY;
+    d.ghost.style.left = (d.x - d.dx) + 'px';
+    d.ghost.style.top = (d.y - d.dy) + 'px';
+    corkUpdateTarget();
+  }
+  function corkClearMarks() {
+    corkboard.querySelectorAll('.drop-before, .drop-after, .drop-empty, .drop-lane').forEach(function (n) {
+      n.classList.remove('drop-before', 'drop-after', 'drop-empty', 'drop-lane');
+    });
+  }
+  function corkUpdateTarget() {
+    var d = corkDrag;
+    if (!d) return;
+    corkClearMarks();
+    d.target = null;
+    var el = document.elementFromPoint(d.x, d.y);
+    var lane = el && el.closest ? el.closest('.sw-cork-lane') : null;
+    if (!lane || !corkboard.contains(lane)) return;
+    var grid = lane.querySelector('.sw-cork-grid');
+    if (!grid) return;
+    var cards = Array.prototype.slice.call(grid.querySelectorAll('.sw-cork-card')).filter(function (c) { return c !== d.card; });
+    var before = null;
+    for (var i = 0; i < cards.length; i++) {
+      var r = cards[i].getBoundingClientRect();
+      if (d.y < r.top || (d.y <= r.bottom && d.x < r.left + r.width / 2)) { before = cards[i]; break; }
+    }
+    lane.classList.add('drop-lane');
+    if (before) {
+      before.classList.add('drop-before');
+      d.target = { cid: lane.dataset.chapterId, beforeId: before.dataset.sceneId };
+    } else {
+      var last = cards[cards.length - 1];
+      if (last) last.classList.add('drop-after'); else grid.classList.add('drop-empty');
+      d.target = { cid: lane.dataset.chapterId, beforeId: null };
+    }
+  }
+  function corkAutoScroll() {
+    var d = corkDrag;
+    if (!d) return;
+    var r = corkboard.getBoundingClientRect(), edge = 60, v = 0;
+    if (d.y < r.top + edge) v = -Math.ceil((r.top + edge - d.y) / 4);
+    else if (d.y > r.bottom - edge) v = Math.ceil((d.y - (r.bottom - edge)) / 4);
+    if (v) { corkboard.scrollTop += v; corkUpdateTarget(); }
+  }
+  function corkDragEnd() {
+    var d = corkDrag;
+    if (!d) return;
+    var target = d.target, sid = d.sid;
+    corkDragCleanup();
+    if (target) corkMoveScene(sid, target.cid, target.beforeId);
+  }
+  function corkDragKey(e) {
+    if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); corkDragCleanup(); }
+  }
+  function corkDragCleanup() {
+    var d = corkDrag;
+    if (!d) return;
+    corkDrag = null;
+    clearInterval(d.timer);
+    d.handle.removeEventListener('pointermove', corkDragMove);
+    d.handle.removeEventListener('pointerup', corkDragEnd);
+    d.handle.removeEventListener('pointercancel', corkDragCleanup);
+    document.removeEventListener('keydown', corkDragKey, true);
+    try { d.handle.releasePointerCapture(d.pid); } catch (err) {}
+    if (d.ghost.parentNode) d.ghost.parentNode.removeChild(d.ghost);
+    d.card.classList.remove('is-dragging');
+    ROOT.classList.remove('sw-cork-dragging');
+    corkClearMarks();
+  }
+
+  // ---- Card actions ----
+  function corkAddScene(cid) {
+    saveCurrent();
+    var ch = corkChapterById(cid);
+    if (!ch) return;
+    var sc = emptyScene('Scene ' + (ch.scenes.length + 1));
+    ch.scenes.push(sc);
+    renderChapters(); save(); markDirty();
+    corkFillIfLive();
+    var t = corkboard.querySelector('.sw-cork-card[data-scene-id="' + sc.id + '"] .sw-cork-title');
+    if (t) { t.focus(); t.select(); try { t.scrollIntoView({ block: 'nearest' }); } catch (e) {} }
+  }
+
+  function corkFillSynopses() {
+    saveCurrent();
+    var changed = [];
+    state.chapters.forEach(function (ch) {
+      ch.scenes.forEach(function (sc) {
+        if (sc.synopsis && sc.synopsis.trim()) return;
+        var s = corkAutoSyn(sc);
+        if (!s) return;
+        sc.synopsis = s;
+        changed.push(sc);
+      });
+    });
+    if (!changed.length) { toast('Every scene with text already has a synopsis'); return; }
+    var active = getActiveScene();
+    if (active && changed.indexOf(active) >= 0) synopsisEl.value = active.synopsis;
+    renderChapters(); save(); markDirty(); corkFillIfLive();
+    swToastAction(changed.length + ' synopses filled from scene openings.', 'Undo', function () {
+      changed.forEach(function (sc) { sc.synopsis = ''; });
+      var a = getActiveScene();
+      if (a && changed.indexOf(a) >= 0) synopsisEl.value = '';
+      renderChapters(); save(); corkFillIfLive();
+    });
+  }
+
+  function corkOpenLabels() {
+    var rows = CORK_LABELS.map(function (l) {
+      return '<div class="sw-cork-labrow"><span class="sw-cork-dot on" style="--c:' + l.color + '"></span>' +
+        '<input class="sw-inp" data-lab="' + l.id + '" maxlength="24" aria-label="Name for ' + l.color + '" value="' + escapeHtml(corkLabelInfo(l.id).name) + '"></div>';
+    }).join('');
+    openModal('<h3>Label names</h3><p style="margin:0 0 10px;font-size:0.85rem;color:var(--sw-muted)">Colour-code cards by plot thread, point of view, or anything you track.</p>' + rows +
+      '<div class="sw-modal-actions"><button type="button" class="sw-btn" id="m-cancel">Cancel</button><button type="button" class="sw-btn sw-btn-primary" id="m-save">Save</button></div>');
+    $('#m-cancel').onclick = closeModal;
+    $('#m-save').onclick = function () {
+      var names = {};
+      modalEl.querySelectorAll('input[data-lab]').forEach(function (inp) {
+        var v = inp.value.trim();
+        if (v) names[inp.getAttribute('data-lab')] = v;
+      });
+      state.corkLabels = names;
+      save(); markDirty(); closeModal();
+      if (corkIsLive()) renderCorkboard();
+    };
+  }
+
+  function corkOpenCardMenu(cid, sid) {
+    var ch = corkChapterById(cid);
+    var sc = ch && ch.scenes.find(function (s) { return s.id === sid; });
+    if (!sc) return;
+    var chosen = sc.label || '';
+    var sug = [], seen = {};
+    function addSug(n) { var k = String(n || '').toLowerCase(); if (k && !seen[k] && sug.length < 14) { seen[k] = 1; sug.push(n); } }
+    (state.characters || []).forEach(function (c) { if (c) addSug(c.name); });
+    (state.locations || []).forEach(function (c) { if (c) addSug(c.name); });
+    corkAllTags().forEach(addSug);
+    var swatches = '<button type="button" class="sw-cork-dot none" data-l="" title="No label" aria-label="No label">\u00d7</button>' +
+      CORK_LABELS.map(function (l) {
+        return '<button type="button" class="sw-cork-dot" data-l="' + l.id + '" style="--c:' + l.color + '" title="' + escapeHtml(corkLabelInfo(l.id).name) + '" aria-label="' + escapeHtml(corkLabelInfo(l.id).name) + '"></button>';
+      }).join('');
+    var chOpts = state.chapters.map(function (c) {
+      return '<option value="' + c.id + '"' + (c.id === cid ? ' selected' : '') + '>' + escapeHtml(c.title || 'Chapter') + '</option>';
+    }).join('');
+    openModal(
+      '<h3>Card options</h3><p style="margin:0 0 10px;font-size:0.85rem;color:var(--sw-muted)">' + escapeHtml(sc.title || 'Scene') + '</p>' +
+      '<label class="sw-lbl">Label</label><div class="sw-cork-swatches" id="m-cork-sw">' + swatches + '</div>' +
+      '<label class="sw-lbl" style="margin-top:10px">Tags (comma-separated)</label>' +
+      '<input class="sw-inp" id="m-cork-tags" placeholder="POV, location, plot thread\u2026" value="' + escapeHtml(corkTags(sc).join(', ')) + '">' +
+      (sug.length ? '<div class="sw-chips" id="m-cork-sug">' + sug.map(function (n) { return '<span class="sw-chip" data-n="' + escapeHtml(n) + '">' + escapeHtml(n) + '</span>'; }).join('') + '</div>' : '') +
+      '<div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap">' +
+        '<div style="flex:1;min-width:130px"><label class="sw-lbl">Scene word target (0 for none)</label><input class="sw-inp" id="m-cork-target" type="number" min="0" step="50" value="' + (+sc.target > 0 ? +sc.target : 0) + '"></div>' +
+        '<div style="flex:1;min-width:130px"><label class="sw-lbl">Move to chapter</label><select class="sw-sel" id="m-cork-move">' + chOpts + '</select></div>' +
+      '</div>' +
+      '<div class="sw-cork-actions"><button type="button" class="sw-btn" id="m-cork-dup">Duplicate</button><button type="button" class="sw-btn" id="m-cork-split">Split\u2026</button>' +
+      '<button type="button" class="sw-btn" id="m-cork-merge">Merge with next</button><button type="button" class="sw-btn" id="m-cork-del" style="color:var(--sw-danger)">Delete</button></div>' +
+      '<div class="sw-modal-actions"><button type="button" class="sw-btn" id="m-cancel">Cancel</button><button type="button" class="sw-btn sw-btn-primary" id="m-save">Save</button></div>');
+    function paintSwatches() {
+      modalEl.querySelectorAll('#m-cork-sw .sw-cork-dot').forEach(function (b) { b.classList.toggle('on', (b.getAttribute('data-l') || '') === chosen); });
+    }
+    paintSwatches();
+    modalEl.querySelectorAll('#m-cork-sw .sw-cork-dot').forEach(function (b) {
+      b.onclick = function () { chosen = b.getAttribute('data-l') || ''; paintSwatches(); };
+    });
+    modalEl.querySelectorAll('#m-cork-sug .sw-chip').forEach(function (chip) {
+      chip.onclick = function () {
+        var inp = $('#m-cork-tags'), n = chip.getAttribute('data-n');
+        var cur = inp.value.split(',').map(function (x) { return x.trim(); }).filter(Boolean);
+        if (!cur.some(function (x) { return x.toLowerCase() === n.toLowerCase(); })) cur.push(n);
+        inp.value = cur.join(', ');
+      };
+    });
+    $('#m-cancel').onclick = closeModal;
+    $('#m-cork-dup').onclick = function () { closeModal(); corkDuplicate(cid, sid); };
+    $('#m-cork-split').onclick = function () { closeModal(); corkSplitDialog(cid, sid); };
+    $('#m-cork-merge').onclick = function () { closeModal(); corkMerge(cid, sid); };
+    $('#m-cork-del').onclick = async function () { closeModal(); await deleteScene(cid, sid); corkFillIfLive(); };
+    $('#m-save').onclick = function () {
+      var seenT = {}, tags = [];
+      $('#m-cork-tags').value.split(',').forEach(function (t) {
+        t = t.trim().slice(0, 32);
+        var k = t.toLowerCase();
+        if (t && !seenT[k] && tags.length < 12) { seenT[k] = 1; tags.push(t); }
+      });
+      sc.label = chosen || '';
+      if (!sc.label) delete sc.label;
+      sc.tags = tags;
+      var tg = parseInt($('#m-cork-target').value, 10);
+      sc.target = tg > 0 ? tg : 0;
+      var dest = $('#m-cork-move').value;
+      closeModal();
+      save(); markDirty();
+      if (dest && dest !== cid) corkMoveScene(sid, dest, null);
+      else corkFillIfLive();
+    };
+  }
+
+  function corkDuplicate(cid, sid) {
+    saveCurrent();
+    var ch = corkChapterById(cid);
+    var i = ch ? ch.scenes.findIndex(function (s) { return s.id === sid; }) : -1;
+    if (i < 0) return;
+    var copy = JSON.parse(JSON.stringify(ch.scenes[i]));
+    copy.id = uid();
+    copy.title = (copy.title || 'Scene') + ' (copy)';
+    copy.comments = [];
+    copy.snapshots = [];
+    ch.scenes.splice(i + 1, 0, copy);
+    renderChapters(); save(); markDirty(); corkFillIfLive();
+    toast('Scene duplicated (comments and snapshots stay with the original)');
+  }
+
+  function corkSplitDialog(cid, sid) {
+    saveCurrent();
+    var ch = corkChapterById(cid);
+    var i = ch ? ch.scenes.findIndex(function (s) { return s.id === sid; }) : -1;
+    if (i < 0) return;
+    var sc = ch.scenes[i];
+    if (sc.revMode || sc.contentB) { toast('Finish or discard the Draft B revision before splitting'); return; }
+    var box = document.createElement('div');
+    box.innerHTML = sc.content || '';
+    var kids = Array.prototype.slice.call(box.childNodes), units = [];
+    kids.forEach(function (n, idx) {
+      var txt = (n.textContent || '').replace(/\s+/g, ' ').trim();
+      var hasImg = n.nodeType === 1 && n.querySelector && n.querySelector('img');
+      if ((n.nodeType === 3 && txt) || (n.nodeType === 1 && (txt || hasImg))) units.push({ idx: idx, txt: txt, w: txt ? txt.split(' ').length : 0 });
+    });
+    if (units.length < 2) { toast('A scene needs at least two paragraphs to be split'); return; }
+    var total = units.reduce(function (a, u) { return a + u.w; }, 0), cum = 0, def = 0, best = Infinity;
+    for (var k = 0; k < units.length - 1; k++) {
+      cum += units[k].w;
+      var diff = Math.abs(cum - total / 2);
+      if (diff < best) { best = diff; def = k; }
+    }
+    var step = Math.max(1, Math.ceil((units.length - 1) / 300));
+    var opts = '';
+    for (var b = 0; b < units.length - 1; b++) {
+      if (b % step !== 0 && b !== def) continue;
+      var tail = units[b].txt.slice(-34), head = units[b + 1].txt.slice(0, 34);
+      opts += '<option value="' + b + '"' + (b === def ? ' selected' : '') + '>' + (b + 1) + '/' + units.length + ' \u2014 \u2026' + escapeHtml(tail) + ' | ' + escapeHtml(head) + '\u2026</option>';
+    }
+    openModal('<h3>Split scene</h3><p style="margin:0 0 10px;font-size:0.85rem;color:var(--sw-muted)">Choose where the first scene ends. The preselected point is nearest the middle.</p>' +
+      '<label class="sw-lbl">Split after paragraph</label><select class="sw-sel" id="m-split-at">' + opts + '</select>' +
+      '<label class="sw-lbl" style="margin-top:10px">Title of the new scene</label><input class="sw-inp" id="m-split-title" value="' + escapeHtml((sc.title || 'Scene') + ' (part 2)') + '">' +
+      '<div class="sw-modal-actions"><button type="button" class="sw-btn" id="m-cancel">Cancel</button><button type="button" class="sw-btn sw-btn-primary" id="m-save">Split</button></div>');
+    $('#m-cancel').onclick = closeModal;
+    $('#m-save').onclick = function () {
+      var cut = units[parseInt($('#m-split-at').value, 10)].idx;
+      var title = $('#m-split-title').value.trim() || ((sc.title || 'Scene') + ' (part 2)');
+      var a = document.createElement('div'), z = document.createElement('div');
+      kids.forEach(function (n, idx) { (idx <= cut ? a : z).appendChild(n.cloneNode(true)); });
+      while (z.firstChild && ((z.firstChild.nodeType === 3 && !z.firstChild.textContent.trim()) || (z.firstChild.nodeName === 'BR'))) z.removeChild(z.firstChild);
+      var oldContent = sc.content;
+      var ns = emptyScene(title);
+      ns.content = z.innerHTML;
+      ns.status = sc.status || 'draft';
+      if (sc.label) ns.label = sc.label;
+      ns.tags = corkTags(sc).slice();
+      sc.content = a.innerHTML;
+      ch.scenes.splice(i + 1, 0, ns);
+      closeModal();
+      if (getActiveScene() === sc) loadIntoEditor();
+      renderChapters(); save(); markDirty(); corkFillIfLive();
+      swToastAction('Scene split in two.', 'Undo', function () {
+        var pos = ch.scenes.indexOf(ns);
+        if (pos < 0) return;
+        sc.content = oldContent;
+        ch.scenes.splice(pos, 1);
+        if (state.activeSceneId === ns.id) state.activeSceneId = sc.id;
+        if (getActiveScene() === sc) loadIntoEditor();
+        renderChapters(); save(); corkFillIfLive();
+      });
+    };
+  }
+
+  async function corkMerge(cid, sid) {
+    saveCurrent();
+    var ch = corkChapterById(cid);
+    var i = ch ? ch.scenes.findIndex(function (s) { return s.id === sid; }) : -1;
+    if (i < 0) return;
+    var sc = ch.scenes[i], nx = ch.scenes[i + 1];
+    if (!nx) { toast('This is the last scene in its chapter, so there is nothing after it to merge'); return; }
+    if (sc.revMode || sc.contentB || nx.revMode || nx.contentB) { toast('Finish or discard Draft B revisions before merging'); return; }
+    if (!(await swConfirm('Merge \u201c' + (nx.title || 'next scene') + '\u201d into \u201c' + (sc.title || 'this scene') + '\u201d? The next card moves to the recycle bin, where you can restore it.'))) return;
+    var a = sc.content || '', z = nx.content || '';
+    sc.content = (a && z) ? (a + '<div><br></div>' + z) : (a || z);
+    sc.synopsis = [sc.synopsis, nx.synopsis].filter(Boolean).join(' ');
+    var seenT = {}, tags = [];
+    corkTags(sc).concat(corkTags(nx)).forEach(function (t) { var k = String(t).toLowerCase(); if (!seenT[k]) { seenT[k] = 1; tags.push(t); } });
+    sc.tags = tags;
+    if (+sc.target > 0 || +nx.target > 0) sc.target = (+sc.target || 0) + (+nx.target || 0);
+    sc.comments = (sc.comments || []).concat(nx.comments || []);
+    sc.snapshots = (sc.snapshots || []).concat(nx.snapshots || []);
+    swTrashPush({ type: 'scene', chapterId: cid, chapterTitle: ch.title, index: i + 1, item: nx });
+    ch.scenes.splice(i + 1, 1);
+    if (state.activeSceneId === nx.id) state.activeSceneId = sc.id;
+    if (getActiveScene() === sc) { loadIntoEditor(); synopsisEl.value = sc.synopsis; }
+    renderChapters(); save(); markDirty(); corkFillIfLive();
+    toast('Scenes merged');
   }
   function setViewMode() {
     var cmp = document.getElementById('sw-compare');
@@ -7659,6 +8562,7 @@ function exportTxt() {
     saveCurrent();
     const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
     saveAs(blob, 'storywriter-project.json');
+    try { swMarkBackup(); } catch (e) {}
     toast('Project JSON downloaded');
   }
 
@@ -9030,7 +9934,7 @@ function exportTxt() {
       list = (await idbAll()).sort(function (a, b) {
         return (b.updatedAt || '').localeCompare(a.updatedAt || '');
       });
-      try { window.__swProjectCountCache = list.length; } catch (e) {}
+      try { window.__swProjectCountCache = list.filter(function (p) { return !/^Sample:/i.test((p && p.name) || ''); }).length; } catch (e) {}
       var metaPin = readMeta();
       var lastId = metaPin.lastOpenedId || metaPin.currentId || currentProjectId;
       if (lastId) {
@@ -9044,7 +9948,7 @@ function exportTxt() {
       list = (readMeta().list || []).map(function (x) {
         return { id: x.id, name: x.name, updatedAt: x.updatedAt, state: {} };
       });
-      try { window.__swProjectCountCache = list.length; } catch (e2) {}
+      try { window.__swProjectCountCache = list.filter(function (p) { return !/^Sample:/i.test((p && p.name) || ''); }).length; } catch (e2) {}
     }
 
     var totalWordsAll = 0;
@@ -13186,6 +14090,1083 @@ function exportTxt() {
   }
 
 
+  // ===== Additions: toasts with actions, recycle bin, import, exports, backups, onboarding =====
+  function swToastAction(msg, label, fn, ms) {
+    toastEl.innerHTML = '';
+    var s = document.createElement('span');
+    s.textContent = msg + ' ';
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'sw-toast-act'; b.textContent = label;
+    b.onclick = function () {
+      clearTimeout(window.__swActT);
+      toastEl.classList.remove('show', 'sw-act');
+      try { fn(); } catch (e) { console.warn(e); }
+    };
+    toastEl.appendChild(s); toastEl.appendChild(b);
+    toastEl.classList.add('show', 'sw-act');
+    clearTimeout(window.__swActT);
+    window.__swActT = setTimeout(function () { toastEl.classList.remove('show', 'sw-act'); }, ms || 7000);
+  }
+  function swAgo(ts) {
+    var s = Math.max(0, Math.floor((Date.now() - ts) / 1000));
+    if (s < 60) return 'just now';
+    if (s < 3600) return Math.floor(s / 60) + ' min ago';
+    if (s < 86400) return Math.floor(s / 3600) + ' h ago';
+    var d = Math.floor(s / 86400);
+    return d + (d === 1 ? ' day ago' : ' days ago');
+  }
+  function swProjectIsBlank() {
+    return state.chapters.length === 1 && state.chapters[0].scenes.length === 1 && totalWords() === 0;
+  }
+
+  // ----- Recycle bin -----
+  var SW_TRASH_CHARS = 2000000;
+  function swTrashPush(entry) {
+    var size = 0;
+    try { size = JSON.stringify(entry.item).length; } catch (e) {}
+    if (size > SW_TRASH_CHARS) return null;
+    if (!state.trash) state.trash = [];
+    entry.id = uid();
+    entry.deletedAt = Date.now();
+    state.trash.unshift(entry);
+    var cutoff = Date.now() - 30 * 86400000, total = 0;
+    state.trash = state.trash.filter(function (t, i) {
+      if (i === 0) { total += size; return true; }
+      if (t.deletedAt < cutoff || i >= 30) return false;
+      var n = 0;
+      try { n = JSON.stringify(t.item).length; } catch (e) {}
+      total += n;
+      return total <= SW_TRASH_CHARS;
+    });
+    try { swUpdateBinBadge(); } catch (e) {}
+    return entry.id;
+  }
+  function swTrashRestore(id) {
+    var list = state.trash || [];
+    var i = list.findIndex(function (t) { return t.id === id; });
+    if (i < 0) return false;
+    var t = list[i];
+    saveCurrent();
+    if (t.type === 'chapter') {
+      if (state.chapters.some(function (c) { return c.id === t.item.id; })) t.item.id = uid();
+      state.chapters.splice(Math.min(Math.max(0, t.index | 0), state.chapters.length), 0, t.item);
+    } else {
+      var ch = state.chapters.find(function (c) { return c.id === t.chapterId; }) || getActiveChapter();
+      if (corkFindScene(t.item.id)) t.item.id = uid();
+      ch.scenes.splice(Math.min(Math.max(0, t.index | 0), ch.scenes.length), 0, t.item);
+    }
+    list.splice(i, 1);
+    renderChapters(); save(); markDirty(); corkFillIfLive();
+    try { swUpdateBinBadge(); } catch (e) {}
+    return true;
+  }
+  function swOpenBin() {
+    var list = state.trash || [];
+    var rows = list.map(function (t) {
+      var title = (t.item && t.item.title) || 'Untitled', words = 0;
+      try {
+        if (t.type === 'chapter') t.item.scenes.forEach(function (s) { words += wordCount(s.content); });
+        else words = wordCount(t.item.content);
+      } catch (e) {}
+      var what = t.type === 'chapter' ? 'Chapter' : ('Scene' + (t.chapterTitle ? ' from ' + t.chapterTitle : ''));
+      return '<div class="sw-bin-row"><div style="flex:1;min-width:0"><strong>' + escapeHtml(title) + '</strong>' +
+        '<span>' + escapeHtml(what) + ' \u00b7 ' + words.toLocaleString() + ' words \u00b7 ' + swAgo(t.deletedAt) + '</span></div>' +
+        '<button type="button" class="sw-btn" data-r="' + t.id + '">Restore</button>' +
+        '<button type="button" class="sw-btn" data-x="' + t.id + '">Delete forever</button></div>';
+    }).join('');
+    openModal('<h3>Recycle bin</h3><p style="margin:0 0 8px;font-size:0.85rem;color:var(--sw-muted)">Deleted scenes and chapters stay here for 30 days.</p>' +
+      (rows || '<p style="padding:14px 0;color:var(--sw-muted)">The bin is empty.</p>') +
+      '<div class="sw-modal-actions">' + (list.length ? '<button type="button" class="sw-btn" id="m-bin-empty">Empty bin</button>' : '') +
+      '<button type="button" class="sw-btn sw-btn-primary" id="m-cancel">Close</button></div>');
+    $('#m-cancel').onclick = closeModal;
+    modalEl.querySelectorAll('[data-r]').forEach(function (b) {
+      b.onclick = function () { if (swTrashRestore(b.getAttribute('data-r'))) toast('Restored'); swOpenBin(); };
+    });
+    modalEl.querySelectorAll('[data-x]').forEach(function (b) {
+      b.onclick = function () {
+        state.trash = (state.trash || []).filter(function (t) { return t.id !== b.getAttribute('data-x'); });
+        save(); try { swUpdateBinBadge(); } catch (e) {} swOpenBin();
+      };
+    });
+    var em = $('#m-bin-empty');
+    if (em) em.onclick = async function () {
+      if (!(await swConfirm('Permanently delete everything in the recycle bin?'))) { swOpenBin(); return; }
+      state.trash = []; save(); try { swUpdateBinBadge(); } catch (e) {} swOpenBin();
+    };
+  }
+
+  // ----- Import manuscript (DOCX, TXT, Markdown, HTML) -----
+  var SW_BREAK_RE = /^\s*(?:[*#~\u2022\u00b7.\-\u2013\u2014_=+]\s*){3,}\s*$|^\s*[#*~]\s*$/;
+  var SW_CHAPTER_RE = /^(chapter|prologue|epilogue|interlude)\b/i;
+  var swImportInput = null;
+
+  function swIsChapterLine(t) {
+    if (t.length > 70 || !SW_CHAPTER_RE.test(t)) return false;
+    if (/^(chapter|prologue|epilogue|interlude)\s*[\w-]*[.:]?$/i.test(t)) return true;
+    return !/[.!?,;]["\u201d']?$/.test(t);
+  }
+  function swKindFromTitle(t) {
+    if (/^prologue/i.test(t)) return 'prologue';
+    if (/^epilogue/i.test(t)) return 'epilogue';
+    return 'chapter';
+  }
+  function swImportPick() {
+    if (!swImportInput) {
+      swImportInput = document.createElement('input');
+      swImportInput.type = 'file';
+      swImportInput.accept = '.docx,.txt,.md,.markdown,.html,.htm,text/plain,text/markdown,text/html,application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+      swImportInput.style.display = 'none';
+      swImportInput.addEventListener('change', function () {
+        var f = swImportInput.files && swImportInput.files[0];
+        swImportInput.value = '';
+        if (f) swImportFile(f);
+      });
+      ROOT.appendChild(swImportInput);
+    }
+    swImportInput.click();
+  }
+  async function swImportFile(file) {
+    var ext = (file.name.split('.').pop() || '').toLowerCase();
+    try {
+      if (file.size > 40 * 1024 * 1024) throw new Error('That file is larger than 40 MB.');
+      var blocks;
+      if (ext === 'docx') blocks = await swParseDocx(await file.arrayBuffer());
+      else if (ext === 'doc' || ext === 'rtf' || ext === 'odt' || ext === 'pages') throw new Error('Please save the file as .docx (Word) or plain text first, then import it.');
+      else if (ext === 'html' || ext === 'htm') blocks = swParseHtml(await file.text());
+      else blocks = swParseText(await file.text());
+      if (!blocks.length) throw new Error('No text was found in that file.');
+      swImportDialog(file.name, blocks);
+    } catch (err) {
+      toast(err && err.message ? err.message : 'That file could not be read');
+    }
+  }
+
+  function swInlineMd(t) {
+    var s = escapeHtml(t);
+    s = s.replace(/\*\*([^*]+?)\*\*/g, '<b>$1</b>').replace(/__([^_]+?)__/g, '<b>$1</b>');
+    s = s.replace(/(^|[\s(\u201c])\*([^*\s][^*]*?)\*(?=$|[\s.,;:!?)\u201d])/g, '$1<i>$2</i>');
+    s = s.replace(/(^|[\s(\u201c])_([^_\s][^_]*?)_(?=$|[\s.,;:!?)\u201d])/g, '$1<i>$2</i>');
+    return s;
+  }
+  function swParseText(text) {
+    text = text.replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n');
+    var lines = text.split('\n');
+    var hasBlank = lines.some(function (l) { return !l.trim(); });
+    var blocks = [], buf = [];
+    function flush() {
+      if (!buf.length) return;
+      var t = buf.join(' ').replace(/\s+/g, ' ').trim();
+      buf = [];
+      if (t) blocks.push({ t: 'p', text: t.replace(/\*\*|__/g, ''), html: swInlineMd(t) });
+    }
+    lines.forEach(function (line) {
+      var s = line.trim();
+      if (!s) { flush(); return; }
+      var m = s.match(/^(#{1,6})\s+(.*?)\s*#*$/);
+      if (m) { flush(); blocks.push({ t: 'h', lvl: m[1].length, text: m[2].replace(/\*\*|__|\*/g, '').trim() }); return; }
+      if (/^(?:[*\-_=~#\u2022\u00b7]\s*){3,}$/.test(s)) { flush(); blocks.push({ t: 'br' }); return; }
+      buf.push(s);
+      if (!hasBlank) flush();
+    });
+    flush();
+    return blocks;
+  }
+  function swInlineFromNode(node) {
+    var s = '';
+    Array.prototype.forEach.call(node.childNodes, function (c) {
+      if (c.nodeType === 3) s += escapeHtml(c.nodeValue.replace(/\s+/g, ' '));
+      else if (c.nodeType === 1) {
+        var tg = c.tagName.toLowerCase(), inner = swInlineFromNode(c);
+        if (tg === 'b' || tg === 'strong') s += inner.trim() ? '<b>' + inner + '</b>' : inner;
+        else if (tg === 'i' || tg === 'em') s += inner.trim() ? '<i>' + inner + '</i>' : inner;
+        else if (tg === 'br') s += ' ';
+        else s += inner;
+      }
+    });
+    return s;
+  }
+  function swParseHtml(src) {
+    var d = new DOMParser().parseFromString(src, 'text/html');
+    d.querySelectorAll('script,style,noscript,head').forEach(function (n) { n.parentNode && n.parentNode.removeChild(n); });
+    var sel = 'h1,h2,h3,h4,h5,h6,p,li,blockquote,div,hr';
+    var out = [];
+    Array.prototype.forEach.call(d.body ? d.body.querySelectorAll(sel) : [], function (n) {
+      var tg = n.tagName.toLowerCase();
+      if (tg === 'hr') { out.push({ t: 'br' }); return; }
+      if (n.querySelector(sel)) return;
+      var text = (n.textContent || '').replace(/\s+/g, ' ').trim();
+      if (!text) return;
+      if (/^h[1-6]$/.test(tg)) out.push({ t: 'h', lvl: +tg.charAt(1), text: text });
+      else out.push({ t: 'p', text: text, html: swInlineFromNode(n).replace(/\s{2,}/g, ' ').trim() });
+    });
+    return out;
+  }
+  function swHeadingLevel(name) {
+    var m = /^heading\s*(\d)$/i.exec(name || '');
+    if (m) return +m[1];
+    if (/^title$/i.test(name || '')) return 0;
+    return null;
+  }
+  async function swParseDocx(buf) {
+    if (typeof JSZip === 'undefined') throw new Error('The Word reader is still loading. Check your connection and try again.');
+    var zip = await JSZip.loadAsync(buf);
+    var docFile = zip.file('word/document.xml');
+    if (!docFile) throw new Error('That file does not look like a .docx document.');
+    var W = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
+    function parse(xml) { return new DOMParser().parseFromString(xml, 'application/xml'); }
+    function attr(el, n) { return (el && (el.getAttributeNS(W, n) || el.getAttribute('w:' + n))) || ''; }
+    function child(el, name) {
+      for (var c = el.firstChild; c; c = c.nextSibling) if (c.nodeType === 1 && c.localName === name) return c;
+      return null;
+    }
+    function flagOn(rPr, name) {
+      var e = child(rPr, name);
+      if (!e) return false;
+      var v = attr(e, 'val');
+      return !(v === '0' || v === 'false' || v === 'off');
+    }
+    var doc = parse(await docFile.async('string'));
+    if (doc.getElementsByTagName('parsererror').length) throw new Error('The document could not be read.');
+    var styleLvl = {};
+    var stFile = zip.file('word/styles.xml');
+    if (stFile) {
+      var sd = parse(await stFile.async('string'));
+      var styles = sd.getElementsByTagNameNS(W, 'style');
+      for (var i = 0; i < styles.length; i++) {
+        var s = styles[i], id = attr(s, 'styleId');
+        var nm = child(s, 'name');
+        var lvl = swHeadingLevel(nm ? attr(nm, 'val') : '');
+        if (lvl === null) {
+          var pp = child(s, 'pPr'), ol = pp && child(pp, 'outlineLvl');
+          if (ol) { var v = parseInt(attr(ol, 'val'), 10); if (v >= 0 && v < 9) lvl = v + 1; }
+        }
+        if (id && lvl !== null) styleLvl[id] = lvl;
+      }
+    }
+    var body = doc.getElementsByTagNameNS(W, 'body')[0];
+    var paras = body ? body.getElementsByTagNameNS(W, 'p') : [];
+    var blocks = [];
+    for (var pi = 0; pi < paras.length; pi++) {
+      var p = paras[pi], pPr = child(p, 'pPr'), plvl = null, pb = false;
+      if (pPr) {
+        var ps = child(pPr, 'pStyle');
+        if (ps && Object.prototype.hasOwnProperty.call(styleLvl, attr(ps, 'val'))) plvl = styleLvl[attr(ps, 'val')];
+        var ol2 = child(pPr, 'outlineLvl');
+        if (ol2) { var ov = parseInt(attr(ol2, 'val'), 10); if (ov >= 0 && ov < 9) plvl = ov + 1; }
+        if (child(pPr, 'pageBreakBefore')) pb = true;
+      }
+      var runs = p.getElementsByTagNameNS(W, 'r'), segs = [], plain = '';
+      for (var ri = 0; ri < runs.length; ri++) {
+        var r = runs[ri], rPr = child(r, 'rPr');
+        var bold = rPr ? flagOn(rPr, 'b') : false, ital = rPr ? flagOn(rPr, 'i') : false;
+        var txt = '';
+        for (var k = r.firstChild; k; k = k.nextSibling) {
+          var ln = k.localName;
+          if (ln === 't') txt += k.textContent;
+          else if (ln === 'tab') txt += ' ';
+          else if (ln === 'br') { if (attr(k, 'type') === 'page') pb = true; else txt += ' '; }
+          else if (ln === 'noBreakHyphen') txt += '-';
+        }
+        if (!txt) continue;
+        plain += txt;
+        var last = segs[segs.length - 1];
+        if (last && last.b === bold && last.i === ital) last.t += txt;
+        else segs.push({ t: txt, b: bold, i: ital });
+      }
+      if (pb && blocks.length) blocks.push({ t: 'pb' });
+      var text = plain.replace(/\s+/g, ' ').trim();
+      if (!text) continue;
+      if (plvl !== null) { blocks.push({ t: 'h', lvl: plvl, text: text }); continue; }
+      var html = segs.map(function (sg) {
+        var h = escapeHtml(sg.t.replace(/\s+/g, ' '));
+        if (!h.trim()) return h;
+        if (sg.i) h = '<i>' + h + '</i>';
+        if (sg.b) h = '<b>' + h + '</b>';
+        return h;
+      }).join('').replace(/\s{2,}/g, ' ').trim();
+      blocks.push({ t: 'p', text: text, html: html });
+    }
+    return blocks;
+  }
+
+  function swBuildStructure(srcBlocks, o) {
+    o = o || {};
+    var blocks = srcBlocks.map(function (b) { return Object.assign({}, b); });
+    var counts = {}, hasHeads = false;
+    blocks.forEach(function (b) {
+      if (b.t === 'h') { counts[b.lvl] = (counts[b.lvl] || 0) + 1; if (b.lvl > 0) hasHeads = true; }
+    });
+    blocks.forEach(function (b) {
+      if (b.t !== 'p') return;
+      if (SW_BREAK_RE.test(b.text)) { b.t = 'br'; return; }
+      if (!hasHeads && swIsChapterLine(b.text)) { b.t = 'h'; b.lvl = 1; counts[1] = (counts[1] || 0) + 1; }
+    });
+    var title = '';
+    var lvls = Object.keys(counts).map(Number).filter(function (l) { return l > 0; }).sort(function (a, b) { return a - b; });
+    if (lvls.length >= 2 && counts[lvls[0]] === 1 && counts[lvls[1]] >= 2) {
+      var tb = blocks.find(function (b) { return b.t === 'h' && b.lvl === lvls[0]; });
+      if (tb) { title = tb.text; tb.skip = true; lvls.shift(); }
+    }
+    var chapLvl = lvls.length ? lvls[0] : null, sceneLvl = lvls.length > 1 ? lvls[1] : null;
+    var pbCount = blocks.filter(function (b) { return b.t === 'pb'; }).length;
+    var usePb = chapLvl === null && pbCount >= 2;
+    var chapters = [], ch = null, sc = null;
+    function newChapter(t, kind) { ch = { title: t || '', kind: kind || 'chapter', scenes: [] }; chapters.push(ch); sc = null; }
+    function newScene(t) { if (!ch) newChapter('', 'chapter'); sc = { title: t || '', paras: [], words: 0 }; ch.scenes.push(sc); }
+    function addPara(html, text) { if (!sc) newScene(''); sc.paras.push('<div>' + html + '</div>'); sc.words += (text || '').split(/\s+/).filter(Boolean).length; }
+    blocks.forEach(function (b) {
+      if (b.skip) return;
+      if (b.t === 'h' && b.lvl === 0) { if (!title) title = b.text; return; }
+      if (b.t === 'h' && chapLvl !== null && b.lvl === chapLvl) { newChapter(b.text, swKindFromTitle(b.text)); newScene(''); return; }
+      if (b.t === 'h' && sceneLvl !== null && b.lvl === sceneLvl) { newScene(b.text); return; }
+      if (b.t === 'h') { addPara('<b>' + escapeHtml(b.text) + '</b>', b.text); return; }
+      if (b.t === 'br') { newScene(''); return; }
+      if (b.t === 'pb') { if (usePb && ch && ch.scenes.some(function (s) { return s.paras.length; })) { newChapter('', 'chapter'); newScene(''); } return; }
+      if (b.t === 'p') addPara(b.html, b.text);
+    });
+    chapters.forEach(function (c) { c.scenes = c.scenes.filter(function (s) { return s.paras.length; }); });
+    chapters = chapters.filter(function (c) { return c.scenes.length || c.title; });
+    chapters.forEach(function (c) { if (!c.scenes.length) c.scenes.push({ title: '', paras: [], words: 0 }); });
+    if (chapters.length > 1 && !chapters[0].title && chapters[0].scenes.length === 1 && chapters[0].scenes[0].paras.length === 1 && chapters[0].scenes[0].words <= 10) {
+      if (!title) title = chapters[0].scenes[0].paras[0].replace(/<[^>]+>/g, '').trim();
+      chapters.shift();
+    }
+    var total = 0;
+    chapters.forEach(function (c) { c.scenes.forEach(function (s) { total += s.words; }); });
+    var detected = chapLvl !== null || usePb, chunked = false;
+    if (chapters.length <= 1 && o.chunk > 0 && total > o.chunk * 1.4) {
+      var flat = [];
+      chapters.forEach(function (c) { c.scenes.forEach(function (s) { flat.push(s); }); });
+      var out = [], cur = null, curWords = 0;
+      var openCh = function () { cur = { title: '', kind: 'chapter', scenes: [] }; out.push(cur); curWords = 0; };
+      openCh();
+      flat.forEach(function (s, si) {
+        var ns = { title: s.title, paras: [], words: 0 };
+        cur.scenes.push(ns);
+        s.paras.forEach(function (p, idx) {
+          var w = p.replace(/<[^>]+>/g, ' ').trim().split(/\s+/).filter(Boolean).length;
+          ns.paras.push(p); ns.words += w; curWords += w;
+          var more = idx < s.paras.length - 1 || si < flat.length - 1;
+          if (curWords >= o.chunk && more) { openCh(); ns = { title: '', paras: [], words: 0 }; cur.scenes.push(ns); }
+        });
+      });
+      chapters = out.map(function (c) { c.scenes = c.scenes.filter(function (s) { return s.paras.length; }); return c; })
+        .filter(function (c) { return c.scenes.length; });
+      chunked = true;
+    }
+    var sceneCount = 0;
+    chapters.forEach(function (c) { sceneCount += c.scenes.length; });
+    return { title: title, chapters: chapters, totalWords: total, sceneCount: sceneCount, detected: detected, chunked: chunked };
+  }
+
+  function swImportDialog(fileName, blocks) {
+    var base = fileName.replace(/\.[^.]+$/, '');
+    var chunk = 3000;
+    var res = swBuildStructure(blocks, { chunk: chunk });
+    var current = currentProjectName || 'Untitled';
+    openModal('<h3>Import manuscript</h3>' +
+      '<p style="margin:0 0 6px;font-size:0.82rem;color:var(--sw-muted)">' + escapeHtml(fileName) + '</p>' +
+      '<div class="sw-imp-sum" id="m-imp-sum"></div><div class="sw-imp-list" id="m-imp-list"></div>' +
+      '<div id="m-imp-chunk-wrap" style="margin-bottom:10px"><label class="sw-lbl">No chapter headings found. Start a new chapter about every (words, 0 keeps one chapter)</label>' +
+      '<input class="sw-inp" id="m-imp-chunk" type="number" min="0" step="500" value="' + chunk + '"></div>' +
+      '<label class="sw-lbl">Where should it go?</label>' +
+      '<label class="sw-imp-opt"><input type="radio" name="m-imp-mode" value="new" checked> A new novel named \u201c<span id="m-imp-name"></span>\u201d</label>' +
+      '<label class="sw-imp-opt"><input type="radio" name="m-imp-mode" value="add"> Added to the open novel (\u201c' + escapeHtml(current) + '\u201d)</label>' +
+      '<label class="sw-imp-opt" style="margin-top:8px"><input type="checkbox" id="m-imp-syn" checked> Write each scene\u2019s synopsis from its opening lines</label>' +
+      '<div class="sw-modal-actions"><button type="button" class="sw-btn" id="m-cancel">Cancel</button><button type="button" class="sw-btn sw-btn-primary" id="m-imp-go">Import</button></div>');
+    function paint() {
+      res = swBuildStructure(blocks, { chunk: chunk });
+      $('#m-imp-sum').textContent = res.chapters.length + ' chapter' + (res.chapters.length === 1 ? '' : 's') + ' \u00b7 ' + res.sceneCount + ' scene' + (res.sceneCount === 1 ? '' : 's') + ' \u00b7 ' + res.totalWords.toLocaleString() + ' words' + (res.chunked ? ' (split by length)' : '');
+      $('#m-imp-list').innerHTML = res.chapters.slice(0, 12).map(function (c, i) {
+        var w = 0; c.scenes.forEach(function (s) { w += s.words; });
+        return '<div>' + escapeHtml(c.title || ('Chapter ' + (i + 1))) + ' <span style="color:var(--sw-muted)">\u00b7 ' + c.scenes.length + ' scene' + (c.scenes.length === 1 ? '' : 's') + ', ' + w.toLocaleString() + ' words</span></div>';
+      }).join('') + (res.chapters.length > 12 ? '<div style="color:var(--sw-muted)">and ' + (res.chapters.length - 12) + ' more\u2026</div>' : '');
+      $('#m-imp-chunk-wrap').style.display = res.detected ? 'none' : '';
+      $('#m-imp-name').textContent = res.title || base;
+    }
+    paint();
+    $('#m-imp-chunk').addEventListener('change', function () {
+      var n = parseInt($('#m-imp-chunk').value, 10);
+      chunk = n > 0 ? n : 0;
+      paint();
+    });
+    $('#m-cancel').onclick = closeModal;
+    $('#m-imp-go').onclick = async function () {
+      var mode = (modalEl.querySelector('input[name="m-imp-mode"]:checked') || {}).value || 'new';
+      var syn = !!$('#m-imp-syn').checked;
+      var name = res.title || base;
+      closeModal();
+      try { await swImportApply(res, mode, name, syn); }
+      catch (e) { console.warn(e); toast('The import could not be completed'); }
+    };
+  }
+  async function swImportApply(res, mode, name, makeSyn) {
+    saveCurrent();
+    var chapters = res.chapters.map(function (c, ci) {
+      var ch = emptyChapter(c.title || ('Chapter ' + (ci + 1)), ci + 1);
+      ch.kind = c.kind || 'chapter';
+      ch.scenes = c.scenes.map(function (s, si) {
+        var sc = emptyScene(s.title || ('Scene ' + (si + 1)));
+        sc.content = s.paras.join('');
+        if (makeSyn) sc.synopsis = corkAutoSyn(sc);
+        return sc;
+      });
+      return ch;
+    });
+    if (!chapters.length) { toast('Nothing to import'); return; }
+    if (mode === 'add') {
+      var blank = swProjectIsBlank();
+      state.chapters = blank ? chapters : state.chapters.concat(chapters);
+      if (blank) { state.activeChapterId = chapters[0].id; state.activeSceneId = chapters[0].scenes[0].id; }
+      state.goals.sessionBase = (state.goals.sessionBase || 0) + res.totalWords;
+      renderChapters(); loadIntoEditor();
+    } else {
+      await createNewProject(name);
+      state.chapters = chapters;
+      state.activeChapterId = chapters[0].id;
+      state.activeSceneId = chapters[0].scenes[0].id;
+      state.goals.sessionBase = totalWords();
+      refreshUI();
+    }
+    save();
+    try { await persistToIdbPromise(); } catch (e) {}
+    markDirty();
+    hideDashboard();
+    swDismissWelcome();
+    toast('Imported ' + chapters.length + ' chapter' + (chapters.length === 1 ? '' : 's') + ' (' + res.totalWords.toLocaleString() + ' words)');
+  }
+
+  // ----- Extra exports: EPUB, PDF, Markdown -----
+  var SW_INLINE_TAGS = /^(b|i|em|strong|u|span|a|sup|sub|small|mark|s|strike|font|code)$/i;
+  function swXmlSafe(s) { return String(s).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, ''); }
+  function swBlocksOf(html) {
+    var box = document.createElement('div');
+    box.innerHTML = html || '';
+    box.querySelectorAll('script,style,iframe,object,embed').forEach(function (n) { n.parentNode.removeChild(n); });
+    var out = [], buf = [];
+    function flush() {
+      if (!buf.length) return;
+      var wrap = document.createElement('span');
+      buf.forEach(function (n) { wrap.appendChild(n.cloneNode(true)); });
+      buf = [];
+      if ((wrap.textContent || '').replace(/\s+/g, '').length) out.push({ tag: 'p', el: wrap });
+    }
+    function walk(parent) {
+      Array.prototype.slice.call(parent.childNodes).forEach(function (n) {
+        if (n.nodeType === 3) { buf.push(n); return; }
+        if (n.nodeType !== 1) return;
+        var tg = n.tagName.toLowerCase();
+        if (tg === 'br') { flush(); return; }
+        if (SW_INLINE_TAGS.test(tg)) { buf.push(n); return; }
+        flush();
+        if (tg === 'hr') { out.push({ tag: 'hr' }); return; }
+        if (/^h[1-6]$/.test(tg)) { if ((n.textContent || '').trim()) out.push({ tag: 'h', el: n }); return; }
+        if (n.querySelector('div,p,h1,h2,h3,h4,h5,h6,blockquote,li,ul,ol,hr')) { walk(n); flush(); return; }
+        if ((n.textContent || '').replace(/\s+/g, '').length) out.push({ tag: 'p', el: n });
+      });
+      flush();
+    }
+    walk(box);
+    return out;
+  }
+  function swXhtmlInline(node) {
+    var s = '';
+    Array.prototype.forEach.call(node.childNodes, function (c) {
+      if (c.nodeType === 3) { s += escapeHtml(swXmlSafe(c.nodeValue)); return; }
+      if (c.nodeType !== 1) return;
+      var tg = c.tagName.toLowerCase(), inner = swXhtmlInline(c);
+      if (tg === 'b' || tg === 'strong') s += '<strong>' + inner + '</strong>';
+      else if (tg === 'i' || tg === 'em') s += '<em>' + inner + '</em>';
+      else if (tg === 'u') s += '<u>' + inner + '</u>';
+      else if (tg === 'sup' || tg === 'sub') s += '<' + tg + '>' + inner + '</' + tg + '>';
+      else if (tg === 'br') s += '<br/>';
+      else s += inner;
+    });
+    return s;
+  }
+  function swChapterBody(ch, ci) {
+    var body = '<h1>' + escapeHtml(ch.title || ('Chapter ' + (ci + 1))) + '</h1>';
+    var scenes = ch.scenes.map(function (sc) {
+      return swBlocksOf(sc.content).map(function (b, i) {
+        if (b.tag === 'hr') return '<p class="scene-break">* * *</p>';
+        var inner = swXhtmlInline(b.el);
+        if (b.tag === 'h') return '<h2>' + inner + '</h2>';
+        return '<p' + (i === 0 ? ' class="first"' : '') + '>' + inner + '</p>';
+      }).join('\n');
+    }).filter(Boolean);
+    return body + '\n' + scenes.join('\n<p class="scene-break">* * *</p>\n');
+  }
+  function swBookMeta() {
+    var author = '';
+    try { author = (typeof getPenName === 'function' && getPenName()) || ''; } catch (e) {}
+    return { title: currentProjectName || 'Manuscript', author: author };
+  }
+  function swFileStem(s) { return (s || 'manuscript').replace(/[^\w\-]+/g, '_').replace(/^_+|_+$/g, '') || 'manuscript'; }
+  function swSave(blob, name) {
+    if (typeof saveAs === 'function') { saveAs(blob, name); return; }
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = name;
+    document.body.appendChild(a); a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.parentNode.removeChild(a); }, 1000);
+  }
+  async function swExportEpub() {
+    if (typeof JSZip === 'undefined') { toast('The EPUB builder is still loading. Check your connection and try again.'); return; }
+    saveCurrent();
+    toast('Building EPUB\u2026');
+    var meta = swBookMeta(), title = meta.title, author = meta.author;
+    var bookId = 'storywriter-' + (currentProjectId || uid());
+    var zip = new JSZip();
+    zip.file('mimetype', 'application/epub+zip', { compression: 'STORE' });
+    zip.file('META-INF/container.xml', '<?xml version="1.0" encoding="UTF-8"?>\n<container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container"><rootfiles><rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/></rootfiles></container>');
+    zip.file('OEBPS/style.css', 'body{font-family:Georgia,serif;line-height:1.5;margin:1em}h1{text-align:center;margin:2em 0 1.2em;font-size:1.5em}h2{font-size:1.15em;margin:1.4em 0 .6em}p{margin:0;text-indent:1.4em;text-align:justify}p.first{text-indent:0}p.scene-break{text-indent:0;text-align:center;margin:1.2em 0}.title-page{text-align:center;margin-top:30%}.title-page p{text-indent:0;text-align:center}');
+    function xdoc(t, body) {
+      return '<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE html>\n<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="en"><head><meta charset="utf-8"/><title>' + escapeHtml(t) + '</title><link rel="stylesheet" type="text/css" href="style.css"/></head><body>' + body + '</body></html>';
+    }
+    var manifest = [], spine = [], nav = [], ncx = [];
+    zip.file('OEBPS/title.xhtml', xdoc(title, '<div class="title-page"><h1>' + escapeHtml(title) + '</h1>' + (author ? '<p>by ' + escapeHtml(author) + '</p>' : '') + '</div>'));
+    manifest.push('<item id="title" href="title.xhtml" media-type="application/xhtml+xml"/>');
+    spine.push('<itemref idref="title"/>');
+    state.chapters.forEach(function (ch, ci) {
+      var fn = 'chapter' + (ci + 1) + '.xhtml', id = 'ch' + (ci + 1), t = ch.title || ('Chapter ' + (ci + 1));
+      zip.file('OEBPS/' + fn, xdoc(t, swChapterBody(ch, ci)));
+      manifest.push('<item id="' + id + '" href="' + fn + '" media-type="application/xhtml+xml"/>');
+      spine.push('<itemref idref="' + id + '"/>');
+      nav.push('<li><a href="' + fn + '">' + escapeHtml(t) + '</a></li>');
+      ncx.push('<navPoint id="np' + (ci + 1) + '" playOrder="' + (ci + 1) + '"><navLabel><text>' + escapeHtml(t) + '</text></navLabel><content src="' + fn + '"/></navPoint>');
+    });
+    zip.file('OEBPS/nav.xhtml', '<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE html>\n<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops"><head><meta charset="utf-8"/><title>Contents</title></head><body><nav epub:type="toc" id="toc"><h1>Contents</h1><ol>' + nav.join('') + '</ol></nav></body></html>');
+    zip.file('OEBPS/toc.ncx', '<?xml version="1.0" encoding="UTF-8"?>\n<ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1"><head><meta name="dtb:uid" content="' + escapeHtml(bookId) + '"/></head><docTitle><text>' + escapeHtml(title) + '</text></docTitle><navMap>' + ncx.join('') + '</navMap></ncx>');
+    var coverMeta = '', coverItem = '';
+    var cm = /^data:image\/(jpeg|jpg|png);base64,(.+)$/.exec(state.coverImage || '');
+    if (cm) {
+      var ext = cm[1] === 'png' ? 'png' : 'jpg';
+      zip.file('OEBPS/cover.' + ext, cm[2], { base64: true });
+      coverItem = '<item id="cover-image" href="cover.' + ext + '" media-type="image/' + (ext === 'png' ? 'png' : 'jpeg') + '" properties="cover-image"/>';
+      coverMeta = '<meta name="cover" content="cover-image"/>';
+    }
+    zip.file('OEBPS/content.opf', '<?xml version="1.0" encoding="UTF-8"?>\n<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid"><metadata xmlns:dc="http://purl.org/dc/elements/1.1/">' +
+      '<dc:identifier id="uid">' + escapeHtml(bookId) + '</dc:identifier><dc:title>' + escapeHtml(title) + '</dc:title>' + (author ? '<dc:creator>' + escapeHtml(author) + '</dc:creator>' : '') +
+      '<dc:language>en</dc:language><meta property="dcterms:modified">' + new Date().toISOString().replace(/\.\d+Z$/, 'Z') + '</meta>' + coverMeta + '</metadata>' +
+      '<manifest><item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/><item id="ncx" href="toc.ncx" media-type="application/x-dtbncx+xml"/><item id="css" href="style.css" media-type="text/css"/>' + coverItem + manifest.join('') + '</manifest>' +
+      '<spine toc="ncx">' + spine.join('') + '</spine></package>');
+    try {
+      var blob = await zip.generateAsync({ type: 'blob', mimeType: 'application/epub+zip', compression: 'DEFLATE' });
+      swSave(blob, swFileStem(title) + '.epub');
+      try { ensureGamify(); state.gamify.exportUsed = true; checkAchievements({ silent: true }); } catch (e) {}
+      toast('EPUB downloaded');
+    } catch (e) { console.warn(e); toast('The EPUB could not be built'); }
+  }
+  function swExportPdf() {
+    saveCurrent();
+    var meta = swBookMeta();
+    var parts = state.chapters.map(function (ch, ci) { return '<section class="ch">' + swChapterBody(ch, ci) + '</section>'; }).join('');
+    var doc = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>' + escapeHtml(meta.title) + '</title><style>' +
+      '@page{size:6in 9in;margin:0.75in 0.7in}body{font-family:Georgia,"Times New Roman",serif;font-size:11.5pt;line-height:1.5;color:#111;margin:0}' +
+      '.tp{text-align:center;padding-top:30%;page-break-after:always}.tp h1{font-size:2em;margin:0 0 .6em}.tp p{text-indent:0}' +
+      '.ch{page-break-before:always}h1{text-align:center;font-size:1.4em;margin:1.5em 0 1.2em}h2{font-size:1.1em;margin:1.2em 0 .5em}' +
+      'p{margin:0;text-indent:1.4em;text-align:justify;orphans:3;widows:3}p.first{text-indent:0}p.scene-break{text-indent:0;text-align:center;margin:1em 0}' +
+      '</style></head><body><div class="tp"><h1>' + escapeHtml(meta.title) + '</h1>' + (meta.author ? '<p>' + escapeHtml(meta.author) + '</p>' : '') + '</div>' + parts +
+      '<scr' + 'ipt>window.onload=function(){setTimeout(function(){window.print()},300)}<\/scr' + 'ipt></body></html>';
+    var w = window.open('', '_blank');
+    if (!w) { toast('Allow pop-ups, then choose Save as PDF in the print dialog'); return; }
+    w.document.open(); w.document.write(doc); w.document.close();
+    toast('Choose \u201cSave as PDF\u201d in the print dialog');
+  }
+  function swMdInline(node) {
+    var s = '';
+    Array.prototype.forEach.call(node.childNodes, function (c) {
+      if (c.nodeType === 3) { s += c.nodeValue.replace(/\s+/g, ' ').replace(/([*_`\\])/g, '\\$1'); return; }
+      if (c.nodeType !== 1) return;
+      var tg = c.tagName.toLowerCase(), inner = swMdInline(c);
+      if ((tg === 'b' || tg === 'strong') && inner.trim()) s += '**' + inner.trim() + '** ';
+      else if ((tg === 'i' || tg === 'em') && inner.trim()) s += '*' + inner.trim() + '* ';
+      else if (tg === 'br') s += '  \n';
+      else s += inner;
+    });
+    return s.replace(/\s+\n/g, '\n').replace(/ {2,}/g, ' ').trim();
+  }
+  function swExportMd() {
+    saveCurrent();
+    var meta = swBookMeta(), out = ['# ' + meta.title];
+    if (meta.author) out.push('*by ' + meta.author + '*');
+    state.chapters.forEach(function (ch, ci) {
+      out.push('## ' + (ch.title || ('Chapter ' + (ci + 1))));
+      ch.scenes.forEach(function (sc, si) {
+        if (si > 0) out.push(/^Scene \d+$/i.test(sc.title || '') || !sc.title ? '* * *' : '### ' + sc.title);
+        else if (sc.title && !/^Scene \d+$/i.test(sc.title) && ch.scenes.length > 1) out.push('### ' + sc.title);
+        swBlocksOf(sc.content).forEach(function (b) {
+          if (b.tag === 'hr') { out.push('* * *'); return; }
+          var t = swMdInline(b.el);
+          if (!t) return;
+          if (b.tag === 'h') out.push('#### ' + t);
+          else out.push(/^([#>+\-]|\d+\.)/.test(t) ? '\\' + t : t);
+        });
+      });
+    });
+    swSave(new Blob([out.join('\n\n') + '\n'], { type: 'text/markdown;charset=utf-8' }), swFileStem(meta.title) + '.md');
+    toast('Markdown downloaded');
+  }
+
+  // ----- Recycle bin badge -----
+  var swBinLast = -1;
+  function swUpdateBinBadge() {
+    var el = document.getElementById('sw-bin-count'), b = document.getElementById('sw-bin-btn');
+    if (!el) return;
+    var n = (state.trash || []).length;
+    if (n === swBinLast) return;
+    swBinLast = n;
+    el.textContent = String(n);
+    if (b) {
+      b.title = 'Recycle bin (' + n + ' item' + (n === 1 ? '' : 's') + ')';
+      b.classList.toggle('has-items', n > 0);
+    }
+  }
+
+  // ----- Storage protection -----
+  var swPersisted = null;
+  function swPaintChip() {
+    var chip = document.getElementById('sw-save-chip');
+    if (!chip) return;
+    chip.classList.toggle('warn', swPersisted === false);
+    chip.title = 'Your writing saves automatically in this browser.' +
+      (swPersisted === true ? ' Storage protection is on.' : (swPersisted === false ? ' The browser has not granted storage protection, so keep a backup copy. Click for options.' : ' Click for backup options.'));
+  }
+  function swTryPersist() {
+    if (!(navigator.storage && navigator.storage.persist)) return Promise.resolve(null);
+    return navigator.storage.persist().then(function (ok) { swPersisted = !!ok; swPaintChip(); return !!ok; }).catch(function () { return null; });
+  }
+  function swCheckPersisted() {
+    try {
+      if (navigator.storage && navigator.storage.persisted) {
+        navigator.storage.persisted().then(function (v) { swPersisted = !!v; swPaintChip(); }).catch(function () {});
+      }
+    } catch (e) {}
+  }
+  function swPersistHelp() {
+    var lines = [];
+    var embedded = false;
+    try { embedded = window.top !== window.self; } catch (e) { embedded = true; }
+    var standalone = false;
+    try { standalone = window.matchMedia('(display-mode: standalone)').matches; } catch (e) {}
+    if (embedded) lines.push('This page is embedded inside another page. Browsers refuse storage protection to embedded pages, so open StoryWriter in its own tab.');
+    if (!window.isSecureContext) lines.push('This page is not served over HTTPS, which browsers require for storage protection.');
+    if (!standalone) {
+      lines.push('Chrome and Edge usually grant protection once the site is installed as an app or bookmarked (Ctrl or Cmd + D). Firefox shows a permission prompt, so choose Allow. Safari grants it to apps added to the Dock or Home Screen.');
+    }
+    lines.push('A folder backup or a downloaded backup protects your novel whatever the browser decides.');
+    return lines.map(function (l) { return '<p>' + escapeHtml(l) + '</p>'; }).join('');
+  }
+
+  // ----- Backups & safety -----
+  var SW_BK_KEY = 'storywriter-backup-v1';
+  var swBkFolderOn = false, swBkTimer = null;
+  function swBkRead() { try { return JSON.parse(localStorage.getItem(SW_BK_KEY) || '{}') || {}; } catch (e) { return {}; } }
+  function swBkWrite(o) { try { localStorage.setItem(SW_BK_KEY, JSON.stringify(o)); } catch (e) {} }
+  function swMarkBackup() {
+    var o = swBkRead();
+    o.p = o.p || {};
+    o.p[currentProjectId || '_'] = Date.now();
+    swBkWrite(o);
+    try { swTryPersist(); } catch (e) {}
+  }
+  function swLastBackup() { var o = swBkRead(); return (o.p && o.p[currentProjectId || '_']) || 0; }
+  function swNoteLocalSave() {
+    var el = document.getElementById('sw-save-chip');
+    if (el) el.textContent = 'Auto-saved ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    if (swBkFolderOn) {
+      clearTimeout(swBkTimer);
+      swBkTimer = setTimeout(function () { swFolderBackup(false).catch(function () {}); }, 180000);
+    }
+  }
+  async function swFolderBackup(requestPerm) {
+    var rec = await idbGetHandle('__backup_dir__');
+    if (!rec || !rec.handle) return false;
+    var dir = rec.handle;
+    try {
+      var perm = dir.queryPermission ? await dir.queryPermission({ mode: 'readwrite' }) : 'granted';
+      if (perm !== 'granted') {
+        if (!requestPerm || !dir.requestPermission) return false;
+        perm = await dir.requestPermission({ mode: 'readwrite' });
+        if (perm !== 'granted') return false;
+      }
+      saveCurrent();
+      var pid = currentProjectId || '_';
+      var o = swBkRead();
+      o.s = o.s || {};
+      var slot = ((o.s[pid] || 0) % 5) + 1;
+      var safe = (currentProjectName || 'novel').replace(/[^a-z0-9\-_]+/gi, '_').slice(0, 40) || 'novel';
+      var name = 'StoryWriter-' + safe + '-backup-' + slot + '.json';
+      var fh = await dir.getFileHandle(name, { create: true });
+      var w = await fh.createWritable();
+      await w.write(new Blob([buildProjectPayload()], { type: 'application/json' }));
+      await w.close();
+      o = swBkRead();
+      o.s = o.s || {}; o.p = o.p || {};
+      o.s[pid] = slot; o.p[pid] = Date.now();
+      swBkWrite(o);
+      return name;
+    } catch (e) { return false; }
+  }
+  async function swQuickBackup() {
+    if (swBkFolderOn) {
+      var n = await swFolderBackup(true);
+      if (n) { toast('Backed up to ' + n); return; }
+    }
+    saveCurrent();
+    exportJson();
+  }
+  async function swOpenBackup() {
+    var rec = null, persisted = null;
+    try { rec = await idbGetHandle('__backup_dir__'); } catch (e) {}
+    try { if (navigator.storage && navigator.storage.persisted) persisted = await navigator.storage.persisted(); } catch (e) {}
+    var folder = rec && rec.handle ? (rec.fileName || rec.handle.name || 'chosen folder') : '';
+    var canFolder = typeof window.showDirectoryPicker === 'function';
+    var canPersist = !!(navigator.storage && navigator.storage.persist);
+    var last = swLastBackup(), o = swBkRead();
+    var instEl = document.getElementById('sw-install-btn');
+    var installReady = !!(instEl && instEl.style.display !== 'none');
+    swPersisted = persisted === null ? swPersisted : !!persisted;
+    swPaintChip();
+    openModal('<h3>Backups &amp; safety</h3>' +
+      '<div class="sw-bk-list">' +
+        '<div><strong>Browser copy</strong><span>Saved automatically as you write, inside this browser.</span></div>' +
+        '<div><strong>Latest backup copy</strong><span>' + (last ? swAgo(last) : 'None yet for this novel') + '</span></div>' +
+        '<div><strong>Storage protection</strong><span>' + (persisted === true ? 'On. The browser will keep your data when space runs low.' : (persisted === false ? 'Off. The browser may clear data when space runs low, so keep a backup copy.' : 'Not reported by this browser.')) + '</span>' +
+          (persisted !== true && canPersist ? ' <button type="button" class="sw-btn" id="m-bk-persist">Ask the browser again</button>' : '') +
+          (persisted !== true && installReady ? ' <button type="button" class="sw-btn" id="m-bk-install">Install StoryWriter</button>' : '') +
+          (persisted !== true ? '<div class="sw-bk-help">' + swPersistHelp() + '</div>' : '') + '</div>' +
+        '<div><strong>Backup folder</strong><span>' + (folder ? escapeHtml(folder) + ' (five rotating copies per novel, refreshed about every three minutes while you write)' : (canFolder ? 'Not chosen. Pick a folder, ideally one your cloud drive syncs.' : 'This browser cannot write to a folder. Use downloaded backups instead.')) + '</span></div>' +
+      '</div>' +
+      '<div class="sw-cork-actions" style="border-top:0;margin-top:6px;padding-top:0">' +
+        '<button type="button" class="sw-btn sw-btn-primary" id="m-bk-now">Download backup now</button>' +
+        (canFolder ? '<button type="button" class="sw-btn" id="m-bk-folder">' + (folder ? 'Change folder' : 'Choose backup folder') + '</button>' : '') +
+        (folder ? '<button type="button" class="sw-btn" id="m-bk-run">Back up to folder now</button><button type="button" class="sw-btn" id="m-bk-stop">Stop folder backups</button>' : '') +
+      '</div>' +
+      '<label class="sw-imp-opt" style="margin-top:12px"><input type="checkbox" id="m-bk-remind"' + (o.remind === false ? '' : ' checked') + '> Remind me when a week passes without a backup</label>' +
+      '<div class="sw-modal-actions"><button type="button" class="sw-btn" id="m-cancel">Close</button></div>');
+    $('#m-cancel').onclick = closeModal;
+    $('#m-bk-now').onclick = function () { saveCurrent(); exportJson(); closeModal(); };
+    var bp = $('#m-bk-persist');
+    if (bp) bp.onclick = function () {
+      swTryPersist().then(function (ok) { toast(ok ? 'Storage protection is on' : 'The browser declined for now. A backup copy keeps you safe.'); swOpenBackup(); });
+    };
+    var bi = $('#m-bk-install');
+    if (bi) bi.onclick = function () { closeModal(); var ib = document.getElementById('sw-install-btn'); if (ib) ib.click(); };
+    var bf = $('#m-bk-folder');
+    if (bf) bf.onclick = async function () {
+      if (await swChooseBackupFolder()) {
+        var n = await swFolderBackup(true);
+        toast(n ? 'Backed up to ' + n : 'Folder chosen');
+      }
+      swOpenBackup();
+    };
+    var br = $('#m-bk-run');
+    if (br) br.onclick = async function () {
+      var n = await swFolderBackup(true);
+      toast(n ? 'Backed up to ' + n : 'The folder could not be written. Allow access and try again.');
+      swOpenBackup();
+    };
+    var bs = $('#m-bk-stop');
+    if (bs) bs.onclick = async function () {
+      await idbClearHandle('__backup_dir__');
+      swBkFolderOn = false;
+      toast('Folder backups stopped');
+      swOpenBackup();
+    };
+    $('#m-bk-remind').onchange = function () {
+      var x = swBkRead(); x.remind = !!$('#m-bk-remind').checked; swBkWrite(x);
+    };
+  }
+  async function swChooseBackupFolder() {
+    if (typeof window.showDirectoryPicker !== 'function') return false;
+    try {
+      var h = await window.showDirectoryPicker({ mode: 'readwrite' });
+      await idbPutHandle('__backup_dir__', h, h.name || 'folder');
+      swBkFolderOn = true;
+      return true;
+    } catch (e) { return false; }
+  }
+  function swMaybeRemind(tries) {
+    try {
+      var o = swBkRead();
+      if (o.remind === false || totalWords() < 300) return;
+      var today = new Date().toISOString().slice(0, 10);
+      if (o.remindedOn === today) return;
+      var last = swLastBackup();
+      if (last && Date.now() - last < 7 * 86400000) return;
+      if (ROOT.classList.contains('sw-show-dash') || modalBg.classList.contains('open')) {
+        if ((tries || 0) < 6) setTimeout(function () { swMaybeRemind((tries || 0) + 1); }, 20000);
+        return;
+      }
+      o.remindedOn = today;
+      swBkWrite(o);
+      swToastAction(last ? 'A week has passed since your last backup.' : 'This novel has no backup copy yet.', 'Back up now', swQuickBackup, 12000);
+    } catch (e) {}
+  }
+
+  // ----- Sample novel, welcome card and tour -----
+  function swDismissWelcome() {
+    try { localStorage.setItem('sw-welcome-dismissed', '1'); } catch (e) {}
+    var el = document.getElementById('sw-dash-welcome');
+    if (el) el.style.display = 'none';
+  }
+  function swShowWelcomeIfNeeded() {
+    var el = document.getElementById('sw-dash-welcome');
+    if (!el) return;
+    var done = false;
+    try { done = !!localStorage.getItem('sw-welcome-dismissed'); } catch (e) {}
+    el.style.display = done ? 'none' : '';
+  }
+  async function swOpenSample() {
+    swDismissWelcome();
+    await createNewProject('Sample: The Lighthouse Letters');
+    var ent = {
+      mara: { type: 'character', id: uid(), name: 'Mara Vance' },
+      tobias: { type: 'character', id: uid(), name: 'Tobias Reed' },
+      elin: { type: 'character', id: uid(), name: 'Elin Vance' },
+      light: { type: 'location', id: uid(), name: 'Harrow Light' },
+      landing: { type: 'location', id: uid(), name: 'Gull Landing' },
+      veyra: { type: 'planet', id: uid(), name: 'Veyra' },
+      order: { type: 'religion', id: uid(), name: 'Order of the Quiet Bell' },
+      log: { type: 'glossary', id: uid(), name: 'keeper\u2019s log' }
+    };
+    function para(text) {
+      var h = escapeHtml(text).replace(/\[\[(\w+)\]\]/g, function (m, k) {
+        var e = ent[k];
+        if (!e) return m;
+        return '<span class="sw-mention" data-type="' + e.type + '" data-id="' + e.id + '" contenteditable="false">' + escapeHtml(e.name) + '</span>';
+      });
+      return '<div>' + h + '</div>';
+    }
+    function mk(title, syn, status, label, tags, target, paras) {
+      var sc = emptyScene(title);
+      sc.synopsis = syn; sc.status = status; sc.label = label; sc.tags = tags;
+      if (target) sc.target = target;
+      sc.content = paras.map(para).join('');
+      return sc;
+    }
+    var c1 = emptyChapter('The Keeper Arrives', 1);
+    c1.target = 600;
+    c1.scenes = [
+      mk('Ferry at dusk', 'Mara crosses to the lighthouse with a doubtful ferryman.', 'done', 'rose', ['Mara Vance', 'Tobias Reed'], 300, [
+        'The ferryman would not go closer than the last buoy. [[mara]] stood in the stern with her trunk between her boots and watched [[light]] grow out of the fog, white and patient, like something that had been waiting a long time to be introduced.',
+        'On [[veyra]], where one slow sun hung above the water for most of the day, fog was less a weather than a habit.',
+        '\u201cForty years nobody\u2019s stayed past winter,\u201d [[tobias]] said, not unkindly. He looked at her the way people look at a ladder they suspect is rotten. \u201cYou\u2019re sure about this?\u201d',
+        'She was not sure. She handed him the fare anyway.'
+      ]),
+      mk('The empty keeper\u2019s room', '', 'revise', 'teal', ['Mara Vance', 'Harrow Light'], 0, [
+        'The door stuck, then gave all at once, as if the house had decided against making her work for it. Inside, a kettle sat cold on the stove and a calendar still showed a March nobody had turned past.',
+        'On the table lay a bundle of letters tied with fishing line. The top one was addressed to her.'
+      ])
+    ];
+    var c2 = emptyChapter('Letters in the Dark', 2);
+    c2.scenes = [
+      mk('The first letter', 'The handwriting is her mother\u2019s, and the instructions are strange.', 'draft', 'violet', ['Mara Vance', 'Elin Vance', 'mystery'], 0, [
+        'The handwriting was her mother\u2019s. That was impossible, and it was also true, and [[mara]] read the first line three times before she let herself read the second.',
+        'Do not light the lamp before the bell rings. Whatever you hear, write it in the [[log]]. The sea remembers who writes things down.',
+        'The old keepers called it the Quiet Bell. The [[order]] on the mainland called it a mercy.'
+      ]),
+      mk('Supplies', '', 'draft', 'amber', ['Tobias Reed', 'Mara Vance'], 0, [
+        '[[tobias]] came on the fourth day with flour, lamp oil and the mail, which was nothing. He stayed for tea. He pretended not to look at the letters on the table.',
+        '\u201cYour mother,\u201d he said at last, \u201cwas the last keeper. She went out one night in March to fix the bell.\u201d He turned his cup a quarter turn on its saucer. \u201cThey never found the bell either.\u201d',
+        'Later, from the window, she watched his boat pull away toward [[landing]] until the fog closed over it.'
+      ])
+    ];
+    var c3 = emptyChapter('The Storm', 3);
+    c3.scenes = [
+      mk('The bell rings', '', 'draft', 'rose', ['Mara Vance', 'mystery'], 0, [
+        'At midnight the bell rang. There was no bell. [[mara]] counted nine strokes, took the lamp in both hands, and climbed.'
+      ]),
+      mk('Dawn', 'The fog lifts and Tobias is waiting with a letter of his own.', 'draft', 'blue', ['Mara Vance', 'Tobias Reed', 'Elin Vance'], 0, [
+        'By morning the fog had burned off and the sea lay flat and innocent. [[tobias]]\u2019s boat was tied at the jetty. He was sitting on the steps with a letter in his hands, one she had never seen him pick up, and the handwriting on it belonged to [[elin]].'
+      ])
+    ];
+    state.chapters = [c1, c2, c3];
+    state.activeChapterId = c1.id;
+    state.activeSceneId = c1.scenes[0].id;
+    function blankChar(o) {
+      return Object.assign({ role: '', age: '', appearance: '', traits: '', wants: '', fears: '', values: '', background: '', conflict: '', arc: '', notes: '', image: '', eyeColor: '', status: 'alive', voiceNotes: '', color: '#5c4a32', palette: [], paletteImage: '' }, o);
+    }
+    state.characters = [
+      blankChar({ id: ent.mara.id, name: ent.mara.name, role: 'Protagonist', age: '29', appearance: 'Wiry, salt-chapped hands, a coat two sizes too big.', traits: 'Stubborn, observant, dry-humoured', wants: 'To learn what happened to her mother', fears: 'That the sea keeps what it takes', values: 'Honesty, work done properly', background: 'Raised inland by an aunt after her mother left the island.', conflict: 'Duty to the light against the pull of the mystery', arc: 'From outsider to keeper', eyeColor: 'Grey', voiceNotes: 'Short sentences when nervous.', color: '#3f7f87', notes: 'Hover over her name in the manuscript to see this card.' }),
+      blankChar({ id: ent.tobias.id, name: ent.tobias.name, role: 'Ferryman', age: '58', appearance: 'Broad, sun-lined, always smells of tar.', traits: 'Kind, evasive, loyal to a fault', wants: 'To keep Mara safe without telling her everything', fears: 'The night in March', background: 'Has crossed to the light every week for thirty years.', color: '#b98a2e' }),
+      blankChar({ id: ent.elin.id, name: ent.elin.name, role: 'Previous keeper', age: '54', status: 'missing', traits: 'Methodical, secretive, tender', wants: 'To protect her daughter', background: 'Kept Harrow Light for twenty years. Vanished one March night.', color: '#7d5f99' })
+    ];
+    state.locations = [
+      { id: ent.light.id, name: ent.light.name, kind: 'lighthouse', parentName: 'Veyra', description: 'A white tower on a black rock, with a keeper\u2019s cottage at its foot and a bell nobody can find.', notes: 'Appears in every chapter.', image: '' },
+      { id: ent.landing.id, name: ent.landing.name, kind: 'harbour', parentName: 'Veyra', description: 'The mainland jetty where the ferry leaves. Smells of fish and rope.', notes: '', image: '' }
+    ];
+    state.planets = [
+      { id: ent.veyra.id, name: ent.veyra.name, summary: 'A cold ocean world under one slow sun, where fog rolls in most afternoons.', star: 'Ankh', climate: 'Cool, foggy, storm-prone', size: 'A little smaller than Earth', notes: 'Days last about thirty hours.' }
+    ];
+    state.religions = [
+      { id: ent.order.id, name: ent.order.name, summary: 'A mainland faith that treats silence at sea as a form of mercy.', deities: 'None; the tide is addressed, not worshipped.', sacredText: 'The Tide Ledger', beliefs: 'What the sea takes is kept, not lost.', practices: 'Ringing a muffled bell at each drowning.', notes: 'Disapproves of lighthouses that ring at night.' }
+    ];
+    state.glossary = [
+      { id: ent.log.id, term: ent.log.name, pronunciation: '', definition: 'The keeper\u2019s handwritten record of weather, ships and anything unexplained.', notes: 'Hovering over this word in the text shows the definition.' }
+    ];
+    state.relationships = [
+      { id: uid(), a: ent.mara.name, b: ent.tobias.name, kind: 'uneasy allies', note: 'He ferries her out and looks after her, but he is hiding something about that March night.', love: 15, hate: 5, trust: 55, intensity: 60 },
+      { id: uid(), a: ent.mara.name, b: ent.elin.name, kind: 'family', note: 'Mother and daughter, separated by the sea and by silence.', love: 90, hate: 15, trust: 40, intensity: 85 },
+      { id: uid(), a: ent.tobias.name, b: ent.elin.name, kind: 'old friends', note: 'He was the last person to see her.', love: 35, hate: 10, trust: 80, intensity: 55 }
+    ];
+    state.timeline = [
+      { id: uid(), title: 'Elin disappears', order: '1', note: 'One night in March, years before the story opens.' },
+      { id: uid(), title: 'Mara arrives at the light', order: '2', note: 'Chapter 1.' },
+      { id: uid(), title: 'The bell rings', order: '3', note: 'Chapter 3.' }
+    ];
+    state.isSample = true;
+    state.goals.sessionBase = totalWords();
+    state.viewMode = 'write';
+    corkUI = null;
+    hideDashboard();
+    refreshUI();
+    save();
+    try { await persistToIdbPromise(); } catch (e) {}
+    toast('Sample novel opened. Type @ in a scene to try mentions. Achievements pause in this practice project.');
+  }
+
+  var swTourEl = null, swTourStep = 0;
+  var SW_TOUR = [
+    { sel: '#sw-chapter-list', title: 'Chapters and scenes', text: 'Your manuscript lives here. Add chapters and scenes, and drag scenes to reorder them.' },
+    { sel: '#sw-tabs', title: 'World-building tabs', text: 'Characters, locations, religions, planets, relations, timeline and more live in this row. Type @ in a scene to link to any of them.' },
+    { sel: '#sw-view-cork', title: 'Corkboard', text: 'See every scene as an index card. Drag cards between chapters, colour-code them, filter by tag or character, and edit synopses in place.' },
+    { sel: '#sw-cap-tools', title: 'The tools menu', text: 'Continuity checks, snapshots, comparisons, search, themes, goals, importing and project settings live here.' },
+    { sel: '#sw-export-btn', title: 'Take your book anywhere', text: 'Export DOCX, EPUB, PDF, Markdown, plain text or the full project file whenever you like.' },
+    { sel: '#sw-disk-save', title: 'Keep your work safe', text: 'Writing saves automatically inside this browser. Save disk and the Backups panel give you copies you control.' },
+    { sel: null, final: true, title: 'You are ready', text: 'Open the sample novel to practise on a small project, or start writing in your own.' }
+  ];
+  function swEndTour() {
+    if (!swTourEl) return;
+    document.removeEventListener('keydown', swTourKey, true);
+    window.removeEventListener('resize', swTourPlace);
+    if (swTourEl.parentNode) swTourEl.parentNode.removeChild(swTourEl);
+    swTourEl = null;
+    try { localStorage.setItem('sw-tour-done', '1'); } catch (e) {}
+  }
+  function swTourKey(e) {
+    if (!swTourEl) return;
+    if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); swEndTour(); }
+    else if (e.key === 'ArrowRight') { e.preventDefault(); swTourGo(1); }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); swTourGo(-1); }
+  }
+  function swTourGo(d) {
+    var n = swTourStep + d;
+    if (n < 0) return;
+    if (n >= SW_TOUR.length) { swEndTour(); return; }
+    swTourStep = n;
+    swTourShow();
+  }
+  function swStartTour() {
+    swDismissWelcome();
+    hideDashboard();
+    if (modalBg.classList.contains('open')) closeModal();
+    swEndTour();
+    if (state.viewMode === 'cork') { state.viewMode = 'write'; setViewMode(); }
+    ROOT.classList.remove('sw-sidebar-collapsed');
+    swTourStep = 0;
+    var wrap = document.createElement('div');
+    wrap.className = 'sw-tour';
+    wrap.innerHTML = '<div class="sw-tour-spot"></div><div class="sw-tour-card" role="dialog" aria-label="StoryWriter tour"><h4></h4><p></p>' +
+      '<div class="sw-tour-nav"><span class="sw-tour-count"></span><span class="sw-tour-btns">' +
+      '<button type="button" class="sw-btn" data-t="skip">Close</button><button type="button" class="sw-btn" data-t="back">Back</button><button type="button" class="sw-btn sw-btn-primary" data-t="next">Next</button></span></div></div>';
+    ROOT.appendChild(wrap);
+    swTourEl = wrap;
+    wrap.querySelector('[data-t="skip"]').onclick = swEndTour;
+    wrap.querySelector('[data-t="back"]').onclick = function () { swTourGo(-1); };
+    wrap.querySelector('[data-t="next"]').onclick = function () {
+      if (SW_TOUR[swTourStep].final) { swEndTour(); swOpenSample(); } else swTourGo(1);
+    };
+    document.addEventListener('keydown', swTourKey, true);
+    window.addEventListener('resize', swTourPlace);
+    swTourShow();
+  }
+  function swTourShow() {
+    if (!swTourEl) return;
+    var s = SW_TOUR[swTourStep];
+    swTourEl.querySelector('h4').textContent = s.title;
+    swTourEl.querySelector('p').textContent = s.text;
+    swTourEl.querySelector('.sw-tour-count').textContent = (swTourStep + 1) + ' of ' + SW_TOUR.length;
+    swTourEl.querySelector('[data-t="back"]').style.visibility = swTourStep === 0 ? 'hidden' : '';
+    swTourEl.querySelector('[data-t="next"]').textContent = s.final ? 'Open sample novel' : 'Next';
+    swTourEl.querySelector('[data-t="skip"]').textContent = s.final ? 'Not now' : 'Close';
+    swTourPlace();
+  }
+  function swTourPlace() {
+    if (!swTourEl) return;
+    var s = SW_TOUR[swTourStep];
+    var spot = swTourEl.querySelector('.sw-tour-spot'), card = swTourEl.querySelector('.sw-tour-card');
+    var el = s.sel ? ROOT.querySelector(s.sel) : null, r = el ? el.getBoundingClientRect() : null;
+    var vis = !!(r && r.width > 0 && r.height > 0);
+    swTourEl.classList.toggle('nospot', !vis);
+    if (vis) {
+      spot.style.display = 'block';
+      spot.style.left = (r.left - 5) + 'px'; spot.style.top = (r.top - 5) + 'px';
+      spot.style.width = (r.width + 10) + 'px'; spot.style.height = (r.height + 10) + 'px';
+    } else spot.style.display = 'none';
+    card.style.visibility = 'hidden'; card.style.left = '0px'; card.style.top = '0px';
+    var cw = card.offsetWidth, chh = card.offsetHeight, vw = window.innerWidth, vh = window.innerHeight, left, top;
+    if (!vis) { left = (vw - cw) / 2; top = (vh - chh) / 2; }
+    else if (r.bottom + 14 + chh <= vh - 10) { top = r.bottom + 14; left = Math.min(Math.max(10, r.left), vw - cw - 10); }
+    else if (r.top - 14 - chh >= 10) { top = r.top - 14 - chh; left = Math.min(Math.max(10, r.left), vw - cw - 10); }
+    else if (r.right + 14 + cw <= vw - 10) { left = r.right + 14; top = Math.min(Math.max(10, r.top), vh - chh - 10); }
+    else { left = (vw - cw) / 2; top = (vh - chh) / 2; }
+    card.style.left = Math.max(10, left) + 'px'; card.style.top = Math.max(10, top) + 'px';
+    card.style.visibility = '';
+  }
+
+  function swPatchOnReady() {
+    swShowWelcomeIfNeeded();
+    var chip = document.getElementById('sw-save-chip');
+    if (chip) chip.textContent = 'Auto-saves in this browser';
+    idbGetHandle('__backup_dir__').then(function (rec) {
+      if (!rec || !rec.handle) return;
+      swBkFolderOn = true;
+      try {
+        if (rec.handle.queryPermission) {
+          rec.handle.queryPermission({ mode: 'readwrite' }).then(function (p) {
+            if (p !== 'granted' && totalWords() >= 300) {
+              setTimeout(function () {
+                if (!ROOT.classList.contains('sw-show-dash')) swToastAction('Folder backups are paused until you allow access.', 'Resume', function () { swFolderBackup(true).then(function (n) { if (n) toast('Backed up to ' + n); }); }, 12000);
+              }, 12000);
+            }
+          }).catch(function () {});
+        }
+      } catch (e) {}
+    }).catch(function () {});
+    swCheckPersisted();
+    var once = function () {
+      document.removeEventListener('pointerdown', once, true);
+      document.removeEventListener('keydown', once, true);
+      setTimeout(function () { try { if (totalWords() >= 100) swTryPersist(); } catch (e) {} }, 2000);
+    };
+    document.addEventListener('pointerdown', once, true);
+    document.addEventListener('keydown', once, true);
+    swUpdateBinBadge();
+    setTimeout(function () { swMaybeRemind(0); }, 9000);
+  }
+
+  (function swWireAdditions() {
+    var closeCap = function () { var cap = document.getElementById('sw-capsule'); if (cap) cap.classList.remove('open'); };
+    var acts = { import: swImportPick, backup: swOpenBackup, tour: swStartTour, sample: swOpenSample };
+    document.querySelectorAll('[data-cap2]').forEach(function (b) {
+      b.addEventListener('click', function () { closeCap(); var f = acts[b.getAttribute('data-cap2')]; if (f) f(); });
+    });
+    document.querySelectorAll('[data-export2]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var t = b.getAttribute('data-export2');
+        try {
+          if (t === 'epub') swExportEpub(); else if (t === 'pdf') swExportPdf(); else if (t === 'md') swExportMd();
+        } catch (e) { console.warn(e); toast('That export could not be completed'); }
+      });
+    });
+    function on(id, fn) { var el = document.getElementById(id); if (el) el.addEventListener('click', fn); }
+    on('sw-dash-import', swImportPick); on('sw-dash-tour', swStartTour); on('sw-dash-backup', swOpenBackup);
+    on('sw-wel-tour', swStartTour); on('sw-wel-sample', swOpenSample); on('sw-wel-import', swImportPick);
+    on('sw-wel-dismiss', swDismissWelcome); on('sw-save-chip', swOpenBackup); on('sw-bin-btn', swOpenBin);
+    setInterval(function () { try { swUpdateBinBadge(); } catch (e) {} }, 1000);
+  })();
+
   // Final v3 aliases (after all function declarations)
   openMentionIndex = openAppearanceReport;
   openPrintSetup = openDesignPrint;
@@ -13250,6 +15231,7 @@ function exportTxt() {
       try { maybeRelinkTip(); } catch (e) {}
       // Dashboard first so the desk is visible under the dialog
       try { showDashboard(); } catch (e) {}
+      try { swPatchOnReady(); } catch (e) {}
       // Then pen-name prompt — stays open until Save or Skip
       try { await maybePenNameOnboarding(); } catch (e) {}
       // Refresh greeting if they just set a name
