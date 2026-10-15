@@ -14771,7 +14771,10 @@ function exportTxt() {
         leading: design.leading,
         textColor: design.textColor,
         sceneBreak: design.sceneBreak,
-        chapterIds: (design.chapterIds || []).slice()
+        sceneSeparator: design.sceneSeparator,
+        compilePreset: design.compilePreset,
+        chapterIds: (design.chapterIds || []).slice(),
+        excludedSceneIds: (design.excludedSceneIds || []).slice()
       };
       design.history.unshift(snap);
       if (design.history.length > 20) design.history = design.history.slice(0, 20);
@@ -15049,6 +15052,75 @@ function exportTxt() {
     'ebook': { label: 'Ebook only (no bleed)', pageSize: '6x9', bleed: 0, margins: { top: 0.8, bottom: 0.8, inner: 0.85, outer: 0.7, gutter: 0 }, paper: 'white' }
   };
 
+  /* Full compile presets (layout + separators + front/back + page style). */
+  var DB_COMPILE_PRESETS = {
+    manuscript: {
+      label: 'Manuscript Standard',
+      note: 'Courier · double-space · Shunn-friendly · title + chapter heads only',
+      template: 'compact',
+      fontFamily: "'Courier New', Courier, monospace",
+      fontSize: 12, leading: 2, indent: 0, dropCap: false,
+      chapterStyle: 'left', chapterLabel: 'number', sceneBreak: '#', sceneSeparator: 'ornament',
+      justify: false, headers: false, pageNumbers: 'center', pageSize: '8.5x11',
+      margins: { top: 1, bottom: 1, inner: 1, outer: 1, gutter: 0 },
+      paper: 'white', bleed: 0, printPreset: '', firstParaNoIndent: true, showChapterSynopsis: false,
+      spaceAfterChapter: 2, front: { halfTitle: false, titlePage: true, copyright: false, dedication: false, toc: false },
+      back: { about: false }, chapterBreak: true, startRecto: false
+    },
+    trade: {
+      label: 'Trade Paperback',
+      note: 'Classic trade serif · drop caps · TOC · running headers',
+      template: 'classic',
+      fontFamily: "Georgia, 'Times New Roman', serif",
+      fontSize: 11, leading: 1.5, indent: 1.5, dropCap: true,
+      chapterStyle: 'centered', chapterLabel: 'number', sceneBreak: '* * *', sceneSeparator: 'ornament',
+      justify: true, headers: true, pageNumbers: 'center', pageSize: '6x9',
+      margins: { top: 0.85, bottom: 0.85, inner: 0.9, outer: 0.7, gutter: 0.15 },
+      paper: 'cream', bleed: 0.125, printPreset: 'kdp-6x9', firstParaNoIndent: true, showChapterSynopsis: false,
+      spaceAfterChapter: 1.8, front: { halfTitle: true, titlePage: true, copyright: true, dedication: true, toc: true },
+      back: { about: true }, chapterBreak: true, startRecto: true
+    },
+    epub: {
+      label: 'EPUB / e-reader',
+      note: 'Reflowable-friendly · no bleed · light heads · TOC',
+      template: 'modern',
+      fontFamily: "Georgia, 'Times New Roman', serif",
+      fontSize: 12, leading: 1.55, indent: 1.2, dropCap: false,
+      chapterStyle: 'left', chapterLabel: 'none', sceneBreak: '\u2022 \u2022 \u2022', sceneSeparator: 'ornament',
+      justify: false, headers: false, pageNumbers: 'none', pageSize: '6x9',
+      margins: { top: 0.8, bottom: 0.8, inner: 0.85, outer: 0.7, gutter: 0 },
+      paper: 'white', bleed: 0, printPreset: 'ebook', firstParaNoIndent: true, showChapterSynopsis: false,
+      spaceAfterChapter: 1.5, front: { halfTitle: false, titlePage: true, copyright: true, dedication: false, toc: true },
+      back: { about: true }, chapterBreak: true, startRecto: false
+    },
+    agency: {
+      label: 'Agency / submission',
+      note: 'Clean Times · 1" margins · chapter numbers · minimal front matter',
+      template: 'compact',
+      fontFamily: "'Times New Roman', Times, serif",
+      fontSize: 12, leading: 2, indent: 0.5, dropCap: false,
+      chapterStyle: 'centered', chapterLabel: 'number', sceneBreak: '#', sceneSeparator: 'ornament',
+      justify: false, headers: false, pageNumbers: 'center', pageSize: '8.5x11',
+      margins: { top: 1, bottom: 1, inner: 1, outer: 1, gutter: 0 },
+      paper: 'white', bleed: 0, printPreset: '', firstParaNoIndent: true, showChapterSynopsis: false,
+      spaceAfterChapter: 2, front: { halfTitle: false, titlePage: true, copyright: false, dedication: false, toc: false },
+      back: { about: false }, chapterBreak: true, startRecto: false
+    },
+    hardcover: {
+      label: 'Hardcover / larger print',
+      note: 'Generous margins · elegant heads · full front matter',
+      template: 'elegant',
+      fontFamily: "'EB Garamond', Garamond, Georgia, serif",
+      fontSize: 12, leading: 1.5, indent: 1.4, dropCap: true,
+      chapterStyle: 'ornament', chapterLabel: 'word', sceneBreak: '\u2756', sceneSeparator: 'ornament',
+      justify: true, headers: true, pageNumbers: 'outer', pageSize: '6x9',
+      margins: { top: 1, bottom: 1, inner: 1, outer: 0.85, gutter: 0.2 },
+      paper: 'cream', bleed: 0.125, printPreset: 'ingram-6x9', firstParaNoIndent: true, showChapterSynopsis: false,
+      spaceAfterChapter: 2, front: { halfTitle: true, titlePage: true, copyright: true, dedication: true, toc: true },
+      back: { about: true }, chapterBreak: true, startRecto: true
+    }
+  };
+
   var dbS = { design: null, st: null, pages: [], meas: [], total: 0, idx: 0, pageNo: 0, pageCount: 1, view: 'page', zoom: 0, preview: false, timer: null, saveTimer: null };
   var dbScope = 'current';
 
@@ -15084,7 +15156,6 @@ function exportTxt() {
     if (d.spaceAfterChapter == null) d.spaceAfterChapter = 1.8;
     if (d.showChapterSynopsis === undefined) d.showChapterSynopsis = false;
     if (d.firstParaNoIndent === undefined) d.firstParaNoIndent = true;
-    // Copyright and half-title are opt-in; title page + TOC default on
     d.front = Object.assign({ halfTitle: false, titlePage: true, copyright: false, dedication: false, toc: true }, d.front || {});
     d.back = Object.assign({ about: false }, d.back || {});
     if (d.copyrightText === undefined) d.copyrightText = '';
@@ -15093,7 +15164,6 @@ function exportTxt() {
     if (d.author === undefined) d.author = '';
     if (d.bookTitle === undefined) d.bookTitle = '';
     if (!Array.isArray(d.versions)) d.versions = [];
-    // Print / store metadata
     if (d.bleed == null) d.bleed = 0;
     d.bleed = dbClamp(d.bleed, 0, 0.25, 0);
     if (d.isbn === undefined) d.isbn = '';
@@ -15106,10 +15176,45 @@ function exportTxt() {
     if (d.displayFont === undefined) d.displayFont = '';
     if (d.novelSyncHash === undefined) d.novelSyncHash = '';
     if (d.novelSyncedAt === undefined) d.novelSyncedAt = '';
+    if (d.compilePreset === undefined) d.compilePreset = '';
+    if (d.sceneSeparator === undefined) d.sceneSeparator = 'ornament';
+    if (d.excludeEmptyScenes === undefined) d.excludeEmptyScenes = false;
+    if (!d.ebookMeta || typeof d.ebookMeta !== 'object') d.ebookMeta = {};
+    if (d.ebookMeta.language === undefined) d.ebookMeta.language = 'en';
+    if (d.ebookMeta.subject === undefined) d.ebookMeta.subject = '';
+    if (d.ebookMeta.description === undefined) d.ebookMeta.description = '';
+    if (d.ebookMeta.rights === undefined) d.ebookMeta.rights = '';
+    if (d.ebookMeta.identifier === undefined) d.ebookMeta.identifier = '';
+    if (!Array.isArray(d.excludedSceneIds)) d.excludedSceneIds = [];
     if (base.headers !== undefined && d.headers === false && d._headersTouched !== true) {
-      /* keep explicit user choice; only default from template on fresh designs via create */
+      /* keep explicit user choice */
     }
     return d;
+  }
+  function dbApplyCompilePreset(d, key) {
+    var p = DB_COMPILE_PRESETS[key];
+    if (!p || !d) return d;
+    d.compilePreset = key;
+    ['template', 'fontFamily', 'fontSize', 'leading', 'indent', 'dropCap', 'chapterStyle', 'chapterLabel',
+      'sceneBreak', 'sceneSeparator', 'justify', 'headers', 'pageNumbers', 'pageSize', 'paper', 'bleed',
+      'printPreset', 'firstParaNoIndent', 'showChapterSynopsis', 'spaceAfterChapter', 'chapterBreak', 'startRecto'].forEach(function (k) {
+      if (p[k] !== undefined) d[k] = (typeof p[k] === 'object' && p[k] !== null && !Array.isArray(p[k])) ? Object.assign({}, p[k]) : p[k];
+    });
+    if (p.margins) d.margins = Object.assign({}, d.margins || {}, p.margins);
+    if (p.front) d.front = Object.assign({}, d.front || {}, p.front);
+    if (p.back) d.back = Object.assign({}, d.back || {}, p.back);
+    if (p.printPreset) d.printPreset = p.printPreset;
+    d._headersTouched = true;
+    return dbNorm(d);
+  }
+  function dbIsSceneExcluded(d, sceneId) {
+    if (!d || !sceneId) return false;
+    return (d.excludedSceneIds || []).indexOf(sceneId) >= 0;
+  }
+  function dbSceneHasContent(sc) {
+    if (!sc) return false;
+    var t = String(sc.content || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    return t.length > 0;
   }
   function dbNovelHash(st) {
     try {
@@ -15473,7 +15578,12 @@ function dbNumWord(n) {
   }
 
   // ---- Pages ----
-  function dbSceneBreak(st, d) {
+    function dbSceneBreak(st, d) {
+    var mode = (d && d.sceneSeparator) || 'ornament';
+    if (mode === 'none') return '';
+    if (mode === 'pagebreak') return '<div class="sb-pagebreak" style="page-break-before:always;break-before:page;height:0;margin:0;padding:0"></div>';
+    if (mode === 'blank') return '<p class="sb sb-blank" style="text-indent:0;margin:1.4em 0">&nbsp;</p>';
+    if (mode === 'space') return '<p class="sb sb-space" style="text-indent:0;margin:0.6em 0">&nbsp;</p>';
     var img = st.sceneBreakImage || state.sceneBreakImage || '';
     if (img) return '<p class="sb"><img src="__SB__" alt="' + escapeHtml(d.sceneBreak || '* * *') + '"/></p>';
     return '<p class="sb">' + escapeHtml(d.sceneBreak || '* * *') + '</p>';
@@ -15491,7 +15601,13 @@ function dbNumWord(n) {
       '<h1>' + escapeHtml(title || ('Chapter ' + num)) + '</h1>' +
       (sub ? '<div class="ch-sub">' + escapeHtml(sub) + '</div>' : '') +
       (d.chapterStyle === 'ornament' ? '<div class="ch-orn">\u2756</div>' : '') + '</header>'];
-    var scenes = (ch.scenes || []).map(function (sc) { return swBlocksOf(sc.content); }).filter(function (b) { return b.length; });
+    var rawScenes = (ch.scenes || []).filter(function (sc) {
+      if (!sc) return false;
+      if (typeof dbIsSceneExcluded === 'function' && dbIsSceneExcluded(d, sc.id)) return false;
+      if (d.excludeEmptyScenes && typeof dbSceneHasContent === 'function' && !dbSceneHasContent(sc)) return false;
+      return true;
+    });
+    var scenes = rawScenes.map(function (sc) { return swBlocksOf(sc.content); }).filter(function (b) { return b.length; });
     var firstPara = true;
     scenes.forEach(function (blocks, si) {
       var first = true;
@@ -15851,7 +15967,7 @@ function dbNumWord(n) {
     return '<label class="db-chk"><input type="checkbox" data-k="' + k + '"' + (side ? ' data-side="1"' : '') + (dbGet(k) ? ' checked' : '') + '> ' + escapeHtml(label) + '</label>';
   }
   function dbRow(label, html) { return '<div class="db-row"><label class="sw-lbl">' + label + '</label>' + html + '</div>'; }
-  var dbOpenSecs = { Template: true, Page: true, Text: true };
+  var dbOpenSecs = { Compile: true, Template: true, Page: true, Text: true };
   function dbSec(title, body) {
     return '<details class="db-sec"' + (dbOpenSecs[title] ? ' open' : '') + ' data-sec="' + title + '"><summary>' + title + '</summary><div class="db-sec-body">' + body + '</div></details>';
   }
@@ -15920,12 +16036,41 @@ function dbNumWord(n) {
     var order = (d.chapterOrder || []).filter(function (id) { return chs.some(function (c) { return c.id === id; }); });
     chs.forEach(function (c) { if (order.indexOf(c.id) < 0) order.push(c.id); });
     var listed = inc.concat(order.filter(function (id) { return inc.indexOf(id) < 0; }));
-    var chHtml = '<div id="db-chlist">' + listed.map(function (id, i) {
+    var excl = d.excludedSceneIds || [];
+    var chHtml = '<div id="db-chlist">' + listed.map(function (id) {
       var c = chs.find(function (x) { return x.id === id; });
-      return '<div class="db-ch" data-id="' + id + '"><label><input type="checkbox" class="db-ch-on"' + (inc.indexOf(id) >= 0 ? ' checked' : '') + '> ' + escapeHtml(c.title || 'Chapter') + '</label>' +
-        '<span><button type="button" class="db-mini db-ch-up" aria-label="Move up">\u2191</button><button type="button" class="db-mini db-ch-down" aria-label="Move down">\u2193</button></span></div>';
+      if (!c) return '';
+      var scenes = c.scenes || [];
+      var scRows = scenes.map(function (sc) {
+        var on = excl.indexOf(sc.id) < 0;
+        var empty = typeof dbSceneHasContent === 'function' && !dbSceneHasContent(sc);
+        return '<div class="db-ch db-sc" data-sid="' + escapeHtml(sc.id) + '" style="padding-left:14px;opacity:' + (on ? '1' : '0.55') + '">' +
+          '<label style="font-size:0.78rem"><input type="checkbox" class="db-sc-on"' + (on ? ' checked' : '') + '> ' +
+          escapeHtml(sc.title || 'Scene') + (empty ? ' <span style="color:var(--sw-muted)">(empty)</span>' : '') + '</label></div>';
+      }).join('');
+      return '<div class="db-ch" data-id="' + id + '"><label><input type="checkbox" class="db-ch-on"' + (inc.indexOf(id) >= 0 ? ' checked' : '') + '> <strong>' + escapeHtml(c.title || 'Chapter') + '</strong></label>' +
+        '<span><button type="button" class="db-mini db-ch-up" aria-label="Move up">\u2191</button><button type="button" class="db-mini db-ch-down" aria-label="Move down">\u2193</button></span></div>' + scRows;
     }).join('') + '</div>';
-        var vers = (d.versions || []).map(function (v, i) {
+    var compileHtml =
+      dbRow('Compile preset', dbSelect('compilePreset', [['', 'Custom (manual)']].concat(Object.keys(DB_COMPILE_PRESETS).map(function (k) {
+        return [k, DB_COMPILE_PRESETS[k].label];
+      })), true)) +
+      '<p class="db-note">' + (d.compilePreset && DB_COMPILE_PRESETS[d.compilePreset] ? escapeHtml(DB_COMPILE_PRESETS[d.compilePreset].note) : 'Presets set type, separators, front/back matter and page style in one step. You can still tweak anything afterward.') + '</p>' +
+      dbRow('Between scenes', dbSelect('sceneSeparator', [
+        ['ornament', 'Ornament / symbol (uses scene break text)'],
+        ['blank', 'Blank line'],
+        ['space', 'Small space'],
+        ['pagebreak', 'Page break'],
+        ['none', 'None (run together)']
+      ], true)) +
+      dbCheck('excludeEmptyScenes', 'Skip empty scenes automatically', true) +
+      '<p class="db-note" style="margin-top:8px">E-book metadata (EPUB / store package)</p>' +
+      dbRow('Language', '<input class="sw-inp" data-k="ebookMeta.language" value="' + escapeHtml((d.ebookMeta && d.ebookMeta.language) || 'en') + '" placeholder="en">') +
+      dbRow('Subject / genre', '<input class="sw-inp" data-k="ebookMeta.subject" value="' + escapeHtml((d.ebookMeta && d.ebookMeta.subject) || '') + '" placeholder="Fiction / Fantasy">') +
+      dbRow('Description', '<textarea class="sw-ta" data-k="ebookMeta.description" rows="3" placeholder="Short blurb for ebook stores\u2026">' + escapeHtml((d.ebookMeta && d.ebookMeta.description) || '') + '</textarea>') +
+      dbRow('Rights', '<input class="sw-inp" data-k="ebookMeta.rights" value="' + escapeHtml((d.ebookMeta && d.ebookMeta.rights) || '') + '" placeholder="All rights reserved">') +
+      dbRow('Identifier', '<input class="sw-inp" data-k="ebookMeta.identifier" value="' + escapeHtml((d.ebookMeta && d.ebookMeta.identifier) || '') + '" placeholder="ISBN or UUID (optional)">');
+    var vers = (d.versions || []).map(function (v, i) {
       return '<div class="db-ver"><span>' + escapeHtml((v.at || '').slice(0, 16).replace('T', ' ')) + ' · ' + escapeHtml(v.label || 'Version') + '</span><span style="display:flex;gap:4px"><button type="button" class="db-mini" data-verdiff="' + i + '">Diff</button><button type="button" class="db-mini" data-ver="' + i + '">Restore</button></span></div>';
     }).join('') || '<p class="db-note">No saved versions yet.</p>';
     var spinePages = (dbS.pages || []).filter(function (p) { return p.type !== 'cover'; }).length;
@@ -15940,9 +16085,10 @@ function dbNumWord(n) {
       '<p class="db-note">Spine ~' + spineEst.toFixed(3) + ' in for ~' + (spinePages || '?') + ' pages (' + (d.paper || 'white') + ' paper).</p>' +
       '<button type="button" class="sw-btn" id="db-refresh-side" style="width:100%">↻ Refresh from novel</button>';
     el.innerHTML = '<div class="db-side-head">Design</div>' +
+      dbSec('Compile', compileHtml) +
       dbSec('Template', '<div class="db-tpls">' + tpl + '</div><p class="db-note">Genre-tuned interiors. Applying a template replaces type and margins; a version is saved first.</p>') +
       dbSec('Page & print', page) + dbSec('Text', text) + dbSec('Chapter headings', heads) +
-      dbSec('Chapters in this book', '<p class="db-note">Tick the chapters to include and reorder them.</p>' + chHtml) +
+      dbSec('Contents (include & order)', '<p class="db-note">Tick chapters and scenes to include. Reorder chapters with the arrows. Scene order follows the novel.</p>' + chHtml) +
       dbSec('Front & back matter', front) +
       dbSec('Export tools', tools) +
       dbSec('Versions', '<button type="button" class="sw-btn" id="db-savever" style="width:100%">Save a version now</button><div class="db-vers">' + vers + '</div>');
@@ -15975,7 +16121,26 @@ function dbNumWord(n) {
           toast(v && DB_PRINT_PRESETS[v] ? (DB_PRINT_PRESETS[v].label + ' applied') : 'Custom print settings');
           return;
         }
+        if (key === 'compilePreset') {
+          if (v && typeof dbApplyCompilePreset === 'function') {
+            dbSnapshot('Before ' + (DB_COMPILE_PRESETS[v] ? DB_COMPILE_PRESETS[v].label : 'compile') + ' preset');
+            dbApplyCompilePreset(dbS.design, v);
+            dbRebuild(); dbRenderSide(); dbSaveSoon();
+            toast(DB_COMPILE_PRESETS[v] ? (DB_COMPILE_PRESETS[v].label + ' applied') : 'Compile preset applied');
+          } else {
+            dbS.design.compilePreset = '';
+            dbChanged({ side: true });
+          }
+          return;
+        }
         if (key === 'headers') dbS.design._headersTouched = true;
+        if (key === 'sceneSeparator' || key === 'excludeEmptyScenes') {
+          dbSetPath(dbS.design, key, v);
+          dbRebuild(); dbSaveSoon();
+          if (key === 'sceneSeparator') dbRenderSide();
+          else dbChanged({ side: inp.getAttribute('data-side') === '1' });
+          return;
+        }
         dbSetPath(dbS.design, key, v);
         dbChanged({ side: inp.getAttribute('data-side') === '1' });
       });
@@ -15997,19 +16162,59 @@ function dbNumWord(n) {
       b.onclick = function () { dbS.design.sceneBreak = b.getAttribute('data-sb'); dbChanged({ side: true }); };
     });
     function syncChapters() {
-      var rows = Array.prototype.slice.call(el.querySelectorAll('#db-chlist .db-ch'));
+      var rows = Array.prototype.slice.call(el.querySelectorAll('#db-chlist .db-ch[data-id]'));
       var d = dbS.design;
-      d.chapterOrder = rows.map(function (r) { return r.getAttribute('data-id'); });
-      d.chapterIds = rows.filter(function (r) { return r.querySelector('.db-ch-on').checked; }).map(function (r) { return r.getAttribute('data-id'); });
+      d.chapterOrder = rows.map(function (r) { return r.getAttribute('data-id'); }).filter(Boolean);
+      d.chapterIds = rows.filter(function (r) {
+        var cb = r.querySelector('.db-ch-on');
+        return cb && cb.checked;
+      }).map(function (r) { return r.getAttribute('data-id'); });
       if (!d.chapterIds.length && rows.length) { d.chapterIds = [d.chapterOrder[0]]; toast('A book needs at least one chapter'); }
+      var excl = [];
+      el.querySelectorAll('#db-chlist .db-sc[data-sid]').forEach(function (r) {
+        var cb = r.querySelector('.db-sc-on');
+        if (cb && !cb.checked) excl.push(r.getAttribute('data-sid'));
+      });
+      d.excludedSceneIds = excl;
       dbChanged({ side: true });
     }
     el.querySelectorAll('.db-ch-on').forEach(function (c) { c.onchange = syncChapters; });
+    el.querySelectorAll('.db-sc-on').forEach(function (c) { c.onchange = syncChapters; });
     el.querySelectorAll('.db-ch-up').forEach(function (b) {
-      b.onclick = function () { var row = b.closest('.db-ch'), prev = row.previousElementSibling; if (prev) { row.parentNode.insertBefore(row, prev); syncChapters(); } };
+      b.onclick = function () {
+        var row = b.closest('.db-ch[data-id]');
+        if (!row) return;
+        var prev = row.previousElementSibling;
+        while (prev && prev.classList.contains('db-sc')) prev = prev.previousElementSibling;
+        if (!prev || !prev.getAttribute('data-id')) return;
+        var block = [row];
+        var n = row.nextElementSibling;
+        while (n && n.classList.contains('db-sc')) { block.push(n); n = n.nextElementSibling; }
+        var parent = row.parentNode;
+        block.forEach(function (node) { parent.insertBefore(node, prev); });
+        syncChapters();
+      };
     });
     el.querySelectorAll('.db-ch-down').forEach(function (b) {
-      b.onclick = function () { var row = b.closest('.db-ch'), nx = row.nextElementSibling; if (nx) { row.parentNode.insertBefore(nx, row); syncChapters(); } };
+      b.onclick = function () {
+        var row = b.closest('.db-ch[data-id]');
+        if (!row) return;
+        var block = [row];
+        var n = row.nextElementSibling;
+        while (n && n.classList.contains('db-sc')) { block.push(n); n = n.nextElementSibling; }
+        var nextCh = n;
+        while (nextCh && !nextCh.getAttribute('data-id')) nextCh = nextCh.nextElementSibling;
+        if (!nextCh) return;
+        var nextBlockEnd = nextCh.nextElementSibling;
+        while (nextBlockEnd && nextBlockEnd.classList.contains('db-sc')) nextBlockEnd = nextBlockEnd.nextElementSibling;
+        var parent = row.parentNode;
+        var ref = nextBlockEnd;
+        block.forEach(function (node) {
+          if (ref) parent.insertBefore(node, ref);
+          else parent.appendChild(node);
+        });
+        syncChapters();
+      };
     });
     var sv = $('#db-savever');
     if (sv) sv.onclick = function () { dbSnapshot('Saved by you'); dbRenderSide(); toast('Version saved'); };
@@ -17903,9 +18108,24 @@ function dbNumWord(n) {
     } catch (e) {}
     zip.file('OEBPS/nav.xhtml', '<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE html>\n<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops"><head><meta charset="utf-8"/><title>Contents</title></head><body><nav epub:type="toc" id="toc"><h1>Contents</h1><ol>' + nav.join('') + '</ol></nav><nav epub:type="landmarks" id="landmarks" hidden=""><h1>Landmarks</h1><ol>' + landmarks.join('') + '</ol></nav></body></html>');
     zip.file('OEBPS/toc.ncx', '<?xml version="1.0" encoding="UTF-8"?>\n<ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1"><head><meta name="dtb:uid" content="' + escapeHtml(bookId) + '"/></head><docTitle><text>' + escapeHtml(title) + '</text></docTitle><navMap>' + ncx.join('') + '</navMap></ncx>');
+    var em = d.ebookMeta || {};
+    var lang = (em.language || 'en').trim() || 'en';
+    if (em.identifier && String(em.identifier).trim()) {
+      bookId = String(em.identifier).trim();
+      if (/^[\dXx\-]{10,}$/.test(bookId.replace(/\s/g, '')) && bookId.indexOf('urn:') !== 0) bookId = 'urn:isbn:' + bookId.replace(/[^0-9Xx\-]/g, '');
+    }
+    var extraMeta = '';
+    if (em.subject && String(em.subject).trim()) extraMeta += '<dc:subject>' + escapeHtml(String(em.subject).trim()) + '</dc:subject>';
+    if (em.description && String(em.description).trim()) extraMeta += '<dc:description>' + escapeHtml(String(em.description).trim()) + '</dc:description>';
+    if (em.rights && String(em.rights).trim()) extraMeta += '<dc:rights>' + escapeHtml(String(em.rights).trim()) + '</dc:rights>';
+    if (d.publisher) extraMeta += '<dc:publisher>' + escapeHtml(d.publisher) + '</dc:publisher>';
+    if (d.seriesName) extraMeta += '<meta property="belongs-to-collection" id="series">' + escapeHtml(d.seriesName) + '</meta>' +
+      (d.seriesNumber ? '<meta refines="#series" property="group-position">' + escapeHtml(String(d.seriesNumber)) + '</meta>' : '') +
+      '<meta refines="#series" property="collection-type">series</meta>';
     zip.file('OEBPS/content.opf', '<?xml version="1.0" encoding="UTF-8"?>\n<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid"><metadata xmlns:dc="http://purl.org/dc/elements/1.1/">' +
       '<dc:identifier id="uid">' + escapeHtml(bookId) + '</dc:identifier><dc:title>' + escapeHtml(title) + '</dc:title>' + (author ? '<dc:creator>' + escapeHtml(author) + '</dc:creator>' : '') +
-      '<dc:language>en</dc:language><meta property="dcterms:modified">' + new Date().toISOString().replace(/\.\d+Z$/, 'Z') + '</meta>' + (cm ? '<meta name="cover" content="cover-image"/>' : '') + '</metadata>' +
+      '<dc:language>' + escapeHtml(lang) + '</dc:language>' + extraMeta +
+      '<meta property="dcterms:modified">' + new Date().toISOString().replace(/\.\d+Z$/, 'Z') + '</meta>' + (cm ? '<meta name="cover" content="cover-image"/>' : '') + '</metadata>' +
       '<manifest><item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/><item id="ncx" href="toc.ncx" media-type="application/x-dtbncx+xml"/><item id="css" href="style.css" media-type="text/css"/>' + imgItems + manifest.join('') + '</manifest>' +
       '<spine toc="ncx">' + spine.join('') + '</spine></package>');
     try {
@@ -17913,7 +18133,7 @@ function dbNumWord(n) {
       swSave(blob, swFileStem(title) + '.epub');
       try { ensureGamify(); state.gamify.exportUsed = true; checkAchievements({ silent: true }); } catch (e) {}
       var tplE = (DB_TEMPLATES[d.template] && DB_TEMPLATES[d.template].label) || d.template || 'design';
-      toast('EPUB downloaded · ' + tplE + ' styles');
+      toast('EPUB downloaded · ' + tplE + (d.compilePreset && DB_COMPILE_PRESETS[d.compilePreset] ? ' · ' + DB_COMPILE_PRESETS[d.compilePreset].label : ''));
     } catch (e) { console.warn(e); toast('The EPUB could not be built'); }
   }
 
