@@ -13767,70 +13767,6 @@ function exportTxt() {
   });
 
   // ----- Find & replace -----
-  function openFindReplace() {
-    openModal(
-      '<h3>Find &amp; replace</h3>' +
-      field('Find', 'm-find', '') +
-      field('Replace with', 'm-repl', '') +
-      '<label class="sw-lbl"><input type="checkbox" id="m-find-all"> Whole manuscript</label>' +
-      '<div class="sw-modal-actions">' +
-      '<button type="button" class="sw-btn" id="m-cancel">Close</button>' +
-      '<button type="button" class="sw-btn" id="m-find-next">Find in scene</button>' +
-      '<button type="button" class="sw-btn sw-btn-primary" id="m-repl-do">Replace</button></div>'
-    );
-    $('#m-cancel').onclick = closeModal;
-    $('#m-find-next').onclick = function () {
-      var q = ($('#m-find').value || '');
-      if (!q) return;
-      var sc = getActiveScene();
-      if (!sc) return;
-      var plain = stripHtml(sc.content);
-      var idx = plain.toLowerCase().indexOf(q.toLowerCase());
-      if (idx < 0) { toast('Not found in scene'); return; }
-      toast('Found at position ' + (idx + 1));
-      // select in editor via window.find when possible
-      if (window.find) {
-        editor.focus();
-        window.find(q, false, false, true, false, false, false);
-      }
-    };
-    $('#m-repl-do').onclick = function () {
-      var q = $('#m-find').value || '';
-      var r = $('#m-repl').value || '';
-      if (!q) return;
-      var whole = $('#m-find-all').checked;
-      var count = 0;
-      function replHtml(html) {
-        var d = document.createElement('div');
-        d.innerHTML = html || '';
-        var walk = document.createTreeWalker(d, NodeFilter.SHOW_TEXT);
-        var nodes = [];
-        while (walk.nextNode()) nodes.push(walk.currentNode);
-        nodes.forEach(function (n) {
-          if (n.nodeValue && n.nodeValue.toLowerCase().indexOf(q.toLowerCase()) >= 0) {
-            var re = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
-            var before = n.nodeValue;
-            n.nodeValue = n.nodeValue.replace(re, r);
-            if (n.nodeValue !== before) count++;
-          }
-        });
-        return d.innerHTML;
-      }
-      saveCurrent();
-      if (whole) {
-        state.chapters.forEach(function (ch) {
-          ch.scenes.forEach(function (sc) { sc.content = replHtml(sc.content); });
-        });
-      } else {
-        var sc = getActiveScene();
-        if (sc) sc.content = replHtml(sc.content);
-      }
-      loadIntoEditor(); save();
-      toast('Replaced in ' + count + ' text node(s)');
-      closeModal();
-    };
-  }
-
   // ----- Mention index -----
   function openMentionIndex() {
     var rows = [];
@@ -13929,59 +13865,6 @@ function exportTxt() {
   }
 
   // ----- Timeline -----
-  function renderTimeline() {
-    var list = document.getElementById('sw-timeline-list');
-    if (!list) return;
-    if (!state.timeline) state.timeline = [];
-    var sorted = state.timeline.slice().sort(function (a, b) {
-      return (parseFloat(a.order) || 0) - (parseFloat(b.order) || 0);
-    });
-    if (!sorted.length) {
-      list.innerHTML = '<p style="color:var(--sw-muted);font-style:italic">No events yet. Add story-order beats here.</p>';
-      return;
-    }
-    list.innerHTML = sorted.map(function (ev) {
-      return '<div class="sw-tl-item" data-id="' + ev.id + '">' +
-        '<div style="font-size:0.75rem;color:var(--sw-muted);min-width:2.5em">' + escapeHtml(String(ev.order)) + '</div>' +
-        '<div style="flex:1"><strong>' + escapeHtml(ev.title) + '</strong>' +
-        (ev.note ? '<div style="font-size:0.82rem;color:var(--sw-muted)">' + escapeHtml(ev.note) + '</div>' : '') +
-        '</div>' +
-        '<button type="button" class="sw-btn sw-tl-edit" data-id="' + ev.id + '">Edit</button>' +
-        '<button type="button" class="sw-btn sw-tl-del" data-id="' + ev.id + '">×</button></div>';
-    }).join('');
-    list.querySelectorAll('.sw-tl-edit').forEach(function (b) {
-      b.onclick = function () { editTimelineEvent(b.dataset.id); };
-    });
-    list.querySelectorAll('.sw-tl-del').forEach(function (b) {
-      b.onclick = async function () {
-        if (!(await swConfirm('Delete this event?'))) return;
-        state.timeline = state.timeline.filter(function (x) { return x.id !== b.dataset.id; });
-        save(); renderTimeline();
-      };
-    });
-  }
-  async function editTimelineEvent(id) {
-    var ev = id ? state.timeline.find(function (x) { return x.id === id; }) : { title: '', order: String((state.timeline || []).length + 1), note: '' };
-    openModal('<h3>' + (id ? 'Edit' : 'New') + ' timeline event</h3>' +
-      field('Title', 'm-title', ev.title) +
-      field('Story order (number)', 'm-order', ev.order) +
-      field('Note', 'm-note', ev.note, 'textarea') +
-      '<div class="sw-modal-actions"><button type="button" class="sw-btn" id="m-cancel">Cancel</button>' +
-      '<button type="button" class="sw-btn sw-btn-primary" id="m-save">Save</button></div>');
-    $('#m-cancel').onclick = closeModal;
-    $('#m-save').onclick = function () {
-      var title = $('#m-title').value.trim();
-      if (!title) { toast('Title required'); return; }
-      var obj = { id: id || uid(), title: title, order: $('#m-order').value.trim() || '0', note: $('#m-note').value.trim() };
-      if (!state.timeline) state.timeline = [];
-      if (id) {
-        var i = state.timeline.findIndex(function (x) { return x.id === id; });
-        state.timeline[i] = obj;
-      } else state.timeline.push(obj);
-      save(); closeModal(); renderTimeline();
-    };
-  }
-
   // ----- Relationships -----
   function renderRelations() {
     var grid = document.getElementById('sw-rel-grid');
@@ -14071,107 +13954,6 @@ function exportTxt() {
   // ----- Highlight passes -----
   var ADVERBS = /\b\w+ly\b/gi;
   var FILTERS = /\b(just|really|very|quite|rather|suddenly|somehow|began to|started to|felt|saw|heard|knew|realized|noticed)\b/gi;
-  function clearHighlights() {
-    editor.querySelectorAll('.sw-hl-dialogue, .sw-hl-adverb, .sw-hl-filter').forEach(function (el) {
-      var p = el.parentNode;
-      if (!p) return;
-      while (el.firstChild) p.insertBefore(el.firstChild, el);
-      p.removeChild(el);
-    });
-    var sc = getActiveScene();
-    if (sc && sc.content && sc.content.indexOf('sw-hl-') !== -1) {
-      sc.content = (typeof stripHighlightSpansFromHtml === 'function')
-        ? stripHighlightSpansFromHtml(sc.content)
-        : sc.content.replace(/<span class="sw-hl-[^"]*">([\s\S]*?)<\/span>/gi, '$1');
-    }
-    if (sc) editor.innerHTML = sc.content || '';
-    state.highlightMode = '';
-  }
-  function applyHighlight(mode) {
-    // Strip existing marks before save so they never enter scene content
-    editor.querySelectorAll('.sw-hl-dialogue, .sw-hl-adverb, .sw-hl-filter').forEach(function (el) {
-      var p = el.parentNode;
-      if (!p) return;
-      while (el.firstChild) p.insertBefore(el.firstChild, el);
-      p.removeChild(el);
-    });
-    saveCurrent();
-    var sc = getActiveScene();
-    if (!sc) return;
-    if (state.highlightMode === mode) { clearHighlights(); save(); return; }
-    clearHighlights();
-    state.highlightMode = mode;
-    var html = sc.content || '';
-    // work on plain-ish: wrap in temp
-    var d = document.createElement('div');
-    d.innerHTML = html;
-    if (mode === 'dialogue') {
-      // highlight text in quotes
-      var walk = document.createTreeWalker(d, NodeFilter.SHOW_TEXT);
-      var nodes = [];
-      while (walk.nextNode()) nodes.push(walk.currentNode);
-      nodes.forEach(function (n) {
-        if (!n.nodeValue || n.nodeValue.indexOf('"') < 0) return;
-        var parts = n.nodeValue.split(/(\"[^\"]*\")/g);
-        if (parts.length < 2) return;
-        var frag = document.createDocumentFragment();
-        parts.forEach(function (p) {
-          if (/^\"[^\"]*\"$/.test(p)) {
-            var sp = document.createElement('span');
-            sp.className = 'sw-hl-dialogue';
-            sp.textContent = p;
-            frag.appendChild(sp);
-          } else frag.appendChild(document.createTextNode(p));
-        });
-        n.parentNode.replaceChild(frag, n);
-      });
-    } else if (mode === 'adverb') {
-      var walk2 = document.createTreeWalker(d, NodeFilter.SHOW_TEXT);
-      var nodes2 = [];
-      while (walk2.nextNode()) nodes2.push(walk2.currentNode);
-      nodes2.forEach(function (n) {
-        if (!n.nodeValue || !/ly\\b/i.test(n.nodeValue)) return;
-        var html2 = n.nodeValue.replace(ADVERBS, function (m) { return '[[HLADV]]' + m + '[[/HLADV]]'; });
-        if (html2 === n.nodeValue) return;
-        var wrap = document.createElement('span');
-        wrap.innerHTML = html2.replace(/\\[\\[HLADV\\]\\]/g, '<span class="sw-hl-adverb">').replace(/\\[\\[\\/HLADV\\]\\]/g, '</span>');
-        n.parentNode.replaceChild(wrap, n);
-      });
-    } else if (mode === 'filter') {
-      var walk3 = document.createTreeWalker(d, NodeFilter.SHOW_TEXT);
-      var nodes3 = [];
-      while (walk3.nextNode()) nodes3.push(walk3.currentNode);
-      nodes3.forEach(function (n) {
-        if (!n.nodeValue) return;
-        var html3 = n.nodeValue.replace(FILTERS, function (m) { return '[[HLFIL]]' + m + '[[/HLFIL]]'; });
-        if (html3 === n.nodeValue) return;
-        var wrap = document.createElement('span');
-        wrap.innerHTML = html3.replace(/\\[\\[HLFIL\\]\\]/g, '<span class="sw-hl-filter">').replace(/\\[\\[\\/HLFIL\\]\\]/g, '</span>');
-        n.parentNode.replaceChild(wrap, n);
-      });
-    }
-    editor.innerHTML = d.innerHTML;
-    // do not save highlighted markup into scene permanently
-  }
-  function openHighlightMenu() {
-    openModal('<h3>Highlight pass</h3>' +
-      '<p style="font-size:0.88rem;color:var(--sw-muted);margin:0 0 12px">Highlights are temporary and not saved into the manuscript.</p>' +
-      '<div class="sw-modal-actions" style="flex-direction:column;align-items:stretch">' +
-      '<button type="button" class="sw-btn" data-hl="dialogue">Dialogue (quoted text)</button>' +
-      '<button type="button" class="sw-btn" data-hl="adverb">Adverbs (-ly)</button>' +
-      '<button type="button" class="sw-btn" data-hl="filter">Filter words</button>' +
-      '<button type="button" class="sw-btn" data-hl="clear">Clear highlights</button>' +
-      '<button type="button" class="sw-btn" id="m-cancel">Close</button></div>');
-    $('#m-cancel').onclick = closeModal;
-    ROOT.querySelectorAll('[data-hl]').forEach(function (btn) {
-      btn.onclick = function () {
-        if (btn.dataset.hl === 'clear') clearHighlights();
-        else applyHighlight(btn.dataset.hl);
-        closeModal();
-      };
-    });
-  }
-
   // ----- Readability stats (single implementation) -----
   function showReadability() {
     var sc = (typeof getActiveScene === 'function') ? getActiveScene() : null;
@@ -14239,35 +14021,6 @@ function exportTxt() {
   }
 
   // ----- Snapshot compare -----
-  function openCompare() {
-    var sc = getActiveScene();
-    if (!sc || !sc.snapshots || sc.snapshots.length < 1) {
-      toast('Take at least one snapshot first');
-      return;
-    }
-    var opts = sc.snapshots.map(function (s, i) {
-      return '<option value="' + s.id + '">' + escapeHtml(s.name || ('Snapshot ' + (i + 1))) + '</option>';
-    }).join('');
-    openModal('<h3>Compare snapshots</h3>' +
-      '<label class="sw-lbl">Left</label><select class="sw-sel" id="m-ca">' + opts + '</select>' +
-      '<label class="sw-lbl" style="margin-top:8px">Right</label><select class="sw-sel" id="m-cb">' + opts + '</select>' +
-      '<div class="sw-modal-actions"><button type="button" class="sw-btn" id="m-cancel">Close</button>' +
-      '<button type="button" class="sw-btn sw-btn-primary" id="m-go">Compare</button></div>');
-    $('#m-cancel').onclick = closeModal;
-    $('#m-go').onclick = function () {
-      var a = sc.snapshots.find(function (x) { return x.id === $('#m-ca').value; });
-      var b = sc.snapshots.find(function (x) { return x.id === $('#m-cb').value; });
-      closeModal();
-      writeView.style.display = 'none';
-      corkboard.classList.remove('active');
-      var cmp = document.getElementById('sw-compare');
-      cmp.classList.add('active');
-      document.getElementById('sw-compare-a').textContent = stripHtml(a ? a.content : '');
-      document.getElementById('sw-compare-b').textContent = stripHtml(b ? b.content : '');
-      toast('Comparing — click Story to return');
-    };
-  }
-
   // ----- Series name in project modal hint handled via series field -----
   async function editSeries() {
     var name = await swPrompt('Series name (shared bible label for linked books)', state.seriesName || '');
