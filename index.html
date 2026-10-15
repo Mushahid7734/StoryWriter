@@ -1690,6 +1690,57 @@
       font-size: 1.25rem;
     }
 
+    /* ===== Home redesign (responsive app layout; palette unchanged) ===== */
+    #sw-dashboard .sw-dash-inner { max-width: 1240px; padding: clamp(14px,3vw,32px) clamp(14px,3vw,36px) 90px; }
+    #sw-dashboard .sw-home-hero { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 16px; margin: 0 0 clamp(16px,2.5vw,26px); padding-top: clamp(4px,1.5vw,14px); }
+    #sw-dashboard .sw-home-title { font-family: "EB Garamond", Georgia, serif; font-weight: 600; font-size: clamp(2.2rem,6vw,3.4rem); line-height: 1.05; margin: 0; color: var(--sw-accent); letter-spacing: -0.01em; }
+    #sw-dashboard .sw-home-tag { margin: 6px 0 0; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: var(--sw-muted); }
+    #sw-dashboard .sw-home-intro { margin: 12px auto 0; max-width: 62ch; font-size: clamp(0.92rem,1.6vw,1.03rem); line-height: 1.6; color: var(--sw-ink); }
+    #sw-dashboard .sw-home-welcome { display: flex; flex-direction: column; align-items: center; gap: 8px; max-width: 100%; }
+    #sw-dashboard .sw-home-welcome .sw-dash-hello { font-size: clamp(1.25rem,3vw,1.6rem); margin: 0; overflow-wrap: anywhere; }
+    #sw-dashboard .sw-home-welcome .sw-dash-sub { display: inline-block; margin: 0; padding: 7px 16px; border-radius: 999px; background: var(--sw-panel); border: 1px solid var(--sw-border); font-size: 0.86rem; line-height: 1.4; max-width: 100%; }
+    #sw-dashboard .sw-home-layout { display: grid; grid-template-columns: minmax(0,1fr); gap: clamp(12px,2vw,22px); align-items: start; }
+    #sw-dashboard .sw-home-aside, #sw-dashboard .sw-home-main { min-width: 0; }
+    #sw-dashboard .sw-profile-card { background: var(--sw-paper); border: 1px solid var(--sw-border); border-radius: 18px; padding: 16px; box-shadow: 0 4px 18px color-mix(in srgb, var(--sw-accent) 8%, transparent); display: flex; flex-direction: column; gap: 14px; }
+    #sw-dashboard .sw-pen-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    #sw-dashboard .sw-pen-avatar { width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.05rem; color: var(--sw-accent); border: 2px solid var(--sw-border); background: color-mix(in srgb, var(--sw-accent) 12%, var(--sw-paper)); }
+    #sw-dashboard .sw-pen-meta { flex: 1; min-width: 120px; }
+    #sw-dashboard .sw-pen-label { font-size: 0.66rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--sw-muted); }
+    #sw-dashboard .sw-pen-name { font-family: "EB Garamond", Georgia, serif; font-weight: 600; font-size: 1.15rem; line-height: 1.25; overflow-wrap: anywhere; }
+    #sw-dashboard .sw-pen-hint { font-size: 0.76rem; color: var(--sw-muted); margin-top: 2px; line-height: 1.4; }
+    #sw-dashboard .sw-pen-row .sw-btn { flex: 1 1 100%; }
+    #sw-dashboard .sw-profile-card .sw-dash-today { grid-template-columns: repeat(3,minmax(0,1fr)); gap: 6px; margin: 0; }
+    #sw-dashboard .sw-profile-card .sw-dash-today-card { padding: 9px 8px; border-radius: 10px; background: var(--sw-bg); min-width: 0; }
+    #sw-dashboard .sw-profile-card .sw-dash-today-card .label { font-size: 0.6rem; }
+    #sw-dashboard .sw-profile-card .sw-dash-today-card .value { font-size: 0.98rem; }
+    #sw-dashboard .sw-profile-card .sw-dash-today-card .hint { display: none; }
+    #sw-dashboard .sw-profile-card .sw-dash-today-bar { margin-top: 6px; height: 6px; }
+    #sw-dashboard .sw-profile-card #sw-page-est { grid-column: 1 / -1; }
+    #sw-dashboard .sw-profile-card .sw-dash-levels { margin: 0; padding: 12px 14px; background: var(--sw-panel); border-radius: 12px; }
+    #sw-dashboard .sw-profile-card .sw-dash-current-novel { display: none; }
+    #sw-dashboard .sw-profile-card .sw-dash-level-head { margin-bottom: 6px; }
+    #sw-dashboard .sw-profile-card .sw-dash-level-head span { display: none; }
+    #sw-dashboard .sw-profile-card .sw-level-next { font-size: 0.76rem; }
+    #sw-dashboard .sw-profile-card .sw-recent-achs { gap: 6px; }
+    #sw-dashboard .sw-profile-card .sw-recent-label { flex: 1 0 100%; margin: 4px 0 0; }
+    #sw-dashboard .sw-profile-card .sw-dash-stats { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 6px; margin: 0; }
+    #sw-dashboard .sw-profile-card .sw-dash-stat { padding: 9px 10px; background: var(--sw-bg); }
+    #sw-dashboard .sw-profile-card .sw-dash-stat strong { font-size: 1.05rem; }
+    #sw-dashboard .sw-profile-card .sw-dash-stat:nth-child(n+3) { display: none; }
+    #sw-dashboard .sw-home-sec { font-size: 0.74rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--sw-muted); margin: 4px 2px 10px; }
+    #sw-dashboard .sw-home-main > .sw-home-sec:not(:first-child) { margin-top: 22px; }
+    #sw-dashboard .sw-home-main .sw-hero { margin: 0 0 16px; gap: 12px; }
+    #sw-dashboard .sw-home-main .sw-free-card { margin: 0 0 6px; }
+    #sw-dashboard .sw-home-main .sw-dash-tabs { margin: 18px 0 14px; }
+    #sw-dashboard .sw-home-main .sw-drive-box { border-radius: 16px; }
+    @media (min-width: 980px) {
+      #sw-dashboard .sw-home-layout { grid-template-columns: 340px minmax(0,1fr); }
+      #sw-dashboard .sw-home-aside { position: sticky; top: 0; align-self: start; }
+      #sw-dashboard .sw-home-hero { flex-direction: row; justify-content: space-between; text-align: left; align-items: center; gap: 32px; }
+      #sw-dashboard .sw-home-intro { margin-left: 0; }
+      #sw-dashboard .sw-home-welcome { align-items: flex-end; text-align: right; max-width: 380px; flex: 0 0 auto; }
+    }
+
   </style>
 <style id="sw-additions-css">
     /* Corkboard: lanes, toolbar, cards */
@@ -2010,16 +2061,6 @@
 </style>
 </head>
 <body>
-<div id="sw-seo-blurb" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">
-  <h1>StoryWriter – Free Offline Novel Writing App for Indie Authors</h1>
-  <p>StoryWriter is a free, private writing studio that runs in your browser. Draft chapters and scenes, manage characters and locations, use focus tools, and export your manuscript. No account required. Developed by Mason Carter.</p>
-  <p><a href="https://www.authormasoncarter.com/2026/09/storywriter-free-offline-writing-app.html">StoryWriter roadmap and changelog</a> · <a href="https://www.authormasoncarter.com/p/books-series.html">Books by Mason Carter</a></p>
-</div>
-<div id="sw-seo-intro" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">
-  <h1>StoryWriter – Free Offline Novel Writing App for Indie Authors</h1>
-  <p>StoryWriter is a free, privacy-friendly writing application by Mason Carter. Plan chapters and scenes, organize characters and locations, write offline in your browser, and export your manuscript as DOCX. No account required.</p>
-  <p><a href="https://www.authormasoncarter.com/2026/09/storywriter-free-offline-writing-app.html">StoryWriter project page</a> · <a href="https://www.authormasoncarter.com/">Author Mason Carter</a></p>
-</div>
 <div id="sw-root" data-theme="parchment">
   <button type="button" class="sw-btn sw-typewriter-exit" id="sw-typewriter-exit" title="Exit Focus Mode">✕ Exit Focus Mode</button>
   <div class="sw-topbar">
@@ -2317,22 +2358,38 @@
   <!-- Author dashboard -->
   <div id="sw-dashboard" aria-label="Author dashboard">
     <div class="sw-dash-inner">
-      <p class="sw-dash-hello" id="sw-dash-hello">Welcome</p>
-      <p class="sw-dash-sub" id="sw-dash-sub">Your free offline writing desk</p>
-      <div class="sw-dash-stats" id="sw-dash-stats"></div>
-      <div class="sw-free-card" id="sw-free-forever" role="note">
-        <div class="sw-free-kicker">✦ Our promise</div>
-        <h3>Free forever</h3>
-        <p>StoryWriter stays free — no paywall on the writing desk, no account required for local drafts. Support by buying the books if you can.</p>
-        <div class="sw-free-actions">
-          <a class="sw-btn sw-btn-primary" href="https://www.authormasoncarter.com/p/books-series.html" target="_blank" rel="noopener noreferrer">Buy the books</a>
-          <button type="button" class="sw-btn" id="sw-free-share-app">Share this app</button>
-          <a class="sw-btn" href="https://www.authormasoncarter.com/2026/09/storywriter-free-offline-writing-app.html" target="_blank" rel="noopener noreferrer">Project page · bugs &amp; ideas</a>
-          <a class="sw-btn" href="https://www.authormasoncarter.com/p/privacy-policy-for-storywriter.html" target="_blank" rel="noopener noreferrer">Privacy</a>
-          <a class="sw-btn" href="https://www.authormasoncarter.com/p/terms-of-service-for-storywriter.html" target="_blank" rel="noopener noreferrer">Terms</a>
+      <header class="sw-home-hero">
+        <div class="sw-home-text">
+          <h1 class="sw-home-title">StoryWriter</h1>
+          <p class="sw-home-tag">Free offline novel writing studio &middot; for indie authors</p>
+          <p class="sw-home-intro">Draft chapters and scenes, keep your characters and worlds in one place, and export a clean manuscript &mdash; all privately in your browser. No account, no paywall, and your story stays on your device unless you choose to share it.</p>
         </div>
-      </div>
-      <div class="sw-welcome" id="sw-dash-welcome" style="display:none">
+        <div class="sw-home-welcome">
+          <h2 class="sw-dash-hello" id="sw-dash-hello">Welcome</h2>
+          <p class="sw-dash-sub" id="sw-dash-sub">Your free offline writing desk</p>
+        </div>
+      </header>
+
+      <div class="sw-home-layout">
+        <aside class="sw-home-aside" aria-label="Author profile">
+          <div class="sw-profile-card">
+            <div class="sw-pen-row" id="sw-pen-card">
+              <div class="sw-pen-avatar placeholder" id="sw-pen-avatar" aria-hidden="true">&#9998;</div>
+              <div class="sw-pen-meta">
+                <div class="sw-pen-label">Author</div>
+                <div class="sw-pen-name" id="sw-pen-name">No pen name yet</div>
+                <div class="sw-pen-hint" id="sw-pen-hint">Add one &mdash; it appears on title pages and exports.</div>
+              </div>
+              <button type="button" class="sw-btn sw-btn-primary" id="sw-dash-penname">Set pen name</button>
+            </div>
+            <div class="sw-dash-today" id="sw-dash-today"></div>
+            <div class="sw-dash-levels" id="sw-dash-levels"></div>
+            <div class="sw-dash-stats" id="sw-dash-stats"></div>
+          </div>
+        </aside>
+
+        <main class="sw-home-main">
+          <div class="sw-welcome" id="sw-dash-welcome" style="display:none">
         <h3>New to StoryWriter?</h3>
         <p>Bring a manuscript you already have, or look around with a small sample novel. Everything stays on your device.</p>
         <div class="sw-welcome-actions">
@@ -2342,7 +2399,21 @@
           <button type="button" class="sw-btn" id="sw-wel-dismiss">Dismiss</button>
         </div>
       </div>
-      <div class="sw-dash-tabs" id="sw-dash-tabs">
+          <h3 class="sw-home-sec">Your desks</h3>
+          <div class="sw-hero" id="sw-dash-hero"></div>
+
+          <div class="sw-free-card" id="sw-free-forever" role="note">
+            <div class="sw-free-kicker">✦ Our promise</div>
+            <h3>Free forever</h3>
+            <p>StoryWriter stays free — no paywall on the writing desk, no account required for local drafts. Support by buying the books if you can.</p>
+            <div class="sw-free-actions">
+              <a class="sw-btn sw-btn-primary" href="https://www.authormasoncarter.com/p/books-series.html" target="_blank" rel="noopener noreferrer">Buy the books</a>
+              <button type="button" class="sw-btn" id="sw-free-share-app">Share this app</button>
+              <a class="sw-btn" href="https://www.authormasoncarter.com/2026/09/storywriter-free-offline-writing-app.html" target="_blank" rel="noopener noreferrer">Project page · bugs &amp; ideas</a>
+            </div>
+          </div>
+
+          <div class="sw-dash-tabs" id="sw-dash-tabs">
         <button type="button" class="active" data-dtab="projects">Projects</button>
         <button type="button" data-dtab="progress">Progress</button>
         <button type="button" data-dtab="achievements">Achievements</button>
@@ -2350,23 +2421,7 @@
         <button type="button" data-dtab="about">About</button>
       </div>
       <div class="sw-dash-panel active" id="sw-dpanel-projects">
-        <div class="sw-drive-box" id="sw-drive-box">
-          <h3>Google Drive sync</h3>
-          <p>Optional cloud backup for this browser. Files are stored in your Drive as StoryWriter JSON (only files this app creates). Local IndexedDB remains the working copy.
-            Long-lived reconnect uses a small Cloudflare helper on this domain (refresh tokens are not stored in the browser).
-            By connecting, you agree to our
-            <a href="https://www.authormasoncarter.com/p/terms-of-service-for-storywriter.html" target="_blank" rel="noopener noreferrer">Terms of Service</a>
-            and
-            <a href="https://www.authormasoncarter.com/p/privacy-policy-for-storywriter.html" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.
-          </p>
-          <div class="sw-drive-row">
-            <button type="button" class="sw-btn sw-btn-primary" id="sw-drive-connect">Connect Google Drive</button>
-            <button type="button" class="sw-btn" id="sw-drive-sync" style="display:none">Sync current novel</button>
-            <button type="button" class="sw-btn" id="sw-drive-pull" style="display:none">Open from Drive</button>
-            <button type="button" class="sw-btn" id="sw-drive-disconnect" style="display:none">Disconnect</button>
-          </div>
-          <div class="sw-drive-status" id="sw-drive-status">Not connected</div>
-        </div>
+        
         <div class="sw-dash-actions">
           <button type="button" class="sw-btn sw-btn-primary" id="sw-dash-new">+ New novel</button>
           <button type="button" class="sw-btn" id="sw-dash-open-disk">Open disk</button>
@@ -2374,7 +2429,6 @@
           <button type="button" class="sw-btn" id="sw-dash-backup">Backups</button>
           <button type="button" class="sw-btn" id="sw-dash-tour">Take the tour</button>
           <button type="button" class="sw-btn" id="sw-dash-notes">Notes / Brainstorm</button>
-          <button type="button" class="sw-btn" id="sw-dash-penname">Pen name</button>
           <button type="button" class="sw-btn" id="sw-dash-continue">Continue writing</button>
           <button type="button" class="sw-btn" id="sw-dash-fix" title="Repair project list and broken novels without deleting your writing">Fix app</button>
         </div>
@@ -2423,15 +2477,10 @@
             <a href="https://www.authormasoncarter.com/p/terms-of-service-for-storywriter.html" target="_blank" rel="noopener noreferrer">Terms of Service</a>
           </p>
         </div>
-        <div class="sw-free-card" style="margin-bottom:12px">
-          <div class="sw-free-kicker">✦ Our promise</div>
-          <h3>StoryWriter stays free</h3>
-          <p>No pricing. No tiers. No accounts. Built by Mason Carter for indie authors who want a private offline desk.</p>
-          <p>Projects stay in this browser unless you use Save disk / Open disk. Export DOCX, design print layouts, or export EPUB &amp; PDF from Designs.</p>
-          <div class="sw-free-actions">
-            <a class="sw-btn sw-btn-primary" href="https://www.authormasoncarter.com/p/books-series.html" target="_blank" rel="noopener noreferrer">Buy the books</a>
-            <a class="sw-btn" href="https://www.authormasoncarter.com/2026/09/storywriter-free-offline-writing-app.html" target="_blank" rel="noopener noreferrer">Project page · bugs &amp; ideas</a>
-          </div>
+        <div class="sw-support-card" style="margin-bottom:12px">
+          <h3>About StoryWriter</h3>
+          <p style="margin:0 0 8px">Built by Mason Carter for indie authors who want a private offline desk. No pricing, no tiers, no accounts.</p>
+          <p style="margin:0">Projects stay in this browser unless you use Save disk / Open disk. Export DOCX, design print layouts, or export EPUB &amp; PDF from Designs.</p>
         </div>
         <div class="sw-support-card">
           <h3>Browser storage (offline)</h3>
@@ -2442,13 +2491,26 @@
           </div>
         </div>
       </div>
-      <div class="sw-free-card" id="sw-dash-footer-promise" style="margin-top:20px">
-        <div class="sw-free-kicker">✦ Free forever</div>
-        <p style="margin:0 0 4px">No pricing, no tiers. Support by buying the books if you can.</p>
-        <div class="sw-free-actions">
-          <a class="sw-btn sw-btn-primary" href="https://www.authormasoncarter.com/p/books-series.html" target="_blank" rel="noopener noreferrer">Buy the books</a>
-          <a class="sw-btn" href="https://www.authormasoncarter.com/2026/09/storywriter-free-offline-writing-app.html" target="_blank" rel="noopener noreferrer">Review &amp; roadmap</a>
+
+          <h3 class="sw-home-sec">Sync &amp; backup</h3>
+          <div class="sw-drive-box" id="sw-drive-box">
+          <h3>Google Drive sync</h3>
+          <p>Optional cloud backup for this browser. Files are stored in your Drive as StoryWriter JSON (only files this app creates). Local IndexedDB remains the working copy.
+            Long-lived reconnect uses a small Cloudflare helper on this domain (refresh tokens are not stored in the browser).
+            By connecting, you agree to our
+            <a href="https://www.authormasoncarter.com/p/terms-of-service-for-storywriter.html" target="_blank" rel="noopener noreferrer">Terms of Service</a>
+            and
+            <a href="https://www.authormasoncarter.com/p/privacy-policy-for-storywriter.html" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.
+          </p>
+          <div class="sw-drive-row">
+            <button type="button" class="sw-btn sw-btn-primary" id="sw-drive-connect">Connect Google Drive</button>
+            <button type="button" class="sw-btn" id="sw-drive-sync" style="display:none">Sync current novel</button>
+            <button type="button" class="sw-btn" id="sw-drive-pull" style="display:none">Open from Drive</button>
+            <button type="button" class="sw-btn" id="sw-drive-disconnect" style="display:none">Disconnect</button>
+          </div>
+          <div class="sw-drive-status" id="sw-drive-status">Not connected</div>
         </div>
+        </main>
       </div>
     </div>
   </div>
@@ -10385,6 +10447,7 @@ function exportTxt() {
     var meta = readMeta();
     meta.penName = (name || '').trim();
     writeMeta(meta);
+    try { if (typeof swRenderPenCard === 'function') swRenderPenCard(); } catch (e) {}
   }
 
   function projectWordsFromState(st) {
@@ -20365,7 +20428,6 @@ function dbNumWord(n) {
       '<div class="sw-drive-row">' +
       '<button type="button" class="sw-btn sw-btn-primary" id="sw-dash-backup-now">Back up everything now</button>' +
       '<button type="button" class="sw-btn" id="sw-dash-backup-opts">Backup options</button>' +
-      '<button type="button" class="sw-btn" id="sw-dash-share-app" title="Share StoryWriter">Share this app</button>' +
       '</div></div>';
   }
 
@@ -21093,6 +21155,33 @@ function dbNumWord(n) {
         if (cont) cont.classList.add('sw-btn-primary');
         try { if (typeof swWireProjBinHome === 'function') swWireProjBinHome(); } catch (e2) {}
       } catch (e) {}
+    };
+  }
+
+
+  // Home: author (pen name) card — mirrors PaperQuill's profile card
+  function swRenderPenCard() {
+    try {
+      var pen = getPenName();
+      var av = document.getElementById('sw-pen-avatar');
+      var nm = document.getElementById('sw-pen-name');
+      var hint = document.getElementById('sw-pen-hint');
+      var btn = document.getElementById('sw-dash-penname');
+      if (av) {
+        var ini = pen ? pen.split(/\s+/).filter(Boolean).slice(0, 2).map(function (w) { return w.charAt(0); }).join('').toUpperCase() : '\u270e';
+        av.textContent = ini || '\u270e';
+        av.className = 'sw-pen-avatar' + (pen ? '' : ' placeholder');
+      }
+      if (nm) nm.textContent = pen || 'No pen name yet';
+      if (hint) hint.textContent = pen ? 'Shown on title pages, exports and your welcome.' : 'Add one \u2014 it appears on title pages and exports.';
+      if (btn) btn.textContent = pen ? 'Edit pen name' : 'Set pen name';
+    } catch (e) {}
+  }
+  var _showDashboardPen = typeof showDashboard === 'function' ? showDashboard : null;
+  if (_showDashboardPen) {
+    showDashboard = async function () {
+      try { return await _showDashboardPen.apply(this, arguments); }
+      finally { swRenderPenCard(); }
     };
   }
 
