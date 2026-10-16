@@ -681,11 +681,13 @@
     }
 
     #sw-root .sw-toast {
-      position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%) translateY(50px);
-      background: var(--sw-accent); color: var(--sw-paper); padding: 7px 14px; border-radius: 6px;
-      font-size: 0.82rem; opacity: 0; transition: all 0.25s; z-index: 10070; pointer-events: none;
+      position: absolute; bottom: 16px; right: 16px; left: auto; max-width: min(340px, calc(100vw - 32px));
+      transform: translateY(20px);
+      background: var(--sw-accent); color: var(--sw-paper); padding: 8px 14px; border-radius: 8px;
+      font-size: 0.82rem; line-height: 1.35; opacity: 0; transition: opacity 0.25s, transform 0.25s; z-index: 10070; pointer-events: none;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.22);
     }
-    #sw-root .sw-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    #sw-root .sw-toast.show { opacity: 1; transform: translateY(0); pointer-events: auto; cursor: pointer; }
 
     
     #sw-root .sw-brainstorm { flex: 1; padding: 12px 16px; overflow-y: auto; }
@@ -1936,13 +1938,13 @@
     #sw-split-pane { display:none; flex:1; flex-direction:column; min-width:0; border-left:1px solid var(--sw-border); overflow:auto; background:var(--sw-bg); }
     #sw-split-pane .sw-split-head { display:flex; gap:6px; padding:8px; border-bottom:1px solid var(--sw-border); align-items:center; flex-wrap:wrap; }
     #sw-split-pane .sw-split-body { flex:1; overflow:auto; padding:12px 16px; line-height:1.65; font-size:0.95rem; }
-    #sw-cmd-palette { display:none; position:fixed; inset:0; z-index:10050; background:rgba(0,0,0,0.35); align-items:flex-start; justify-content:center; padding-top:12vh; }
+    #sw-cmd-palette { display:none; position:fixed; inset:0; z-index:10050; background:rgba(20,18,14,0.5); -webkit-backdrop-filter:blur(2px); backdrop-filter:blur(2px); align-items:flex-start; justify-content:center; padding-top:12vh; }
     #sw-cmd-palette.open { display:flex; }
-    #sw-cmd-palette .sw-cmd-box { background:var(--sw-panel, var(--sw-bg)); border:1px solid var(--sw-border); border-radius:12px; width:min(520px,92vw); box-shadow:0 16px 48px rgba(0,0,0,0.25); overflow:hidden; }
-    #sw-cmd-palette input { width:100%; border:0; border-bottom:1px solid var(--sw-border); padding:14px 16px; font-size:1rem; background:transparent; color:var(--sw-text); outline:none; }
+    #sw-cmd-palette .sw-cmd-box { background:var(--sw-paper, #f7f4ef); color:var(--sw-ink, #2a2e33); border:1px solid var(--sw-border, #d4cdc3); border-radius:12px; width:min(520px,92vw); box-shadow:0 20px 60px rgba(0,0,0,0.4); overflow:hidden; opacity:1; }
+    #sw-cmd-palette input { width:100%; box-sizing:border-box; border:0; border-bottom:1px solid var(--sw-border, #d4cdc3); padding:14px 16px; font-size:1rem; background:var(--sw-panel, #e4ddd4); color:var(--sw-ink, #2a2e33); outline:none; }
     #sw-cmd-palette .sw-cmd-list { max-height:50vh; overflow:auto; }
-    #sw-cmd-palette .sw-cmd-item { display:block; width:100%; text-align:left; padding:10px 16px; border:0; background:transparent; color:var(--sw-text); cursor:pointer; font-size:0.9rem; }
-    #sw-cmd-palette .sw-cmd-item:hover, #sw-cmd-palette .sw-cmd-item.active { background:var(--sw-hover); }
+    #sw-cmd-palette .sw-cmd-item { display:block; width:100%; text-align:left; padding:10px 16px; border:0; background:transparent; color:var(--sw-ink, #2a2e33); cursor:pointer; font-size:0.9rem; font-family:inherit; }
+    #sw-cmd-palette .sw-cmd-item:hover, #sw-cmd-palette .sw-cmd-item.active { background:var(--sw-hover, #dcd5cb); }
     #sw-cmd-palette .sw-cmd-item kbd { float:right; opacity:0.55; font-size:0.75rem; }
     #sw-plot-grid-view { display:none; flex:1; overflow:auto; padding:12px; }
     #sw-root.sw-plot-grid #sw-plot-grid-view { display:block; }
@@ -2473,6 +2475,99 @@
     .sx-chip { border: 1px solid var(--sw-border); background: var(--sw-paper); color: inherit; border-radius: 999px; padding: 7px 12px; font: inherit; font-size: 0.8rem; cursor: pointer; opacity: 0.7; }
     .sx-chip.on { opacity: 1; background: linear-gradient(135deg, #ff2e93, #7a5cff); color: #fff; border-color: transparent; font-weight: 700; }
     .sx-seg { flex-wrap: wrap; }
+
+/* ===== UX pass: calm defaults, grouped tabs, mobile app layout, quiet writing ===== */
+#sw-root .sw-support-link { font-size: 0.74rem; color: var(--sw-muted); text-decoration: none; padding: 4px 8px; border-radius: 999px; white-space: nowrap; border: 1px solid transparent; }
+#sw-root .sw-support-link:hover { color: var(--sw-ink); border-color: var(--sw-border); background: var(--sw-hover); }
+#sw-dashboard .sw-support-home { position: absolute; top: 12px; right: 14px; z-index: 3; color: var(--sw-muted); font-size: 0.78rem; text-decoration: none; padding: 5px 10px; border-radius: 999px; border: 1px solid var(--sw-border); background: var(--sw-paper); }
+#sw-dashboard .sw-support-home:hover { color: var(--sw-ink); background: var(--sw-hover); }
+#sw-dashboard .sw-home-hero { position: relative; }
+/* The "Free forever" card becomes a quiet note */
+#sw-dashboard .sw-free-card { padding: 10px 14px !important; box-shadow: none !important; background: transparent !important; border: 1px dashed var(--sw-border) !important; }
+#sw-dashboard .sw-free-card .sw-free-kicker { display: none; }
+#sw-dashboard .sw-free-card h3 { font-size: 0.95rem !important; margin: 0 0 4px !important; }
+#sw-dashboard .sw-free-card p { font-size: 0.8rem !important; margin: 0 0 8px !important; color: var(--sw-muted); }
+/* Hero cards: Continue writing leads, Design Studio is calm */
+#sw-dashboard .sw-hero-desk { background: var(--sw-accent); color: var(--sw-paper); border-color: var(--sw-accent); border-left-width: 1px; }
+#sw-dashboard .sw-hero-design { color: var(--sw-ink); background: var(--sw-paper); border: 1px solid var(--sw-border); box-shadow: none; }
+#sw-dashboard .sw-hero-design:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.1); }
+#sw-dashboard .sw-hero-design .sw-hero-go { color: var(--sw-accent); font-weight: 600; }
+.sx-lay .sw-btn.on, .sx-chip.on { background: var(--sw-accent); }
+
+/* Grouped tab bar */
+#sw-root #sw-tabs { display: none !important; }
+#sw-root .sw-tabgroups { display: flex; align-items: stretch; gap: 2px; padding: 0 8px; background: var(--sw-panel); border-bottom: 1px solid var(--sw-border); flex-shrink: 0; position: relative; z-index: 30; }
+#sw-root .sw-tg { position: relative; }
+#sw-root .sw-tg-btn { font: inherit; font-size: 0.84rem; font-weight: 500; padding: 9px 14px; border: 0; background: transparent; color: var(--sw-muted); cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; min-height: 40px; }
+#sw-root .sw-tg-btn:hover { color: var(--sw-ink); }
+#sw-root .sw-tg.active > .sw-tg-btn { color: var(--sw-accent); border-bottom-color: var(--sw-accent); font-weight: 600; }
+#sw-root .sw-tg-sub { font-size: 0.72rem; font-weight: 400; color: var(--sw-muted); }
+#sw-root .sw-tg-caret { font-size: 0.6rem; opacity: 0.6; }
+#sw-root .sw-tg-menu { display: none; position: absolute; top: 100%; left: 0; min-width: 190px; background: var(--sw-paper); border: 1px solid var(--sw-border); border-radius: 10px; box-shadow: 0 10px 28px rgba(0,0,0,0.18); padding: 6px; z-index: 60; }
+#sw-root .sw-tg.open > .sw-tg-menu { display: block; }
+#sw-root .sw-tg-menu button { display: block; width: 100%; text-align: left; font: inherit; font-size: 0.86rem; border: 0; background: transparent; color: var(--sw-ink); padding: 8px 12px; border-radius: 8px; cursor: pointer; }
+#sw-root .sw-tg-menu button:hover { background: var(--sw-hover); }
+#sw-root .sw-tg-menu button.on { color: var(--sw-accent); font-weight: 600; }
+#sw-root .sw-tg-menu .sw-tg-sep { height: 1px; background: var(--sw-border); margin: 4px 6px; }
+#sw-root .sw-tg-menu .sw-tg-manage { color: var(--sw-muted); font-size: 0.78rem; }
+#sw-root .sw-tg-gear { margin-left: auto; padding: 9px 10px; }
+#sw-root .sw-tabs-check { display: flex; gap: 8px; align-items: center; padding: 6px 2px; font-size: 0.9rem; }
+#sw-root .sw-tabs-check-grp { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--sw-muted); margin: 12px 0 2px; }
+
+/* Quiet bar (thin word count) */
+#sw-root .sw-quietbar { display: none; flex: 0 0 auto; align-items: center; justify-content: center; gap: 14px; height: 24px; font-size: 0.72rem; color: var(--sw-muted); background: var(--sw-paper); border-top: 1px solid color-mix(in srgb, var(--sw-border) 60%, transparent); letter-spacing: 0.02em; user-select: none; cursor: default; }
+#sw-root.sw-typing .sw-quietbar, #sw-root.sw-typewriter .sw-quietbar { display: flex; }
+#sw-root.sw-show-dash .sw-quietbar { display: none !important; }
+/* While typing: only the text and the thin bar remain */
+#sw-root.sw-typing .sw-topbar, #sw-root.sw-typing .sw-tabgroups, #sw-root.sw-typing .sw-story-toolbar,
+#sw-root.sw-typing .sw-capsule, #sw-root.sw-typing .sw-threads-bar, #sw-root.sw-typing .sw-timer-panel { display: none !important; }
+#sw-root.sw-typing .sw-sidebar { width: 0 !important; min-width: 0 !important; border: none !important; overflow: hidden; }
+#sw-root.sw-typing .sw-chapter-title-input, #sw-root.sw-typing .sw-scene-title-input, #sw-root.sw-typing .sw-synopsis-input,
+#sw-root.sw-typing .sw-scene-meta-row, #sw-root.sw-typing .sw-details-toggle { opacity: 0; pointer-events: none; transition: opacity 0.4s; }
+#sw-root .sw-chapter-title-input, #sw-root .sw-scene-title-input, #sw-root .sw-synopsis-input, #sw-root .sw-scene-meta-row { transition: opacity 0.3s; }
+#sw-root .sw-details-toggle { display: none; }
+
+/* Phone: app layout, bottom navigation, tuned editor */
+@media (max-width: 899px) {
+  #sw-root .sw-capsule { position: fixed; left: 0; right: 0; bottom: 0; top: auto; transform: none; width: 100%; max-width: none;
+    border-radius: 0; border: 0; border-top: 1px solid var(--sw-border); padding: 4px 6px calc(4px + env(safe-area-inset-bottom, 0px));
+    box-shadow: 0 -2px 14px rgba(0,0,0,0.08); justify-content: space-around; gap: 0; z-index: 60; background: var(--sw-paper); }
+  #sw-root .sw-capsule > .sw-btn { flex: 1 1 0; font-size: 0; gap: 0; justify-content: center; border: 0; background: transparent; min-height: 48px; padding: 6px 0; border-radius: 10px; color: var(--sw-muted); }
+  #sw-root .sw-capsule > .sw-btn:active { background: var(--sw-hover); color: var(--sw-ink); }
+  #sw-root .sw-capsule > .sw-btn .sw-cap-ico { width: 26px; height: 26px; opacity: 1; }
+  #sw-root .sw-capsule > .sw-btn .sw-cap-ico svg { width: 26px; height: 26px; }
+  #sw-root .sw-capsule-menu { position: fixed; left: 8px; right: 8px; bottom: calc(62px + env(safe-area-inset-bottom, 0px)); transform: none; min-width: 0; max-height: 66vh; }
+  #sw-root .sw-main { padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px)); }
+  #sw-root.sw-typing .sw-main { padding-bottom: 0; }
+  #sw-root.sw-show-dash .sw-main { padding-bottom: 0; }
+  #sw-root .sw-toast { bottom: calc(66px + env(safe-area-inset-bottom, 0px)); right: 10px; max-width: calc(100vw - 20px); }
+  /* Compact top bar: one scrolling row; the rest lives in the Tools menu */
+  #sw-root .sw-topbar { flex-wrap: nowrap; overflow-x: auto; row-gap: 0; padding: 4px 8px; scrollbar-width: none; }
+  #sw-root .sw-topbar::-webkit-scrollbar { display: none; }
+  #sw-root .sw-topbar > * { flex-shrink: 0; }
+  #sw-root #sw-disk-open, #sw-root #sw-disk-save-as, #sw-root #sw-top-drive-sync, #sw-root #sw-top-drive-status,
+  #sw-root #sw-disk-status, #sw-root #sw-project-label, #sw-root #sw-save-chip, #sw-root .sw-goal-wrap,
+  #sw-root .sw-streak, #sw-root .sw-support-top, #sw-root .sw-topbar .sw-top-sep { display: none !important; }
+  #sw-root .sw-wordcount { margin-left: auto; }
+  /* Grouped tabs: four equal headings, menu spans the width */
+  #sw-root .sw-tabgroups { padding: 0 4px; gap: 0; }
+  #sw-root .sw-tg { position: static; flex: 1 1 0; }
+  #sw-root .sw-tg-btn { width: 100%; justify-content: center; padding: 10px 4px; min-height: 44px; font-size: 0.86rem; }
+  #sw-root .sw-tg-sub { display: none; }
+  #sw-root .sw-tg-menu { left: 8px; right: 8px; top: 100%; }
+  #sw-root .sw-tg-gear { flex: 0 0 auto; width: 44px; }
+  /* Editor: explicit width, padding and measure for phone screens */
+  #sw-root .sw-editor-wrap { padding: 14px max(16px, env(safe-area-inset-left, 0px)) 28px max(16px, env(safe-area-inset-right, 0px)); }
+  #sw-root .sw-editor, #sw-root .sw-chapter-title-input, #sw-root .sw-scene-title-input, #sw-root .sw-synopsis-input { width: 100%; max-width: 34rem; box-sizing: border-box; }
+  #sw-root .sw-editor { font-size: max(var(--sw-font-size), 17px); line-height: 1.7; min-height: 55vh; overflow-wrap: break-word; hyphens: auto; }
+  #sw-root .sw-chapter-title-input { font-size: 1.25rem; }
+  #sw-root .sw-scene-title-input { font-size: 1.05rem; }
+  /* Scene details tuck away so the page is the focus */
+  #sw-root .sw-details-toggle { display: inline-block; font: inherit; font-size: 0.78rem; color: var(--sw-muted); background: transparent; border: 0; padding: 4px 0 8px; cursor: pointer; }
+  #sw-root #sw-write-view:not(.sw-details-open) .sw-synopsis-input,
+  #sw-root #sw-write-view:not(.sw-details-open) .sw-scene-meta-row { display: none !important; }
+  #sw-root .sw-quietbar { height: 28px; font-size: 0.74rem; }
+}
 </style>
 </head>
 <body>
@@ -2518,6 +2613,7 @@
       <span id="sw-goal-label">0/500</span>
       <div class="sw-goal-bar"><div class="sw-goal-fill" id="sw-goal-fill"></div></div>
     </div>
+    <a class="sw-support-link sw-support-top" href="https://store.authormasoncarter.com/checkout/buy/3d5bf2e6-be0a-48e5-82ca-4801374aebd7" target="_blank" rel="noopener noreferrer" title="StoryWriter stays free — an optional tip supports development">☕ Support</a>
     <span class="sw-wordcount" id="sw-wordcount">0 words</span>
     <span class="sw-streak" id="sw-streak" title="Writing streak">🔥 <strong>0</strong></span>
     <!-- Hidden controls: still present for JS wiring; use Capsule → Tools / Home / Chapters / Focus -->
@@ -2822,6 +2918,7 @@
           <p class="sw-home-tag">Free offline novel writing studio &middot; for indie authors</p>
           <p class="sw-home-intro">Draft chapters and scenes, keep your characters and worlds in one place, and export a clean manuscript &mdash; all privately in your browser. No account, no paywall, and your story stays on your device unless you choose to share it.</p>
         </div>
+        <a class="sw-support-link sw-support-home" href="https://store.authormasoncarter.com/checkout/buy/3d5bf2e6-be0a-48e5-82ca-4801374aebd7" target="_blank" rel="noopener noreferrer" title="StoryWriter stays free — an optional tip supports development">☕ Support</a>
         <div class="sw-home-welcome">
           <h2 class="sw-dash-hello" id="sw-dash-hello">Welcome</h2>
           <p class="sw-dash-sub" id="sw-dash-sub">Your free offline writing desk</p>
@@ -2863,9 +2960,9 @@
           <div class="sw-free-card" id="sw-free-forever" role="note">
             <div class="sw-free-kicker">✦ Our promise</div>
             <h3>Free forever</h3>
-            <p>StoryWriter stays free — no paywall on the writing desk, no account required for local drafts. Support by buying the books if you can.</p>
+            <p>StoryWriter stays free — no paywall on the writing desk, no account required for local drafts. If it helps your writing, you can leave an optional tip to support development.</p>
             <div class="sw-free-actions">
-              <a class="sw-btn sw-btn-primary" href="https://www.authormasoncarter.com/p/books-series.html" target="_blank" rel="noopener noreferrer">Buy the books</a>
+              <a class="sw-btn sw-btn-primary" href="https://store.authormasoncarter.com/checkout/buy/3d5bf2e6-be0a-48e5-82ca-4801374aebd7" target="_blank" rel="noopener noreferrer">Support StoryWriter</a>
               <button type="button" class="sw-btn" id="sw-free-share-app">Share this app</button>
               <a class="sw-btn" href="https://www.authormasoncarter.com/2026/09/storywriter-free-offline-writing-app.html" target="_blank" rel="noopener noreferrer">Project page · bugs &amp; ideas</a>
             </div>
@@ -3034,6 +3131,8 @@
     <button type="button" class="sw-btn" id="sw-cap-tools" title="Tools menu"><span class="sw-cap-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L4 17.4V20h2.6l5.7-5.3a4 4 0 0 0 5.4-5.4l-2.1 2.1-2.9-2.9 2.1-2.1z"/></svg></span>Tools ▾</button>
     <div class="sw-capsule-menu" id="sw-capsule-menu">
       <div class="sw-cap-label">Writing</div>
+      <button type="button" data-swq="quiet" id="sw-cap-quiet">Quiet writing while typing: on</button>
+      <button type="button" data-swq="tabs">Show / hide tabs…</button>
       <button type="button" data-cap="scriv">Scrivenings</button>
       <button type="button" data-cap="fullread">Continuous read</button>
       <button type="button" data-cap="plotgrid">Plot grid</button>
@@ -3463,8 +3562,10 @@
 
   function toast(msg) {
     toastEl.textContent = msg;
+    toastEl.classList.remove('sw-act');
     toastEl.classList.add('show');
-    setTimeout(() => toastEl.classList.remove('show'), 2200);
+    clearTimeout(window.__swToastT);
+    window.__swToastT = setTimeout(() => toastEl.classList.remove('show'), 2600);
   }
   function escapeHtml(s) {
     if (!s) return '';
@@ -5742,7 +5843,7 @@
       ' · Level ' + item.level + (item.ach.msg ? ' — ' + item.ach.msg : '');
     try {
       if (typeof swToastAction === 'function') {
-        swToastAction(label, 'OK', function () {}, 7000);
+        swToastAction(label, 'OK', function () {}, 4500);
       } else {
         toast(label);
       }
@@ -5754,6 +5855,7 @@
   function checkAchievements(opts) {
     opts = opts || {};
     if (state.isSample) return [];
+    if (!swHasRealActivity()) return [];
     ensureGamify();
     var stats = achievementStats();
     var newly = [];
@@ -5776,9 +5878,8 @@
       } catch (e) {}
       // Celebrate unless silent — but always toast a brief note when silent unlocks stack
       if (!opts.silent) {
-        newly.forEach(function (ach, i) {
-          celebrateAchievement(ach, base + i + 1);
-        });
+        /* One quiet celebration at a time: never stack several toasts */
+        celebrateAchievement(newly[0], base + 1);
       } else if (newly.length === 1) {
         try { toast((newly[0].icon || '🏅') + ' ' + newly[0].name); } catch (e) {}
       } else if (newly.length > 1) {
@@ -11610,7 +11711,7 @@ function exportTxt() {
       saveToDisk();
       return;
     }
-    if (mod && e.key === 'k') { e.preventDefault(); openSearch(); }
+    if (mod && (e.key === 'k' || e.key === 'K')) { e.preventDefault(); if (typeof swOpenCmd === 'function') swOpenCmd(); else openSearch(); }
     if (mod && e.key === '\\') { e.preventDefault(); ROOT.classList.toggle('sw-sidebar-collapsed'); }
     if (mod && e.key === 'b' && document.activeElement === editor) { /* let browser bold work via exec in some browsers */ }
   });
@@ -12501,6 +12602,10 @@ function exportTxt() {
         (recent
           ? '<div class="sw-recent-achs"><span class="sw-recent-label">Recent</span>' + recent + '</div>'
           : '<p class="sw-level-next">Write, add a character, place a location — milestones appear here as you earn them.</p>');
+      if (!swHasRealActivity() || !lv) {
+        levelWrap.querySelectorAll('.sw-dash-level-head, .sw-dash-level-bar, .sw-recent-achs').forEach(function (n) { n.remove(); });
+        if (!levelWrap.querySelector('.sw-level-next')) levelWrap.insertAdjacentHTML('beforeend', '<p class="sw-level-next">Write your first lines — milestones appear here once you have.</p>');
+      }
     }
     var openDeskBtn = document.getElementById('sw-dash-open-desk');
     if (openDeskBtn) {
@@ -13655,7 +13760,7 @@ function exportTxt() {
       'Developed by <strong style="color:var(--sw-accent)">Mason Carter</strong>' +
       '</p>' +
       '<div class="sw-modal-actions" style="flex-direction:column;align-items:stretch;gap:8px">' +
-      '<a class="sw-btn sw-btn-primary" href="https://www.authormasoncarter.com/p/books-series.html" target="_blank" rel="noopener noreferrer" style="text-align:center;text-decoration:none;justify-content:center">Support development — browse books</a>' +
+      '<a class="sw-btn sw-btn-primary" href="https://store.authormasoncarter.com/checkout/buy/3d5bf2e6-be0a-48e5-82ca-4801374aebd7" target="_blank" rel="noopener noreferrer" style="text-align:center;text-decoration:none;justify-content:center">Support development ☕</a>' +
       '<a class="sw-btn" href="https://www.authormasoncarter.com/2026/09/storywriter-free-offline-writing-app.html" target="_blank" rel="noopener noreferrer" style="text-align:center;text-decoration:none;justify-content:center">Suggest features, roadmap &amp; changelog</a>' +
       '<button type="button" class="sw-btn" id="m-welcome-close">Continue writing</button>' +
       '</div>'
@@ -15024,10 +15129,10 @@ function exportTxt() {
         'A free offline writing desk for indie authors. Built by <strong style="color:var(--sw-ink)">Mason Carter</strong>.' +
       '</p>' +
       '<p style="margin:0 0 14px;line-height:1.55;font-size:0.9rem">' +
-        'If StoryWriter helps your work, you can support development by buying a book, or leave feature ideas on the project page (roadmap and changelog live there too).' +
+        'If StoryWriter helps your work, you can leave an optional tip to support development, or leave feature ideas on the project page (roadmap and changelog live there too).' +
       '</p>' +
       '<div class="sw-modal-actions" style="flex-direction:column;align-items:stretch;gap:8px">' +
-        '<a class="sw-btn sw-btn-primary" id="m-welcome-books" href="https://www.authormasoncarter.com/p/books-series.html" target="_blank" rel="noopener noreferrer" style="text-decoration:none;justify-content:center;text-align:center">Buy books to support development</a>' +
+        '<a class="sw-btn sw-btn-primary" id="m-welcome-books" href="https://store.authormasoncarter.com/checkout/buy/3d5bf2e6-be0a-48e5-82ca-4801374aebd7" target="_blank" rel="noopener noreferrer" style="text-decoration:none;justify-content:center;text-align:center">Support development ☕</a>' +
         '<a class="sw-btn" id="m-welcome-feedback" href="https://www.authormasoncarter.com/2026/09/storywriter-free-offline-writing-app.html" target="_blank" rel="noopener noreferrer" style="text-decoration:none;justify-content:center;text-align:center">Suggest features · roadmap · changelog</a>' +
         '<button type="button" class="sw-btn" id="m-welcome-close">Continue writing</button>' +
       '</div>'
@@ -21150,7 +21255,7 @@ function dbNumWord(n) {
   var swTourEl = null, swTourStep = 0;
   var SW_TOUR = [
     { sel: '#sw-chapter-list', title: 'Chapters and scenes', text: 'Your manuscript lives here. Add chapters and scenes, and drag scenes to reorder them.' },
-    { sel: '#sw-tabs', title: 'World-building tabs', text: 'Characters, locations, religions, planets, relations, timeline and more live in this row. Type @ in a scene to link to any of them.' },
+    { sel: '#sw-tabgroups', title: 'World-building tabs', text: 'Characters, locations, religions, planets, relations, timeline and more live in this row. Type @ in a scene to link to any of them.' },
     { sel: '#sw-view-cork', title: 'Corkboard', text: 'See every scene as an index card. Drag cards between chapters, colour-code them, filter by tag or character, and edit synopses in place.' },
     { sel: '#sw-cap-tools', title: 'The tools menu', text: 'Continuity checks, snapshots, comparisons, search, themes, goals, importing and project settings live here.' },
     { sel: '#sw-export-btn', title: 'Take your book anywhere', text: 'Export DOCX, EPUB, PDF, Markdown, plain text or the full project file whenever you like.' },
@@ -23108,7 +23213,8 @@ function dbNumWord(n) {
     var el = document.createElement('div');
     el.id = 'sw-cmd-palette';
     el.innerHTML = '<div class="sw-cmd-box"><input type="search" id="sw-cmd-input" placeholder="Go to scene, character, export…" autocomplete="off"/><div class="sw-cmd-list" id="sw-cmd-list"></div></div>';
-    document.body.appendChild(el);
+    /* Mount inside #sw-root so the theme variables (--sw-paper, --sw-ink …) apply */
+    (document.getElementById('sw-root') || document.body).appendChild(el);
     el.addEventListener('click', function (e) { if (e.target === el) swCloseCmd(); });
   }
   function swCloseCmd() {
@@ -23122,6 +23228,7 @@ function dbNumWord(n) {
     var list = document.getElementById('sw-cmd-list');
     el.classList.add('open');
     var items = [];
+    items.push({ label: 'Search project', run: function () { openSearch(); } });
     items.push({ label: 'Continuous read (whole book)', run: swOpenFullRead });
     items.push({ label: 'Plot grid', run: swOpenPlotGrid });
     items.push({ label: 'Split pane', run: swOpenSplitPane });
@@ -23178,7 +23285,7 @@ function dbNumWord(n) {
     if (!window.__swCmdKey) {
       window.__swCmdKey = true;
       document.addEventListener('keydown', function (e) {
-        if ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K')) { e.preventDefault(); swOpenCmd(); }
+        if ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K')) { e.preventDefault(); var pe = document.getElementById('sw-cmd-palette'); if (!(pe && pe.classList.contains('open'))) swOpenCmd(); }
       });
     }
     ['sw-scene-pov', 'sw-scene-place', 'sw-scene-time'].forEach(function (id) {
@@ -23291,7 +23398,7 @@ function dbNumWord(n) {
       try { swPatchOnReady(); } catch (e) {}
       try { swCdnHealthBanner(); setTimeout(swCdnHealthBanner, 2500); } catch (e) {}
       // Then pen-name prompt — stays open until Save or Skip
-      try { await maybePenNameOnboarding(); } catch (e) {}
+      try { swSchedulePenName(); } catch (e) {}
       // Refresh greeting if they just set a name
       try {
         if (ROOT.classList.contains('sw-show-dash') && typeof showDashboard === 'function') {
@@ -24534,6 +24641,252 @@ function dbNumWord(n) {
     // Immediate toast if somehow still unreachable
     console.log('[StoryWriter] Scrivenings pack ready');
   })();
+
+
+  // ===== UX pass: activity gate, late pen-name prompt, grouped tabs, quiet writing, phone start =====
+  function swHasRealActivity() {
+    try {
+      if (totalWords() >= 1) return true;
+      var n = (state.characters || []).length + (state.locations || []).length + (state.religions || []).length +
+        (state.planets || []).length + (state.timeline || []).length + (state.relationships || []).length + (state.glossary || []).length;
+      if (n > 0) return true;
+      if (state.brainstorm && String(state.brainstorm).trim()) return true;
+    } catch (e) {}
+    return false;
+  }
+
+  // Pen-name question: after the first chapter (a second chapter exists, or chapter one holds ~1,000 words)
+  function swSchedulePenName() {
+    if (window.__swPenTimer) return;
+    window.__swPenTimer = setInterval(function () {
+      try {
+        var meta = readMeta();
+        if (meta.penNameAsked) { clearInterval(window.__swPenTimer); return; }
+        if (state.isSample) return;
+        var chs = state.chapters || [];
+        var firstWords = 0;
+        if (chs[0]) (chs[0].scenes || []).forEach(function (sc) { firstWords += wordCount(sc.content); });
+        if (chs.length < 2 && firstWords < 1000) return;
+        if (ROOT.classList.contains('sw-typing') || ROOT.classList.contains('sw-typewriter')) return;
+        if (modalBg.classList.contains('open')) return;
+        if (Date.now() - (window.__swLastKey || 0) < 6000) return;
+        clearInterval(window.__swPenTimer);
+        maybePenNameOnboarding();
+      } catch (e) {}
+    }, 5000);
+  }
+
+  // ----- Grouped tabs (Write / World / Plan / Reference) with hide & unhide -----
+  var SW_TAB_GROUPS = [
+    { id: 'write', label: 'Write', tabs: ['story'] },
+    { id: 'world', label: 'World', tabs: ['characters', 'locations', 'religions', 'planets', 'items'] },
+    { id: 'plan', label: 'Plan', tabs: ['timeline', 'relations', 'series'] },
+    { id: 'ref', label: 'Reference', mobileLabel: 'More', tabs: ['brainstorm', 'glossary', 'libraries'] }
+  ];
+  function swTabLabel(name) {
+    var b = document.querySelector('.sw-tab[data-tab="' + name + '"]');
+    return b ? b.textContent.trim() : name;
+  }
+  function swHiddenTabs() {
+    try { var a = JSON.parse(localStorage.getItem('sw-hidden-tabs') || '[]'); return Array.isArray(a) ? a.filter(function (x) { return x !== 'story'; }) : []; } catch (e) { return []; }
+  }
+  function swSetHiddenTabs(a) { try { localStorage.setItem('sw-hidden-tabs', JSON.stringify(a)); } catch (e) {} }
+  function swIsPhone() { return !!(window.matchMedia && window.matchMedia('(max-width: 899px)').matches); }
+  function swCurrentTab() {
+    var a = document.querySelector('.sw-tab.active'); return a ? a.dataset.tab : 'story';
+  }
+  function swCloseTabMenus() {
+    var bar = document.getElementById('sw-tabgroups'); if (!bar) return;
+    bar.querySelectorAll('.sw-tg.open').forEach(function (g) { g.classList.remove('open'); });
+  }
+  function swBuildTabGroups() {
+    var legacy = document.getElementById('sw-tabs'); if (!legacy) return;
+    var bar = document.getElementById('sw-tabgroups');
+    if (!bar) {
+      bar = document.createElement('div');
+      bar.id = 'sw-tabgroups'; bar.className = 'sw-tabgroups';
+      bar.setAttribute('role', 'tablist');
+      legacy.parentNode.insertBefore(bar, legacy);
+    }
+    var hidden = swHiddenTabs(), cur = swCurrentTab(), phone = swIsPhone();
+    bar.innerHTML = '';
+    SW_TAB_GROUPS.forEach(function (g) {
+      var vis = g.tabs.filter(function (t) { return hidden.indexOf(t) < 0; });
+      if (!vis.length) return;
+      var wrap = document.createElement('div');
+      wrap.className = 'sw-tg' + (g.tabs.indexOf(cur) >= 0 ? ' active' : '');
+      wrap.setAttribute('data-group', g.id);
+      var btn = document.createElement('button');
+      btn.type = 'button'; btn.className = 'sw-tg-btn';
+      var label = (phone && g.mobileLabel) ? g.mobileLabel : g.label;
+      var html = '<span>' + escapeHtml(label) + '</span>';
+      if (g.id !== 'write' && g.tabs.indexOf(cur) >= 0 && !phone) html += '<span class="sw-tg-sub">· ' + escapeHtml(swTabLabel(cur)) + '</span>';
+      if (g.id !== 'write') html += '<span class="sw-tg-caret" aria-hidden="true">▾</span>';
+      btn.innerHTML = html;
+      wrap.appendChild(btn);
+      if (g.id === 'write') {
+        btn.onclick = function (e) { e.stopPropagation(); swCloseTabMenus(); switchTab('story'); };
+      } else {
+        var menu = document.createElement('div'); menu.className = 'sw-tg-menu';
+        vis.forEach(function (t) {
+          var it = document.createElement('button'); it.type = 'button';
+          it.textContent = swTabLabel(t); if (t === cur) it.className = 'on';
+          it.onclick = function (e) { e.stopPropagation(); swCloseTabMenus(); switchTab(t); };
+          menu.appendChild(it);
+        });
+        var sep = document.createElement('div'); sep.className = 'sw-tg-sep'; menu.appendChild(sep);
+        var mg = document.createElement('button'); mg.type = 'button'; mg.className = 'sw-tg-manage'; mg.textContent = 'Show / hide tabs…';
+        mg.onclick = function (e) { e.stopPropagation(); swCloseTabMenus(); swOpenTabManager(); };
+        menu.appendChild(mg);
+        wrap.appendChild(menu);
+        btn.onclick = function (e) {
+          e.stopPropagation();
+          var was = wrap.classList.contains('open');
+          swCloseTabMenus();
+          if (vis.length === 1) { switchTab(vis[0]); return; }
+          if (!was) wrap.classList.add('open');
+        };
+      }
+      bar.appendChild(wrap);
+    });
+    var gear = document.createElement('button');
+    gear.type = 'button'; gear.className = 'sw-tg-btn sw-tg-gear'; gear.title = 'Show or hide tabs'; gear.setAttribute('aria-label', 'Show or hide tabs');
+    gear.innerHTML = '<span aria-hidden="true">⚙︎</span>';
+    gear.onclick = function (e) { e.stopPropagation(); swCloseTabMenus(); swOpenTabManager(); };
+    bar.appendChild(gear);
+  }
+  function swOpenTabManager() {
+    var hidden = swHiddenTabs();
+    var html = '<h3>Tabs</h3><p style="font-size:0.88rem;color:var(--sw-muted);margin:0 0 6px">Hide the tabs you do not use; bring them back here at any time. Nothing you wrote is deleted.</p>';
+    SW_TAB_GROUPS.forEach(function (g) {
+      if (g.id === 'write') return;
+      html += '<div class="sw-tabs-check-grp">' + escapeHtml(g.label) + '</div>';
+      g.tabs.forEach(function (t) {
+        html += '<label class="sw-tabs-check"><input type="checkbox" data-tabname="' + t + '"' + (hidden.indexOf(t) < 0 ? ' checked' : '') + '> ' + escapeHtml(swTabLabel(t)) + '</label>';
+      });
+    });
+    html += '<div class="sw-modal-actions"><button type="button" class="sw-btn" id="m-tabs-all">Show all</button><button type="button" class="sw-btn" id="m-cancel">Cancel</button><button type="button" class="sw-btn sw-btn-primary" id="m-tabs-save">Save</button></div>';
+    openModal(html);
+    var all = document.getElementById('m-tabs-all');
+    if (all) all.onclick = function () { modalEl.querySelectorAll('input[data-tabname]').forEach(function (c) { c.checked = true; }); };
+    var sv = document.getElementById('m-tabs-save');
+    if (sv) sv.onclick = function () {
+      var h = [];
+      modalEl.querySelectorAll('input[data-tabname]').forEach(function (c) { if (!c.checked) h.push(c.getAttribute('data-tabname')); });
+      swSetHiddenTabs(h);
+      closeModal();
+      if (h.indexOf(swCurrentTab()) >= 0) switchTab('story'); else swBuildTabGroups();
+    };
+  }
+  (function () {
+    var orig = switchTab;
+    switchTab = function (name) { var r = orig.apply(this, arguments); try { swCloseTabMenus(); swBuildTabGroups(); } catch (e) {} return r; };
+  })();
+
+  // ----- Quiet writing: hide everything except the text and a thin word-count bar -----
+  function swQuietEnabled() { try { return localStorage.getItem('sw-quiet') !== '0'; } catch (e) { return true; } }
+  function swUpdateQuietLabel() {
+    var b = document.getElementById('sw-cap-quiet');
+    if (b) b.textContent = 'Quiet writing while typing: ' + (swQuietEnabled() ? 'on' : 'off');
+  }
+  function swInitQuiet() {
+    var main = document.querySelector('#sw-root .sw-main');
+    var ed = document.getElementById('sw-editor');
+    if (!main || !ed || document.getElementById('sw-quietbar')) return;
+    var bar = document.createElement('div');
+    bar.id = 'sw-quietbar'; bar.className = 'sw-quietbar';
+    bar.innerHTML = '<span id="sw-qb-words">0 words</span><span id="sw-qb-goal"></span>';
+    main.appendChild(bar);
+    var wc = document.getElementById('sw-wordcount'), goal = document.getElementById('sw-goal-label');
+    function sync() {
+      var w = document.getElementById('sw-qb-words'), g = document.getElementById('sw-qb-goal');
+      if (w && wc) w.textContent = wc.textContent;
+      if (g && goal) g.textContent = goal.textContent ? ('Goal ' + goal.textContent) : '';
+    }
+    try {
+      var mo = new MutationObserver(sync);
+      if (wc) mo.observe(wc, { childList: true, characterData: true, subtree: true });
+      if (goal) mo.observe(goal, { childList: true, characterData: true, subtree: true });
+    } catch (e) {}
+    sync();
+    var lastX = null, lastY = null;
+    function typingOn() {
+      if (!swQuietEnabled() || ROOT.classList.contains('sw-show-dash')) return;
+      if (!document.getElementById('sw-panel-story').classList.contains('active')) return;
+      if (!ROOT.classList.contains('sw-typing')) { lastX = null; lastY = null; ROOT.classList.add('sw-typing'); }
+    }
+    function typingOff() { ROOT.classList.remove('sw-typing'); }
+    ed.addEventListener('keydown', function (e) {
+      window.__swLastKey = Date.now();
+      if (e.key === 'Escape') { typingOff(); return; }
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.key.length === 1 || e.key === 'Enter' || e.key === 'Backspace' || e.key === 'Delete') typingOn();
+    });
+    ed.addEventListener('input', function () { window.__swLastKey = Date.now(); typingOn(); });
+    ed.addEventListener('blur', function () { setTimeout(function () { if (document.activeElement !== ed) typingOff(); }, 150); });
+    document.addEventListener('mousemove', function (e) {
+      if (!ROOT.classList.contains('sw-typing')) return;
+      if (lastX === null) { lastX = e.clientX; lastY = e.clientY; return; }
+      if (Math.abs(e.clientX - lastX) + Math.abs(e.clientY - lastY) > 10) typingOff();
+    }, { passive: true });
+    document.addEventListener('mousedown', function (e) { if (!ed.contains(e.target)) typingOff(); }, true);
+    document.addEventListener('touchstart', function (e) { if (!ed.contains(e.target)) typingOff(); }, { capture: true, passive: true });
+    bar.addEventListener('click', typingOff);
+    swUpdateQuietLabel();
+  }
+
+  // Scene-details toggle (phone) and wiring for the new Tools-menu entries
+  function swWireUxExtras() {
+    var wv = document.getElementById('sw-write-view');
+    var syn = document.getElementById('sw-synopsis');
+    if (wv && syn && !document.getElementById('sw-details-toggle')) {
+      var t = document.createElement('button');
+      t.type = 'button'; t.id = 'sw-details-toggle'; t.className = 'sw-details-toggle'; t.textContent = '⋯ Scene details';
+      t.onclick = function () { wv.classList.toggle('sw-details-open'); t.textContent = wv.classList.contains('sw-details-open') ? '⋯ Hide details' : '⋯ Scene details'; };
+      syn.parentNode.insertBefore(t, syn);
+    }
+    var menu = document.getElementById('sw-capsule-menu');
+    if (menu && !menu.dataset.swqWired) {
+      menu.dataset.swqWired = '1';
+      menu.addEventListener('click', function (ev) {
+        var b = ev.target && ev.target.closest && ev.target.closest('[data-swq]');
+        if (!b) return;
+        ev.preventDefault(); ev.stopPropagation();
+        var cap = document.getElementById('sw-capsule'); if (cap) cap.classList.remove('open');
+        var a = b.getAttribute('data-swq');
+        if (a === 'quiet') {
+          var on = !swQuietEnabled();
+          try { localStorage.setItem('sw-quiet', on ? '1' : '0'); } catch (e) {}
+          if (!on) ROOT.classList.remove('sw-typing');
+          swUpdateQuietLabel();
+          toast('Quiet writing ' + (on ? 'on' : 'off'));
+        } else if (a === 'tabs') { swOpenTabManager(); }
+      });
+    }
+    var cap = document.getElementById('sw-capsule');
+    if (cap) cap.querySelectorAll(':scope > .sw-btn').forEach(function (b) {
+      if (!b.getAttribute('aria-label')) b.setAttribute('aria-label', (b.getAttribute('title') || b.textContent || '').replace('▾', '').trim());
+    });
+  }
+  function swInitUx() {
+    try { swBuildTabGroups(); } catch (e) { console.warn(e); }
+    try { swInitQuiet(); } catch (e) { console.warn(e); }
+    try { swWireUxExtras(); } catch (e) { console.warn(e); }
+    document.addEventListener('click', function () { swCloseTabMenus(); });
+    try { window.addEventListener('resize', function () { clearTimeout(window.__swRsz); window.__swRsz = setTimeout(swBuildTabGroups, 150); }); } catch (e) {}
+    try { toastEl.addEventListener('click', function () { toastEl.classList.remove('show', 'sw-act'); }); } catch (e) {}
+    // Phone: open straight into the writing desk
+    setTimeout(function () {
+      try {
+        if (swIsPhone() && ROOT.classList.contains('sw-show-dash') && !window.__swPhoneStarted) {
+          window.__swPhoneStarted = true;
+          hideDashboard();
+          try { refreshUI(); } catch (e) {}
+        }
+      } catch (e) {}
+    }, 1100);
+  }
+  setTimeout(swInitUx, 0);
 
 })(); // end StoryWriter main
 
