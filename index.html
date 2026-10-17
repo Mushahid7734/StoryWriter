@@ -25309,7 +25309,8 @@ function dbNumWord(n) {
   var SX = {
     tab: 'quote', theme: 'noir', ratio: '9:16', qi: 0, quotes: [], words: 0, custom: '', cover: true, handleOn: true,
     handle: '', tropes: '', tag: '', vibe: { slow: 4, angst: 3, twist: 3, cozy: 2, dark: 3 }, cta: 'Coming soon', sound: true,
-    kit: { series: '', book: '', link: '', readers: '' }, img: null, imgSrc: '', sel: '', author: '', coverText: false, sample: '', mk: { items: { kindle: true, paperback: true, audio: true }, ratio: '9:16', style: 'theme', headline: 'Out now', headlineCustom: '', badge: 'NEW', badgeCustom: '', formats: true, review: '', stars: 5, narrator: '', cta: 'Link in bio' }, playing: false, raf: 0, raf3: 0, rec: null, audio: null, plan: null, scrub: 0, ry: -28, tilt: -14, spin: true, drag: null
+    kit: { series: '', book: '', link: '', readers: '' }, img: null, imgSrc: '', sel: '', author: '', coverText: false, sample: '', mk: { items: { kindle: true, paperback: true, audio: true }, ratio: '9:16', style: 'theme', headline: 'Out now', headlineCustom: '', badge: 'NEW', badgeCustom: '', formats: true, review: '', stars: 5, narrator: '', cta: 'Link in bio' }, playing: false, raf: 0, raf3: 0, rec: null, audio: null, plan: null, scrub: 0, ry: -28, tilt: -14, spin: true, drag: null,
+    speed: 1, durIntro: 4.2, durQuote: 3.6, durEnd: 4.5, quoteCount: 3, motion: 'kinetic', recEnding: false
   };
   var SX_THEMES = {
     noir: { label: 'Neon noir', c: ['#0b0220', '#2a0a6a', '#ff2e93'], ink: '#ffffff', acc: '#3df2ff', sans: true, dark: true },
@@ -25325,7 +25326,11 @@ function dbNumWord(n) {
     ocean: { label: 'Deep ocean', c: ['#021a2b', '#0b5d7a', '#43c6c0'], ink: '#f0fdff', acc: '#fef08a', sans: true, dark: true },
     lavender: { label: 'Lavender haze', c: ['#f3e8ff', '#d8b4fe', '#a5b4fc'], ink: '#2e1065', acc: '#7c3aed', sans: true, dark: false },
     sunrise: { label: 'Sunrise', c: ['#fff1e6', '#ffd6a5', '#ffadad'], ink: '#3b1d0f', acc: '#e5383b', sans: false, dark: false },
-    candy: { label: 'Candy pop', c: ['#ffd6ec', '#ffb3da', '#c9b8ff'], ink: '#3b1146', acc: '#ff2d95', sans: true, dark: false }
+    candy: { label: 'Candy pop', c: ['#ffd6ec', '#ffb3da', '#c9b8ff'], ink: '#3b1146', acc: '#ff2d95', sans: true, dark: false },
+    ink: { label: 'Ink & gold', c: ['#0c0a08', '#1a1612', '#3d3428'], ink: '#f5e6c8', acc: '#d4a84b', sans: false, dark: true },
+    frost: { label: 'Frost glass', c: ['#e8f4f8', '#c5dde8', '#a8c5d4'], ink: '#1a2e38', acc: '#2a8fad', sans: true, dark: false },
+    ember: { label: 'Ember night', c: ['#1a0806', '#4a1810', '#c44a20'], ink: '#ffe8d6', acc: '#ffb347', sans: false, dark: true },
+    sage: { label: 'Soft sage', c: ['#f0f4ec', '#d4e0c8', '#b8c9a8'], ink: '#2a3224', acc: '#5a7a48', sans: false, dark: false }
   };
   var SX_RATIOS = { '9:16': [1080, 1920], '4:5': [1080, 1350], '1:1': [1080, 1080], '16:9': [1920, 1080], '4:3': [1440, 1080], '2:3': [1080, 1620], '1.91:1': [1910, 1000] };
   var SX_VIBES = [['slow', 'Slow burn'], ['angst', 'Angst'], ['twist', 'Plot twists'], ['cozy', 'Cozy'], ['dark', 'Dark']];
@@ -25646,39 +25651,60 @@ function dbNumWord(n) {
     return out.slice(0, n);
   }
   function sxPlan() {
-    var qs = sxPick(3);
-    return { qs: qs, tc: 3.4, tq: 2.8, te: 3.8, total: 3.4 + qs.length * 2.8 + 3.8 };
+    var n = Math.max(1, Math.min(6, parseInt(SX.quoteCount, 10) || 3));
+    var qs = sxPick(n);
+    var sp = Math.max(0.35, Math.min(2.5, +SX.speed || 1));
+    var tc = Math.max(1.2, (+SX.durIntro || 4.2) / sp);
+    var tq = Math.max(1.4, (+SX.durQuote || 3.6) / sp);
+    var te = Math.max(1.6, (+SX.durEnd || 4.5) / sp);
+    return { qs: qs, tc: tc, tq: tq, te: te, total: tc + qs.length * tq + te, speed: sp };
   }
   function sxTrailerFrame(ctx, W, H, t) {
-    var th = SX_THEMES[SX.theme], p = SX.plan || (SX.plan = sxPlan()), u = W / 1080, m = W * 0.09, d = dbS.design;
-    sxBg(ctx, W, H, th, t * 1.6);
+    var th = SX_THEMES[SX.theme] || SX_THEMES.noir, p = SX.plan || (SX.plan = sxPlan()), u = W / 1080, m = W * 0.09, d = dbS.design;
+    var motion = SX.motion || 'kinetic';
+    var soft = motion === 'soft', bold = motion === 'bold', zoom = motion === 'zoom', slide = motion === 'slide';
+    sxBg(ctx, W, H, th, t * (soft ? 0.9 : 1.6));
     ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
     var qEnd = p.tc + p.qs.length * p.tq, flash = 0;
     if (t < p.tc) {
-      var e = sxEaseOutBack(t / 1.2), a = sxClamp(t / 0.5, 0, 1);
-      var cw = W * 0.62, ch = sxCoverH(cw), fy = Math.sin(t * 1.7) * 9 * u;
-      ctx.save(); ctx.globalAlpha = a; ctx.translate(W / 2, H * 0.4 + fy); ctx.rotate((1 - e) * 0.2 - 0.035); ctx.scale(0.55 + 0.45 * e, 0.55 + 0.45 * e);
+      var easeIn = soft ? 1.8 : (bold ? 0.85 : 1.2);
+      var e = sxEaseOutBack(t / easeIn), a = sxClamp(t / (soft ? 0.7 : 0.5), 0, 1);
+      var cw = W * (bold ? 0.68 : 0.62), ch = sxCoverH(cw), fy = Math.sin(t * (soft ? 1.1 : 1.7)) * (soft ? 4 : 9) * u;
+      var rot = soft ? (1 - e) * 0.06 : (bold ? (1 - e) * 0.28 - 0.04 : (1 - e) * 0.2 - 0.035);
+      var sc0 = soft ? 0.72 : 0.55, sc1 = soft ? 0.28 : 0.45;
+      ctx.save(); ctx.globalAlpha = a; ctx.translate(W / 2, H * 0.4 + fy); ctx.rotate(rot); ctx.scale(sc0 + sc1 * e, sc0 + sc1 * e);
       sxDrawCover(ctx, -cw / 2, -ch / 2, cw, th, sxClamp((t - 1.5) / 1.3, 0, 1)); ctx.restore();
-      var ta = sxClamp((t - 1.2) / 0.7, 0, 1);
+      var ta = sxClamp((t - (soft ? 1.5 : 1.2)) / (soft ? 0.9 : 0.7), 0, 1);
       ctx.save(); ctx.globalAlpha = ta; ctx.fillStyle = th.ink;
-      var fit = sxFit(ctx, th, dbBookTitle(d), W - m * 2, 260 * u, 96 * u, 40 * u, 800, false);
+      var fit = sxFit(ctx, th, dbBookTitle(d), W - m * 2, bold ? 300 * u : 260 * u, bold ? 108 * u : 96 * u, 40 * u, 800, false);
       sxDrawFit(ctx, th, fit, W / 2, H * 0.4 + ch / 2 + 60 * u + (1 - ta) * 30 * u, 1);
       ctx.font = sxFont(th, 36 * u, 500, false); ctx.globalAlpha = ta * 0.85;
       ctx.fillText('by ' + (sxAuthor() || 'you'), W / 2, H * 0.4 + ch / 2 + 90 * u + fit.lines.length * fit.lh + (1 - ta) * 30 * u);
       ctx.restore();
       ctx.save(); ctx.globalAlpha = ta; ctx.fillStyle = th.acc; ctx.font = sxFont(th, 28 * u, 800, false);
       ctx.fillText('\u2726  ' + SX.cta.toUpperCase().split('').join(' ') + '  \u2726', W / 2, H * 0.095); ctx.restore();
-      flash = t > p.tc - 0.12 ? (t - (p.tc - 0.12)) / 0.12 : 0;
+      flash = (!soft && t > p.tc - 0.12) ? (t - (p.tc - 0.12)) / 0.12 : 0;
     } else if (t < qEnd) {
       var i = Math.min(p.qs.length - 1, Math.floor((t - p.tc) / p.tq)), lt = t - p.tc - i * p.tq;
-      var q = p.qs[i], rev = sxClamp(lt / 1.5, 0, 1), fade = lt > p.tq - 0.3 ? sxClamp((p.tq - lt) / 0.3, 0, 1) : 1;
-      ctx.save(); ctx.globalAlpha = fade;
+      var q = p.qs[i] || { text: '', src: '' };
+      var revDur = soft ? 2.0 : (bold ? 1.0 : 1.5);
+      var fadeDur = soft ? 0.5 : 0.3;
+      var rev = sxClamp(lt / revDur, 0, 1), fade = lt > p.tq - fadeDur ? sxClamp((p.tq - lt) / fadeDur, 0, 1) : 1;
+      ctx.save();
+      if (slide) {
+        var slideX = (1 - sxEaseOut(rev)) * W * (i % 2 === 0 ? 0.18 : -0.18);
+        ctx.translate(slideX, 0);
+      } else if (zoom) {
+        var zs = 0.88 + 0.12 * sxEaseOut(rev);
+        ctx.translate(W / 2, H / 2); ctx.scale(zs, zs); ctx.translate(-W / 2, -H / 2);
+      }
+      ctx.globalAlpha = fade * (soft ? sxClamp(lt / 0.35, 0, 1) : 1);
       sxQuoteLayer(ctx, W, H, th, t, rev, q.text, q.src || '', { cover: SX.cover, handleOn: SX.handleOn });
       ctx.restore();
-      flash = lt < 0.14 ? (0.14 - lt) / 0.14 * 0.7 : 0;
+      flash = (!soft && lt < 0.14) ? (0.14 - lt) / 0.14 * 0.7 : 0;
     } else {
-      var et = t - qEnd, e2 = sxEaseOutBack(et / 0.9), cw2 = W * 0.44, ch2 = sxCoverH(cw2);
-      ctx.save(); ctx.globalAlpha = sxClamp(et / 0.4, 0, 1); ctx.translate(W / 2, H * 0.31 + Math.sin(t * 1.7) * 8 * u); ctx.scale(0.6 + 0.4 * e2, 0.6 + 0.4 * e2);
+      var et = t - qEnd, e2 = sxEaseOutBack(et / (soft ? 1.2 : 0.9)), cw2 = W * (bold ? 0.5 : 0.44), ch2 = sxCoverH(cw2);
+      ctx.save(); ctx.globalAlpha = sxClamp(et / 0.4, 0, 1); ctx.translate(W / 2, H * 0.31 + Math.sin(t * 1.7) * (soft ? 4 : 8) * u); ctx.scale(0.6 + 0.4 * e2, 0.6 + 0.4 * e2);
       sxDrawCover(ctx, -cw2 / 2, -ch2 / 2, cw2, th, sxClamp((et - 0.5) / 1.2, 0, 1)); ctx.restore();
       var ea = sxClamp((et - 0.5) / 0.6, 0, 1), yy = H * 0.31 + ch2 / 2 + 70 * u;
       ctx.save(); ctx.globalAlpha = ea; ctx.fillStyle = th.ink;
@@ -25698,7 +25724,7 @@ function dbNumWord(n) {
     ctx.save(); ctx.globalAlpha = 0.85; ctx.fillStyle = th.ink;
     var bx = m, bw = W - m * 2, by = H * 0.035;
     ctx.globalAlpha = 0.25; sxRR(ctx, bx, by, bw, 6 * u, 3 * u); ctx.fill();
-    ctx.globalAlpha = 0.95; sxRR(ctx, bx, by, Math.max(6 * u, bw * sxClamp(t / p.total, 0, 1)), 6 * u, 3 * u); ctx.fill();
+    ctx.globalAlpha = 0.95; sxRR(ctx, bx, by, Math.max(6 * u, bw * sxClamp(t / Math.max(0.01, p.total), 0, 1)), 6 * u, 3 * u); ctx.fill();
     ctx.restore();
     ctx.textAlign = 'left';
   }
@@ -25743,8 +25769,13 @@ function dbNumWord(n) {
 
   // ---- playback / recording ----
   function sxStop(silent) {
-    SX.playing = false; cancelAnimationFrame(SX.raf);
-    if (SX.rec && SX.rec.state !== 'inactive') { try { SX.rec.stop(); } catch (e) {} }
+    SX.playing = false;
+    SX.recEnding = false;
+    cancelAnimationFrame(SX.raf);
+    if (SX.rec && SX.rec.state !== 'inactive') {
+      try { if (SX.rec.state === 'recording') SX.rec.requestData(); } catch (e) {}
+      try { SX.rec.stop(); } catch (e) {}
+    }
     SX.rec = null;
     setTimeout(sxAudioStop, 400);
     var b = $('#sx-play'); if (b) b.textContent = '\u25b6 Play';
@@ -25753,41 +25784,113 @@ function dbNumWord(n) {
   function sxPlay(record) {
     sxStop();
     var cv = $('#sx-cv'); if (!cv) return;
-    var ctx = cv.getContext('2d'), p = SX.plan = sxPlan(), chunks = [], rec = null;
+    // Full vertical resolution for clean recording of every slide
+    if (cv.width !== 1080 || cv.height !== 1920) { cv.width = 1080; cv.height = 1920; }
+    var ctx = cv.getContext('2d', { alpha: false, desynchronized: true });
+    var p = SX.plan = sxPlan();
+    var chunks = [], rec = null, stream = null;
+    var fps = 30;
+    // Paint first frame before captureStream so the track has real pixels
+    try { sxTrailerFrame(ctx, cv.width, cv.height, 0); } catch (e) {}
     if (record) {
-      if (!cv.captureStream || !window.MediaRecorder) { toast('This browser can\u2019t record video. Use your phone\u2019s screen recorder on the preview instead.'); return; }
-      var stream = cv.captureStream(30);
+      if (!cv.captureStream || !window.MediaRecorder) {
+        toast('This browser can\u2019t record video. Use your phone\u2019s screen recorder on the preview instead.');
+        return;
+      }
+      try { stream = cv.captureStream(fps); } catch (e) {
+        toast('Could not capture the canvas for recording');
+        return;
+      }
       if (SX.sound) {
-        try { SX.audio = sxAudioStart(p.total); var tr = SX.audio && SX.audio.dest.stream.getAudioTracks()[0]; if (tr) stream.addTrack(tr); } catch (e) {}
+        try {
+          SX.audio = sxAudioStart(p.total);
+          var tr = SX.audio && SX.audio.dest.stream.getAudioTracks()[0];
+          if (tr) stream.addTrack(tr);
+        } catch (e) {}
       }
       var mimes = ['video/mp4;codecs=avc1.42E01E,mp4a.40.2', 'video/mp4', 'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm'];
       var mime = mimes.filter(function (m) { try { return MediaRecorder.isTypeSupported(m); } catch (e) { return false; } })[0] || '';
-      try { rec = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: 6000000 } : { videoBitsPerSecond: 6000000 }); }
-      catch (e) { toast('Could not start the recorder in this browser'); sxAudioStop(); return; }
+      try {
+        rec = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: 8000000 } : { videoBitsPerSecond: 8000000 });
+      } catch (e) {
+        try { rec = new MediaRecorder(stream); } catch (e2) {
+          toast('Could not start the recorder in this browser');
+          sxAudioStop();
+          return;
+        }
+      }
       rec.ondataavailable = function (ev) { if (ev.data && ev.data.size) chunks.push(ev.data); };
+      rec.onerror = function () { toast('Recording error \u2014 try Chrome or Edge'); };
       rec.onstop = function () {
-        var type = (rec && rec.mimeType) || mime || 'video/webm', blob = new Blob(chunks, { type: type }), ext = /mp4/.test(type) ? 'mp4' : 'webm';
-        var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = sxSlug() + '-trailer.' + ext;
+        if (!chunks.length) {
+          toast('Recording was empty. Try again, or use your phone\u2019s screen recorder.');
+          return;
+        }
+        var type = (rec && rec.mimeType) || mime || 'video/webm';
+        var blob = new Blob(chunks, { type: type });
+        var ext = /mp4/.test(type) ? 'mp4' : 'webm';
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = sxSlug() + '-trailer.' + ext;
         document.body.appendChild(a); a.click(); a.remove();
         setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
-        toast('Trailer saved (' + ext.toUpperCase() + ')' + (ext === 'webm' ? ' \u2013 CapCut or your phone gallery can convert it for Instagram' : ''));
+        toast('Full trailer saved (' + ext.toUpperCase() + ', ~' + Math.round(p.total) + 's)' + (ext === 'webm' ? ' \u2013 CapCut or your phone gallery can convert it for Instagram' : ''));
       };
-      rec.start(250);
+      // Short timeslice so every slide is flushed into chunks, not only the first
+      try { rec.start(100); } catch (e) {
+        toast('Could not start recording');
+        sxAudioStop();
+        return;
+      }
     } else if (SX.sound) {
       try { SX.audio = sxAudioStart(p.total); } catch (e) {}
     }
-    SX.rec = rec; SX.playing = true;
+    SX.rec = rec;
+    SX.playing = true;
+    SX.recEnding = false;
     var pb = $('#sx-play'); if (pb) pb.textContent = '\u25a0 Stop';
     var rb = $('#sx-rec'); if (rb && record) { rb.disabled = true; rb.textContent = '\u23fa Recording\u2026'; }
     var t0 = performance.now(), sl = $('#sx-scrub');
+    if (sl) { sl.max = p.total.toFixed(2); sl.value = 0; }
+    var lastT = -1;
+    function finishRecording() {
+      if (SX.recEnding) return;
+      SX.recEnding = true;
+      SX.playing = false;
+      cancelAnimationFrame(SX.raf);
+      // Hold the final frame so the encoder captures the ending slide
+      try { sxTrailerFrame(ctx, cv.width, cv.height, Math.max(0, p.total - 0.02)); } catch (e) {}
+      if (rec && rec.state === 'recording') {
+        try { rec.requestData(); } catch (e) {}
+        setTimeout(function () {
+          try { if (rec.state === 'recording') rec.stop(); } catch (e) {}
+          SX.rec = null;
+          setTimeout(sxAudioStop, 300);
+          var b2 = $('#sx-play'); if (b2) b2.textContent = '\u25b6 Play';
+          var r2 = $('#sx-rec'); if (r2) { r2.disabled = false; r2.textContent = '\ud83c\udfac Record video'; }
+          SX.scrub = 0; if (sl) sl.value = 0;
+          SX.recEnding = false;
+        }, 400);
+      } else {
+        sxStop();
+        SX.scrub = 0; if (sl) sl.value = 0;
+      }
+    }
     function frame(now) {
       if (!SX.playing) return;
       var t = (now - t0) / 1000;
-      if (t >= p.total) { sxTrailerFrame(ctx, cv.width, cv.height, p.total - 0.01); SX.scrub = 0; sxStop(); if (sl) sl.value = 0; return; }
-      sxTrailerFrame(ctx, cv.width, cv.height, t);
-      if (sl) sl.value = t;
+      if (t >= p.total) {
+        finishRecording();
+        return;
+      }
+      // Always redraw so captureStream receives every slide, not a frozen first frame
+      try { sxTrailerFrame(ctx, cv.width, cv.height, t); } catch (err) { console.warn(err); }
+      if (sl && (t - lastT > 0.05 || lastT < 0)) { sl.value = t; lastT = t; }
+      SX.scrub = t;
       SX.raf = requestAnimationFrame(frame);
     }
+    // Kick a couple of frames before rAF settles (helps some browsers seed the stream)
+    try { sxTrailerFrame(ctx, cv.width, cv.height, 0.001); } catch (e) {}
     SX.raf = requestAnimationFrame(frame);
   }
 
@@ -25842,7 +25945,7 @@ function dbNumWord(n) {
   }
   function sxSave() {
     var d = dbS.design; if (!d) return;
-    d.share = { theme: SX.theme, handle: SX.handle, handleOn: SX.handleOn, tropes: SX.tropes, tag: SX.tag, vibe: SX.vibe, cta: SX.cta, sound: SX.sound, cover: SX.cover, ratio: SX.ratio, author: SX.author, coverText: SX.coverText, mk: SX.mk, kit: SX.kit };
+    d.share = { theme: SX.theme, handle: SX.handle, handleOn: SX.handleOn, tropes: SX.tropes, tag: SX.tag, vibe: SX.vibe, cta: SX.cta, sound: SX.sound, cover: SX.cover, ratio: SX.ratio, author: SX.author, coverText: SX.coverText, mk: SX.mk, kit: SX.kit, speed: SX.speed, durIntro: SX.durIntro, durQuote: SX.durQuote, durEnd: SX.durEnd, quoteCount: SX.quoteCount, motion: SX.motion };
     dbSaveSoon();
   }
 
@@ -25879,8 +25982,13 @@ function dbNumWord(n) {
       sxFitCanvas();
     } else if (SX.tab === 'trailer') {
       var c2 = $('#sx-cv'); if (!c2) return;
-      if (c2.width !== 720) { c2.width = 720; c2.height = 1280; }
-      if (!SX.playing) { SX.plan = sxPlan(); var sl = $('#sx-scrub'); if (sl) { sl.max = SX.plan.total.toFixed(2); } sxTrailerFrame(c2.getContext('2d'), 720, 1280, SX.scrub || 0.9); }
+      if (c2.width !== 1080 || c2.height !== 1920) { c2.width = 1080; c2.height = 1920; }
+      if (!SX.playing && !SX.recEnding) {
+        SX.plan = sxPlan();
+        var sl = $('#sx-scrub');
+        if (sl) { sl.max = SX.plan.total.toFixed(2); }
+        sxTrailerFrame(c2.getContext('2d'), 1080, 1920, SX.scrub || 0.9);
+      }
       sxFitCanvas();
     }
   }
@@ -26113,25 +26221,68 @@ function dbNumWord(n) {
     } else if (tab === 'trailer') {
       stage.innerHTML = '<canvas id="sx-cv" class="sx-cv"></canvas>';
       SX.scrub = 0.9;
+      var p0 = sxPlan();
+      var speedOpts = [0.5, 0.75, 1, 1.25, 1.5, 2].map(function (v) {
+        var lab = v + '\u00d7' + (v === 1 ? ' \u2014 normal' : (v < 1 ? ' \u2014 slower' : ' \u2014 faster'));
+        return '<option value="' + v + '"' + ((+SX.speed || 1) === v ? ' selected' : '') + '>' + lab + '</option>';
+      }).join('');
+      var motionOpts = [
+        ['kinetic', 'Kinetic (default)'],
+        ['soft', 'Soft fade'],
+        ['zoom', 'Zoom in'],
+        ['slide', 'Slide'],
+        ['bold', 'Bold impact']
+      ].map(function (m) {
+        return '<option value="' + m[0] + '"' + ((SX.motion || 'kinetic') === m[0] ? ' selected' : '') + '>' + m[1] + '</option>';
+      }).join('');
       ctl.innerHTML =
         '<h4>Look</h4>' + sxSwatches() +
+        '<h4>Motion style</h4><select class="sw-sel" id="sx-motion">' + motionOpts + '</select>' +
         '<h4>Ending text</h4><select class="sw-sel" id="sx-cta">' + ['Coming soon', 'Out now', 'Now writing', 'Chapter 1 is live', 'Read it free', 'Pre-order open'].map(function (c) { return '<option' + (c === SX.cta ? ' selected' : '') + '>' + c + '</option>'; }).join('') + '</select>' +
         '<label class="db-chk"><input type="checkbox" id="sx-cover"' + (SX.cover ? ' checked' : '') + '> Show cover on quote scenes</label>' +
-        '<label class="db-chk"><input type="checkbox" id="sx-sound"' + (SX.sound ? ' checked' : '') + '> Add a soundtrack (made for you, royalty-free)</label>' +
+        '<label class="db-chk"><input type="checkbox" id="sx-sound"' + (SX.sound ? ' checked' : '') + '> Soundtrack (generated for you, royalty-free)</label>' +
         '<label class="db-chk"><input type="checkbox" id="sx-handleon"' + (SX.handleOn ? ' checked' : '') + '> Show handle</label>' +
         '<input class="sw-inp" id="sx-handle" placeholder="@yourhandle" maxlength="30" value="' + escapeHtml(SX.handle) + '">' +
         '<div class="sx-row"><button type="button" class="sw-btn" id="sx-reshuffle">\ud83c\udfb2 Pick other lines</button></div>' +
-        '<h4>Preview</h4><input type="range" id="sx-scrub" min="0" max="14" step="0.01" value="0.9" style="width:100%">' +
+        '<h4>Pace</h4>' +
+        '<label class="sw-lbl">Playback speed</label><select class="sw-sel" id="sx-speed">' + speedOpts + '</select>' +
+        '<label class="sw-lbl">Quote slides (1\u20136)</label><input type="number" class="sw-inp" id="sx-qcount" min="1" max="6" step="1" value="' + (SX.quoteCount || 3) + '">' +
+        '<label class="sw-lbl">Intro length (seconds at 1\u00d7)</label><input type="range" id="sx-dur-intro" min="2" max="8" step="0.2" value="' + (+SX.durIntro || 4.2) + '" style="width:100%"><div class="sx-hint" id="sx-dur-intro-v">' + (+SX.durIntro || 4.2).toFixed(1) + 's</div>' +
+        '<label class="sw-lbl">Each quote (seconds at 1\u00d7)</label><input type="range" id="sx-dur-quote" min="2" max="8" step="0.2" value="' + (+SX.durQuote || 3.6) + '" style="width:100%"><div class="sx-hint" id="sx-dur-quote-v">' + (+SX.durQuote || 3.6).toFixed(1) + 's</div>' +
+        '<label class="sw-lbl">Ending (seconds at 1\u00d7)</label><input type="range" id="sx-dur-end" min="2" max="10" step="0.2" value="' + (+SX.durEnd || 4.5) + '" style="width:100%"><div class="sx-hint" id="sx-dur-end-v">' + (+SX.durEnd || 4.5).toFixed(1) + 's</div>' +
+        '<div class="sx-hint" id="sx-total-hint">Total ~' + p0.total.toFixed(1) + 's at current speed</div>' +
+        '<h4>Preview</h4><input type="range" id="sx-scrub" min="0" max="' + p0.total.toFixed(2) + '" step="0.01" value="0.9" style="width:100%">' +
         '<div class="sx-row"><button type="button" class="sw-btn" id="sx-play">\u25b6 Play</button><button type="button" class="sw-btn sw-btn-primary" id="sx-rec">\ud83c\udfac Record video</button></div>' +
-        '<div class="sx-hint">About 14 seconds, vertical 9:16, with kinetic text and a story-style progress bar. Recording runs in real time and downloads when it ends. Chrome and Edge save WebM; Safari saves MP4. Most editors and phone galleries accept both.</div>';
+        '<div class="sx-hint">Records the full trailer (intro + every quote + ending) in real time at 1080\u00d71920. Chrome and Edge save WebM; Safari may save MP4. Slow the pace above if slides feel rushed.</div>';
       sxCommon(ctl);
-      $('#sx-cta').onchange = function () { SX.cta = this.value; SX.plan = null; sxAfter(); };
+      function sxRefreshPlanUI() {
+        SX.plan = null;
+        var p = sxPlan();
+        var sl = $('#sx-scrub'); if (sl) { sl.max = p.total.toFixed(2); if (+sl.value > p.total) sl.value = p.total * 0.5; }
+        var h = $('#sx-total-hint'); if (h) h.textContent = 'Total ~' + p.total.toFixed(1) + 's at current speed';
+        sxAfter();
+      }
+      $('#sx-cta').onchange = function () { SX.cta = this.value; sxRefreshPlanUI(); };
       $('#sx-cover').onchange = function () { SX.cover = this.checked; sxAfter(); };
       $('#sx-sound').onchange = function () { SX.sound = this.checked; sxSave(); };
-      $('#sx-reshuffle').onclick = function () { SX.custom = ''; SX.qi = Math.floor(Math.random() * Math.max(1, Math.min(SX.quotes.length, 40))); sxStop(); sxRender(); };
+      $('#sx-motion').onchange = function () { SX.motion = this.value; sxRefreshPlanUI(); };
+      $('#sx-speed').onchange = function () { SX.speed = +this.value || 1; sxRefreshPlanUI(); };
+      $('#sx-qcount').onchange = function () { SX.quoteCount = Math.max(1, Math.min(6, parseInt(this.value, 10) || 3)); this.value = SX.quoteCount; sxRefreshPlanUI(); };
+      function wireDur(id, key, labelId) {
+        var el = $('#' + id); if (!el) return;
+        el.oninput = function () {
+          SX[key] = +this.value;
+          var lab = $('#' + labelId); if (lab) lab.textContent = (+this.value).toFixed(1) + 's';
+          sxRefreshPlanUI();
+        };
+      }
+      wireDur('sx-dur-intro', 'durIntro', 'sx-dur-intro-v');
+      wireDur('sx-dur-quote', 'durQuote', 'sx-dur-quote-v');
+      wireDur('sx-dur-end', 'durEnd', 'sx-dur-end-v');
+      $('#sx-reshuffle').onclick = function () { SX.custom = ''; SX.qi = Math.floor(Math.random() * Math.max(1, Math.min(SX.quotes.length, 40))); sxStop(); SX.plan = null; sxRender(); };
       $('#sx-scrub').oninput = function () { if (SX.playing) sxStop(); SX.scrub = +this.value; sxRender(); };
       $('#sx-play').onclick = function () { if (SX.playing) sxStop(); else sxPlay(false); };
-      $('#sx-rec').onclick = function () { sxPlay(true); };
+      $('#sx-rec').onclick = function () { if (SX.playing) sxStop(); sxPlay(true); };
       sxRender();
     }
   }
@@ -26688,6 +26839,12 @@ function dbNumWord(n) {
     if (s.sound !== undefined) SX.sound = !!s.sound;
     if (s.cover !== undefined) SX.cover = !!s.cover;
     if (s.ratio && SX_RATIOS[s.ratio]) SX.ratio = s.ratio;
+    if (s.speed != null) SX.speed = +s.speed || 1;
+    if (s.durIntro != null) SX.durIntro = +s.durIntro;
+    if (s.durQuote != null) SX.durQuote = +s.durQuote;
+    if (s.durEnd != null) SX.durEnd = +s.durEnd;
+    if (s.quoteCount != null) SX.quoteCount = Math.max(1, Math.min(6, +s.quoteCount || 3));
+    if (s.motion) SX.motion = s.motion;
     SX.author = s.author || ''; SX.coverText = !!s.coverText;
     if (s.kit && typeof s.kit === 'object') SX.kit = Object.assign({ series: '', book: '', link: '', readers: '' }, s.kit);
     if (s.mk) { var keepItems = SX.mk.items; SX.mk = Object.assign({}, SX.mk, s.mk); if (!s.mk.items || typeof s.mk.items !== 'object') SX.mk.items = keepItems; if (!SX_RATIOS[SX.mk.ratio]) SX.mk.ratio = '9:16'; }
