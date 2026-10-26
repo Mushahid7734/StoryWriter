@@ -2767,6 +2767,42 @@
     #sw-root .sw-music-player #sw-mus-vol {
       width: 90px; min-width: 70px; max-width: 110px; flex: 0 0 auto;
     }
+    #sw-root .sw-mus-subtabs {
+      display: flex; gap: 4px; padding: 8px 16px 0; flex-wrap: wrap;
+      border-bottom: 1px solid var(--sw-border); background: var(--sw-bg);
+      position: sticky; top: 0; z-index: 4;
+    }
+    #sw-root .sw-mus-subtabs button {
+      font: inherit; font-size: 0.78rem; font-weight: 600; padding: 7px 12px;
+      border: 1px solid transparent; border-bottom: 2px solid transparent;
+      background: transparent; color: var(--sw-muted); cursor: pointer; border-radius: 6px 6px 0 0;
+    }
+    #sw-root .sw-mus-subtabs button.on {
+      color: var(--sw-accent); border-bottom-color: var(--sw-accent); background: var(--sw-paper);
+    }
+    #sw-root .sw-mus-folder {
+      border: 1px solid var(--sw-border); border-radius: var(--sw-radius);
+      background: var(--sw-paper); margin: 0 0 8px; overflow: hidden;
+    }
+    #sw-root .sw-mus-folder-head {
+      display: flex; align-items: center; gap: 10px; padding: 10px 12px; cursor: pointer;
+      width: 100%; text-align: left; font: inherit; background: transparent; border: 0; color: var(--sw-ink);
+    }
+    #sw-root .sw-mus-folder-head:hover { background: var(--sw-hover); }
+    #sw-root .sw-mus-folder.open .sw-mus-folder-head { background: var(--sw-hover); }
+    #sw-root .sw-mus-folder-icon { font-size: 1.15rem; flex-shrink: 0; width: 1.6rem; text-align: center; }
+    #sw-root .sw-mus-folder-meta { flex: 1; min-width: 0; }
+    #sw-root .sw-mus-folder-title { font-weight: 600; font-size: 0.92rem; }
+    #sw-root .sw-mus-folder-sub { font-size: 0.75rem; color: var(--sw-muted); }
+    #sw-root .sw-mus-folder-body {
+      display: none; border-top: 1px solid var(--sw-border); padding: 6px 8px 10px;
+      background: var(--sw-bg);
+    }
+    #sw-root .sw-mus-folder.open .sw-mus-folder-body { display: block; }
+    #sw-root .sw-mus-folder-tools {
+      display: flex; gap: 6px; flex-wrap: wrap; padding: 6px 4px 8px; align-items: center;
+    }
+
     #sw-root.sw-typing .sw-music-panel { display: none !important; }
     #sw-root.sw-full-read #sw-music-panel, #sw-root.sw-plot-grid #sw-music-panel { display: none !important; }
 
@@ -31504,10 +31540,12 @@ function dbNumWord(n) {
           playlists: Array.isArray(r.playlists) ? r.playlists : [],
           listens: r.listens && typeof r.listens === 'object' ? r.listens : {},
           localFolders: Array.isArray(r.localFolders) ? r.localFolders : [],
-          trackMeta: r.trackMeta && typeof r.trackMeta === 'object' ? r.trackMeta : {}
+          trackMeta: r.trackMeta && typeof r.trackMeta === 'object' ? r.trackMeta : {},
+          musicTab: r.musicTab || 'offline',
+          openFolderId: r.openFolderId || ''
         };
       } catch (e) {
-        return { activeLibraryId: 'lib-classical', customLibraries: [], playlists: [], listens: {}, localFolders: [], trackMeta: {} };
+        return { activeLibraryId: 'lib-classical', customLibraries: [], playlists: [], listens: {}, localFolders: [], trackMeta: {}, musicTab: 'offline', openFolderId: '' };
       }
     }
     function saveMusicState(st) {
@@ -31992,7 +32030,7 @@ function dbNumWord(n) {
         var name = (document.getElementById('sw-mus-pl-name').value || '').trim();
         if (!name) { try { toast('Enter a name'); } catch (e) {} return; }
         var st = loadMusicState();
-        st.playlists.unshift({ id: 'pl-' + Date.now().toString(36), name: name, trackIds: preId ? [preId] : [], created: Date.now() });
+        st.playlists.unshift({ id: 'pl-' + Date.now().toString(36), name: name, trackIds: preId ? [preId] : [], created: Date.now(), kind: 'mood' });
         saveMusicState(st);
         closeModal();
         swRenderMusicPanel();
@@ -32041,115 +32079,166 @@ function dbNumWord(n) {
       var panel = document.getElementById('sw-music-panel');
       if (!panel) return;
       var st = loadMusicState();
+      var tab = st.musicTab || 'offline';
+      if (['offline', 'online', 'downloads'].indexOf(tab) < 0) tab = 'offline';
+      var openId = st.openFolderId || '';
       var libs = allLibraries();
       var active = getLib(st.activeLibraryId);
-      panel.innerHTML = '<div class="sw-music-head"><h2>Music</h2><span style="font-size:0.8rem;color:var(--sw-muted)">Loading library…</span></div>';
-      var tracks = [];
-      try { tracks = await ensureLibraryTracks(active); } catch (e) { tracks = []; }
-      st = loadMusicState();
-      active = getLib(st.activeLibraryId);
-      var top = topTracks(10);
-      var themes = themeShelves(tracks);
-      var playlists = st.playlists || [];
+      var onlineTracks = [];
+      if (tab === 'online') {
+        panel.innerHTML = '<div class="sw-music-head"><h2>Music</h2><span style="font-size:0.8rem;color:var(--sw-muted)">Loading…</span></div>';
+        try { onlineTracks = await ensureLibraryTracks(active); } catch (e) { onlineTracks = []; }
+        st = loadMusicState();
+        active = getLib(st.activeLibraryId);
+      }
       var localFolders = st.localFolders || [];
+      var playlists = (st.playlists || []).filter(function (p) { return p && p.kind !== 'online'; });
       var downloaded = [];
       try { downloaded = await musicListDownloadedTracks(); } catch (e) { downloaded = []; }
       var offlineMap = {};
-      try {
-        await Promise.all(tracks.slice(0, 40).map(async function (t) {
-          offlineMap[t.id] = await musicIsOffline(t.id);
-        }));
-      } catch (e) {}
       downloaded.forEach(function (t) { offlineMap[t.id] = true; });
 
-      var html = '<div class="sw-music-head">' +
-        '<h2>Music</h2>' +
-        '<select class="sw-sel" id="sw-mus-lib">' +
-        libs.map(function (l) {
-          return '<option value="' + esc(l.id) + '"' + (l.id === active.id ? ' selected' : '') + '>' +
-            esc(l.name) + (l.custom ? ' · custom' : '') + '</option>';
-        }).join('') + '</select>' +
-        '<button type="button" class="sw-btn" id="sw-mus-add-lib">＋ Library</button>' +
-        '<button type="button" class="sw-btn sw-btn-primary" id="sw-mus-new-pl">＋ Playlist</button>' +
-        '</div><div class="sw-music-body">';
-      html += '<p style="font-size:0.82rem;color:var(--sw-muted);margin:0 0 14px">' + esc(active.description || '') +
-        ' · ' + tracks.length + ' tracks · streamed from Internet Archive (free). Use while you write.</p>';
+      function trackFromId(id) {
+        return findTrack(id) || downloaded.find(function (t) { return t.id === id; }) || null;
+      }
+      function localTracksOnly() {
+        return downloaded.filter(function (t) {
+          var m = st.trackMeta[t.id];
+          return m && m.source === 'local';
+        });
+      }
+      function onlineDownloadedOnly() {
+        return downloaded.filter(function (t) {
+          var m = st.trackMeta[t.id];
+          return !m || m.source !== 'local';
+        });
+      }
+      function topLocal(n) {
+        return localTracksOnly().slice(0, n || 20);
+      }
+      function topOnline(n) {
+        var st2 = loadMusicState();
+        var ids = Object.keys(st2.listens || {}).map(function (id) {
+          return { id: id, c: st2.listens[id].count || 0, ms: st2.listens[id].ms || 0 };
+        }).sort(function (a, b) { return b.c - a.c || b.ms - a.ms; });
+        var out = [];
+        ids.forEach(function (e) {
+          if (out.length >= (n || 15)) return;
+          var t = onlineTracks.find(function (x) { return x.id === e.id; }) || findTrack(e.id);
+          if (!t) return;
+          var meta = st2.trackMeta[e.id];
+          if (meta && meta.source === 'local') return;
+          out.push(t);
+        });
+        return out;
+      }
 
-      html += '<div class="sw-music-sec"><h3 style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap"><span>Local library · ' + localFolders.length + '</span>' +
-        '<span style="display:inline-flex;gap:6px"><button type="button" class="sw-btn" id="sw-mus-local-folder">＋ Folder</button>' +
-        '<button type="button" class="sw-btn" id="sw-mus-local-files">＋ Files</button></span></h3>';
-      if (!localFolders.length) {
-        html += '<p style="font-size:0.85rem;color:var(--sw-muted)">Add a folder or files. Audio is stored in this browser (IndexedDB) so you are not prompted again and playback stays seamless.</p>';
-      } else {
-        html += '<div class="sw-music-list">';
+      function folderHtml(fid, icon, title, sub, toolsHtml, bodyTracks, extraClass) {
+        var open = openId === fid;
+        var n = (bodyTracks || []).length;
+        var html = '<div class="sw-mus-folder' + (open ? ' open' : '') + (extraClass ? ' ' + extraClass : '') + '" data-folder="' + esc(fid) + '">';
+        html += '<button type="button" class="sw-mus-folder-head" data-fold="' + esc(fid) + '">' +
+          '<span class="sw-mus-folder-icon">' + icon + '</span>' +
+          '<span class="sw-mus-folder-meta"><span class="sw-mus-folder-title">' + esc(title) + '</span>' +
+          '<span class="sw-mus-folder-sub">' + esc(sub || (n + ' track' + (n === 1 ? '' : 's'))) + '</span></span>' +
+          '<span style="color:var(--sw-muted);font-size:0.85rem">' + (open ? '▾' : '▸') + '</span></button>';
+        html += '<div class="sw-mus-folder-body">';
+        if (toolsHtml) html += '<div class="sw-mus-folder-tools">' + toolsHtml + '</div>';
+        if (!n) html += '<p style="font-size:0.84rem;color:var(--sw-muted);margin:4px 8px">Empty</p>';
+        else {
+          html += '<div class="sw-music-list">';
+          bodyTracks.forEach(function (t, i) {
+            var plays = (st.listens[t.id] && st.listens[t.id].count) || 0;
+            var off = offlineMap[t.id] || t.offline;
+            html += '<div class="sw-music-row"><div class="sw-music-num">' + (i + 1) + '</div>' +
+              '<div class="sw-music-meta"><div class="sw-music-title">' + esc(t.title) + (off ? ' · offline' : '') + '</div>' +
+              '<div class="sw-music-sub">' + esc(t.artist || '') + (plays ? (' · ' + plays + ' plays') : '') + '</div></div>' +
+              '<div class="sw-music-actions">' +
+              '<button type="button" class="sw-btn sw-btn-primary" data-mplay="' + esc(t.id) + '">Play</button>' +
+              (off ? '<button type="button" class="sw-btn" data-mdel="' + esc(t.id) + '">Delete</button>' : '<button type="button" class="sw-btn" data-mdl="' + esc(t.id) + '">↓</button>') +
+              '<button type="button" class="sw-btn" data-madd="' + esc(t.id) + '">＋</button></div></div>';
+          });
+          html += '</div>';
+        }
+        html += '</div></div>';
+        return html;
+      }
+
+      var html = '<div class="sw-music-head"><h2>Music</h2></div>';
+      html += '<div class="sw-mus-subtabs" role="tablist">' +
+        '<button type="button" data-mtab="offline"' + (tab === 'offline' ? ' class="on"' : '') + '>Offline Library</button>' +
+        '<button type="button" data-mtab="online"' + (tab === 'online' ? ' class="on"' : '') + '>Online Libraries</button>' +
+        '<button type="button" data-mtab="downloads"' + (tab === 'downloads' ? ' class="on"' : '') + '>Downloads</button></div>';
+      html += '<div class="sw-music-body">';
+
+      if (tab === 'offline') {
+        html += '<p style="font-size:0.82rem;color:var(--sw-muted);margin:0 0 12px">Folders and mood playlists stored in this browser. Import once — play anytime without permission prompts.</p>';
+        html += '<div style="display:flex;gap:6px;flex-wrap:wrap;margin:0 0 12px">' +
+          '<button type="button" class="sw-btn sw-btn-primary" id="sw-mus-local-folder">＋ Folder</button>' +
+          '<button type="button" class="sw-btn" id="sw-mus-local-files">＋ Files</button>' +
+          '<button type="button" class="sw-btn" id="sw-mus-new-pl">＋ Mood playlist</button></div>';
+
+        var topLoc = topLocal(25);
+        html += folderHtml('__top_local', '⭐', 'Most listened (local)', topLoc.length + ' tracks · auto',
+          topLoc.length ? '<button type="button" class="sw-btn sw-btn-primary" data-play-set="top_local">Play all</button>' : '',
+          topLoc);
+
         localFolders.forEach(function (f) {
-          var n = (f.trackIds || []).length;
-          html += '<div class="sw-music-row"><div class="sw-music-num">📁</div><div class="sw-music-meta">' +
-            '<div class="sw-music-title">' + esc(f.name) + '</div><div class="sw-music-sub">' + n + ' tracks · offline</div></div>' +
-            '<div class="sw-music-actions">' +
-            '<button type="button" class="sw-btn sw-btn-primary" data-loc-play="' + esc(f.id) + '">Play</button>' +
-            '<button type="button" class="sw-btn" data-loc-del="' + esc(f.id) + '">Delete all</button></div></div>';
+          var ts = (f.trackIds || []).map(trackFromId).filter(Boolean);
+          var tools = '<button type="button" class="sw-btn sw-btn-primary" data-loc-play="' + esc(f.id) + '">Play all</button>' +
+            '<button type="button" class="sw-btn" data-loc-ren="' + esc(f.id) + '">Rename</button>' +
+            '<button type="button" class="sw-btn" data-loc-addfiles="' + esc(f.id) + '">＋ Tracks</button>' +
+            '<button type="button" class="sw-btn" data-loc-del="' + esc(f.id) + '">Delete folder</button>';
+          html += folderHtml(f.id, '📁', f.name, ts.length + ' tracks · local folder', tools, ts);
         });
-        html += '</div>';
-      }
-      html += '</div>';
 
-      html += '<div class="sw-music-sec"><h3>Downloaded · ' + downloaded.length + ' <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--sw-muted)">· by listens</span></h3>';
-      if (!downloaded.length) {
-        html += '<p style="font-size:0.85rem;color:var(--sw-muted)">Use ↓ on any track to save offline. They appear here ranked by plays.</p>';
-      } else {
-        html += '<div class="sw-music-list">';
-        downloaded.slice(0, 50).forEach(function (t, i) {
-          var plays = (st.listens[t.id] && st.listens[t.id].count) || 0;
-          html += '<div class="sw-music-row"><div class="sw-music-num">' + (i + 1) + '</div><div class="sw-music-meta">' +
-            '<div class="sw-music-title">' + esc(t.title) + ' · offline</div>' +
-            '<div class="sw-music-sub">' + esc(t.artist || '') + (plays ? (' · ' + plays + ' plays') : '') + '</div></div>' +
-            '<div class="sw-music-actions">' +
-            '<button type="button" class="sw-btn sw-btn-primary" data-mplay="' + esc(t.id) + '">Play</button>' +
-            '<button type="button" class="sw-btn" data-mdel="' + esc(t.id) + '">Delete</button></div></div>';
-        });
-        html += '</div><div style="margin:6px 0 0"><button type="button" class="sw-btn sw-btn-primary" id="sw-mus-play-dl">Play all downloaded</button></div>';
-      }
-      html += '</div>';
-
-      html += '<div class="sw-music-sec"><h3>Your top listens</h3>';
-      if (!top.length) html += '<p style="font-size:0.85rem;color:var(--sw-muted)">Play tracks to build your top 10 (stored on this device).</p>';
-      else {
-        html += '<div class="sw-music-list">';
-        top.forEach(function (t, i) { html += rowHtml(t, i, st, offlineMap[t.id]); });
-        html += '</div>';
-      }
-      html += '</div>';
-
-      html += '<div class="sw-music-sec"><h3>Your playlists · ' + playlists.length + '</h3>';
-      if (!playlists.length) html += '<p style="font-size:0.85rem;color:var(--sw-muted)">Create a playlist and add songs while browsing.</p>';
-      else {
-        html += '<div class="sw-music-list">';
         playlists.forEach(function (pl) {
-          var n = (pl.trackIds || []).length;
-          html += '<div class="sw-music-row"><div class="sw-music-num">🎵</div><div class="sw-music-meta">' +
-            '<div class="sw-music-title">' + esc(pl.name) + '</div><div class="sw-music-sub">' + n + ' tracks</div></div>' +
-            '<div class="sw-music-actions">' +
-            '<button type="button" class="sw-btn sw-btn-primary" data-pl-play="' + esc(pl.id) + '">Play</button>' +
-            '<button type="button" class="sw-btn" data-pl-del="' + esc(pl.id) + '">Delete</button></div></div>';
+          var ts = (pl.trackIds || []).map(trackFromId).filter(Boolean);
+          var tools = '<button type="button" class="sw-btn sw-btn-primary" data-pl-play="' + esc(pl.id) + '">Play all</button>' +
+            '<button type="button" class="sw-btn" data-pl-ren="' + esc(pl.id) + '">Rename</button>' +
+            '<button type="button" class="sw-btn" data-pl-del="' + esc(pl.id) + '">Delete</button>';
+          html += folderHtml(pl.id, '🎵', pl.name, ts.length + ' tracks · mood playlist', tools, ts);
         });
-        html += '</div>';
       }
-      html += '</div>';
 
-      if (themes.length) {
+      if (tab === 'online') {
+        html += '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 12px">' +
+          '<label style="font-size:0.8rem;color:var(--sw-muted)">Library</label>' +
+          '<select class="sw-sel" id="sw-mus-lib">' +
+          libs.map(function (l) {
+            return '<option value="' + esc(l.id) + '"' + (l.id === active.id ? ' selected' : '') + '>' +
+              esc(l.name) + (l.custom ? ' · custom' : '') + '</option>';
+          }).join('') + '</select>' +
+          '<button type="button" class="sw-btn" id="sw-mus-add-lib">＋ Catalog</button></div>';
+        html += '<p style="font-size:0.82rem;color:var(--sw-muted);margin:0 0 12px">' + esc(active.description || '') +
+          ' · ' + onlineTracks.length + ' tracks from Internet Archive.</p>';
+
+        var topOn = topOnline(15);
+        html += folderHtml('__top_online', '⭐', 'Most listened (online)', topOn.length + ' tracks · auto',
+          topOn.length ? '<button type="button" class="sw-btn sw-btn-primary" data-play-set="top_online">Play all</button>' : '',
+          topOn);
+
+        var themes = themeShelves(onlineTracks);
         themes.forEach(function (th) {
-          html += '<div class="sw-music-sec"><h3 style="display:flex;align-items:center;gap:8px">' + esc(th.label) +
-            ' <button type="button" class="sw-btn sw-btn-primary" data-theme-play="' + esc(th.id) + '" style="text-transform:none;letter-spacing:0">Play all</button></h3>' +
-            '<div class="sw-music-list">';
-          th.tracks.slice(0, 10).forEach(function (t) { html += rowHtml(t, null, st, offlineMap[t.id]); });
-          html += '</div></div>';
+          html += folderHtml('theme-' + th.id, '📂', th.label, th.tracks.length + ' tracks · theme',
+            '<button type="button" class="sw-btn sw-btn-primary" data-theme-play="' + esc(th.id) + '">Play all</button>',
+            th.tracks.slice(0, 40));
         });
+
+        html += folderHtml('__all_online', '📚', active.name + ' — all tracks', onlineTracks.length + ' tracks',
+          onlineTracks.length ? '<button type="button" class="sw-btn sw-btn-primary" data-play-set="all_online">Play all</button>' : '',
+          onlineTracks.slice(0, 60));
       }
 
-      html += '<div class="sw-music-sec"><h3>All tracks · ' + tracks.length + '</h3><div class="sw-music-list">';
-      tracks.forEach(function (t) { html += rowHtml(t, null, st, offlineMap[t.id]); });
-      html += '</div></div></div>';
+      if (tab === 'downloads') {
+        var dlOnline = onlineDownloadedOnly();
+        html += '<p style="font-size:0.82rem;color:var(--sw-muted);margin:0 0 12px">Songs saved offline from online libraries. Ranked by listens. Local imports live under Offline Library.</p>';
+        html += folderHtml('__downloads', '⬇️', 'Downloaded from online', dlOnline.length + ' tracks · by listens',
+          dlOnline.length ? '<button type="button" class="sw-btn sw-btn-primary" id="sw-mus-play-dl">Play all</button>' : '',
+          dlOnline);
+      }
+
+      html += '</div>';
       html += '<div class="sw-music-player" id="sw-mus-player">' +
         '<button type="button" class="sw-btn" id="sw-mus-prev">⏮</button>' +
         '<button type="button" class="sw-btn sw-btn-primary" id="sw-mus-toggle">Play/Pause</button>' +
@@ -32164,23 +32253,53 @@ function dbNumWord(n) {
 
       panel.innerHTML = html;
 
+      function persistUi(patch) {
+        var s = loadMusicState();
+        Object.keys(patch).forEach(function (k) { s[k] = patch[k]; });
+        saveMusicState(s);
+      }
+
+      panel.querySelectorAll('[data-mtab]').forEach(function (btn) {
+        btn.onclick = function () {
+          persistUi({ musicTab: btn.getAttribute('data-mtab'), openFolderId: '' });
+          swRenderMusicPanel();
+        };
+      });
+      panel.querySelectorAll('[data-fold]').forEach(function (btn) {
+        btn.onclick = function (e) {
+          e.stopPropagation();
+          var fid = btn.getAttribute('data-fold');
+          var next = (openId === fid) ? '' : fid;
+          persistUi({ openFolderId: next });
+          swRenderMusicPanel();
+        };
+      });
+
       var libSel = document.getElementById('sw-mus-lib');
       if (libSel) libSel.onchange = function () {
-        var st2 = loadMusicState();
-        st2.activeLibraryId = libSel.value;
-        saveMusicState(st2);
+        persistUi({ activeLibraryId: libSel.value, openFolderId: '' });
         swRenderMusicPanel();
       };
       var addLib = document.getElementById('sw-mus-add-lib');
       if (addLib) addLib.onclick = openAddLibrary;
       var newPl = document.getElementById('sw-mus-new-pl');
       if (newPl) newPl.onclick = function () { openNewPlaylist(); };
+      var bf = document.getElementById('sw-mus-local-folder');
+      if (bf) bf.onclick = function () { musicPickLocalFolder(); };
+      var bff = document.getElementById('sw-mus-local-files');
+      if (bff) bff.onclick = function () { musicPickLocalFiles(false); };
+
+      function resolvePlayIds(ids) {
+        return (ids || []).map(function (id) {
+          return trackFromId(id) || findTrack(id) || { id: id, title: id, url: 'idb:' + id };
+        }).filter(Boolean);
+      }
 
       panel.querySelectorAll('[data-mplay]').forEach(function (btn) {
         btn.onclick = function (e) {
           e.stopPropagation();
           var id = btn.getAttribute('data-mplay');
-          var t = tracks.find(function (x) { return x.id === id; }) || findTrack(id);
+          var t = trackFromId(id) || onlineTracks.find(function (x) { return x.id === id; }) || findTrack(id);
           if (t) playTracks([t], 0);
         };
       });
@@ -32188,13 +32307,12 @@ function dbNumWord(n) {
         btn.onclick = async function (e) {
           e.stopPropagation();
           var id = btn.getAttribute('data-mdl');
-          var t = tracks.find(function (x) { return x.id === id; }) || findTrack(id);
+          var t = onlineTracks.find(function (x) { return x.id === id; }) || findTrack(id);
           if (!t) return;
           var ok = await musicDownloadTrack(t);
-          if (ok) { btn.textContent = '✓'; try { swRenderMusicPanel(); } catch (err) {} }
+          if (ok) swRenderMusicPanel();
         };
       });
-
       panel.querySelectorAll('[data-mdel]').forEach(function (btn) {
         btn.onclick = async function (e) {
           e.stopPropagation();
@@ -32203,64 +32321,134 @@ function dbNumWord(n) {
           swRenderMusicPanel();
         };
       });
-      panel.querySelectorAll('[data-loc-play]').forEach(function (btn) {
-        btn.onclick = async function (e) {
+      panel.querySelectorAll('[data-madd]').forEach(function (btn) {
+        btn.onclick = function (e) { e.stopPropagation(); addToPlaylist(btn.getAttribute('data-madd')); };
+      });
+      panel.querySelectorAll('[data-theme-play]').forEach(function (btn) {
+        btn.onclick = function (e) {
           e.stopPropagation();
-          var fid = btn.getAttribute('data-loc-play');
-          var st3 = loadMusicState();
-          var f = (st3.localFolders || []).find(function (x) { return x.id === fid; });
+          var th = themeShelves(onlineTracks).find(function (x) { return x.id === btn.getAttribute('data-theme-play'); });
+          if (th) playTracks(th.tracks, 0, th.label);
+        };
+      });
+      panel.querySelectorAll('[data-pl-play]').forEach(function (btn) {
+        btn.onclick = function (e) {
+          e.stopPropagation();
+          var s = loadMusicState();
+          var pl = (s.playlists || []).find(function (p) { return p.id === btn.getAttribute('data-pl-play'); });
+          if (!pl) return;
+          playTracks(resolvePlayIds(pl.trackIds), 0, pl.name);
+        };
+      });
+      panel.querySelectorAll('[data-pl-del]').forEach(function (btn) {
+        btn.onclick = function (e) {
+          e.stopPropagation();
+          if (!confirm('Delete this playlist?')) return;
+          var s = loadMusicState();
+          s.playlists = (s.playlists || []).filter(function (p) { return p.id !== btn.getAttribute('data-pl-del'); });
+          saveMusicState(s);
+          swRenderMusicPanel();
+        };
+      });
+      panel.querySelectorAll('[data-pl-ren]').forEach(function (btn) {
+        btn.onclick = function (e) {
+          e.stopPropagation();
+          var pid = btn.getAttribute('data-pl-ren');
+          var s = loadMusicState();
+          var pl = (s.playlists || []).find(function (p) { return p.id === pid; });
+          if (!pl) return;
+          openModal('<h3>Rename playlist</h3><input class="sw-inp" id="sw-mus-ren" value="' + esc(pl.name) + '" style="width:100%">' +
+            '<div class="sw-modal-actions"><button type="button" class="sw-btn" id="m-cancel">Cancel</button>' +
+            '<button type="button" class="sw-btn sw-btn-primary" id="m-save">Save</button></div>');
+          document.getElementById('m-cancel').onclick = closeModal;
+          document.getElementById('m-save').onclick = function () {
+            var name = (document.getElementById('sw-mus-ren').value || '').trim();
+            if (!name) return;
+            pl.name = name; saveMusicState(s); closeModal(); swRenderMusicPanel();
+          };
+        };
+      });
+      panel.querySelectorAll('[data-loc-play]').forEach(function (btn) {
+        btn.onclick = function (e) {
+          e.stopPropagation();
+          var s = loadMusicState();
+          var f = (s.localFolders || []).find(function (x) { return x.id === btn.getAttribute('data-loc-play'); });
           if (!f) return;
-          var all = await musicListDownloadedTracks();
-          var ts = (f.trackIds || []).map(function (id) {
-            return all.find(function (t) { return t.id === id; }) || findTrack(id) || { id: id, title: id, url: 'idb:' + id };
-          });
-          playTracks(ts, 0, f.name);
+          playTracks(resolvePlayIds(f.trackIds), 0, f.name);
         };
       });
       panel.querySelectorAll('[data-loc-del]').forEach(function (btn) {
         btn.onclick = async function (e) {
           e.stopPropagation();
-          if (!confirm('Delete this local folder and all offline tracks in it?')) return;
+          if (!confirm('Delete this folder and all offline tracks in it?')) return;
           await musicDeleteLocalFolder(btn.getAttribute('data-loc-del'));
           swRenderMusicPanel();
         };
       });
-      var bf = document.getElementById('sw-mus-local-folder');
-      if (bf) bf.onclick = function () { musicPickLocalFolder(); };
-      var bff = document.getElementById('sw-mus-local-files');
-      if (bff) bff.onclick = function () { musicPickLocalFiles(false); };
+      panel.querySelectorAll('[data-loc-ren]').forEach(function (btn) {
+        btn.onclick = function (e) {
+          e.stopPropagation();
+          var fid = btn.getAttribute('data-loc-ren');
+          var s = loadMusicState();
+          var f = (s.localFolders || []).find(function (x) { return x.id === fid; });
+          if (!f) return;
+          openModal('<h3>Rename folder</h3><input class="sw-inp" id="sw-mus-ren" value="' + esc(f.name) + '" style="width:100%">' +
+            '<div class="sw-modal-actions"><button type="button" class="sw-btn" id="m-cancel">Cancel</button>' +
+            '<button type="button" class="sw-btn sw-btn-primary" id="m-save">Save</button></div>');
+          document.getElementById('m-cancel').onclick = closeModal;
+          document.getElementById('m-save').onclick = function () {
+            var name = (document.getElementById('sw-mus-ren').value || '').trim();
+            if (!name) return;
+            f.name = name; saveMusicState(s); closeModal(); swRenderMusicPanel();
+          };
+        };
+      });
+      panel.querySelectorAll('[data-loc-addfiles]').forEach(function (btn) {
+        btn.onclick = function (e) {
+          e.stopPropagation();
+          var fid = btn.getAttribute('data-loc-addfiles');
+          var inp = document.createElement('input');
+          inp.type = 'file'; inp.multiple = true;
+          inp.accept = 'audio/*,.mp3,.m4a,.ogg,.opus,.wav,.flac,.aac';
+          inp.onchange = async function () {
+            if (!inp.files || !inp.files.length) return;
+            var s = loadMusicState();
+            var f = (s.localFolders || []).find(function (x) { return x.id === fid; });
+            if (!f) return;
+            // import into existing folder
+            var files = Array.prototype.slice.call(inp.files);
+            var n = 0;
+            for (var i = 0; i < Math.min(files.length, 100); i++) {
+              try {
+                var file = files[i];
+                if (!(/audio\//i.test(file.type || '') || /\.(mp3|m4a|ogg|opus|wav|flac|aac)$/i.test(file.name || ''))) continue;
+                var id = 'local-' + Date.now().toString(36) + '-' + (n++);
+                var title = String(file.name || 'Track').replace(/\.[^.]+$/, '');
+                await idbMusicPut({ id: musicBlobKey(id), blob: file, title: title, artist: f.name, url: '', savedAt: Date.now() });
+                s.trackMeta[id] = { title: title, artist: f.name, source: 'local', folderId: fid, themes: ['local'] };
+                f.trackIds = f.trackIds || [];
+                f.trackIds.push(id);
+              } catch (err) { console.warn(err); }
+            }
+            saveMusicState(s);
+            try { toast('Added tracks'); } catch (e2) {}
+            swRenderMusicPanel();
+          };
+          inp.click();
+        };
+      });
+      panel.querySelectorAll('[data-play-set]').forEach(function (btn) {
+        btn.onclick = function (e) {
+          e.stopPropagation();
+          var k = btn.getAttribute('data-play-set');
+          if (k === 'top_local') playTracks(topLocal(50), 0, 'Most listened (local)');
+          if (k === 'top_online') playTracks(topOnline(30), 0, 'Most listened (online)');
+          if (k === 'all_online') playTracks(onlineTracks, 0, active.name);
+        };
+      });
       var bpd = document.getElementById('sw-mus-play-dl');
-      if (bpd) bpd.onclick = async function () {
-        var all = await musicListDownloadedTracks();
-        playTracks(all, 0, 'Downloaded');
-      };
-      panel.querySelectorAll('[data-madd]').forEach(function (btn) {
-        btn.onclick = function (e) { e.stopPropagation(); addToPlaylist(btn.getAttribute('data-madd')); };
-      });
-      panel.querySelectorAll('[data-theme-play]').forEach(function (btn) {
-        btn.onclick = function () {
-          var th = themes.find(function (x) { return x.id === btn.getAttribute('data-theme-play'); });
-          if (th) playTracks(th.tracks, 0, th.label);
-        };
-      });
-      panel.querySelectorAll('[data-pl-play]').forEach(function (btn) {
-        btn.onclick = function () {
-          var st3 = loadMusicState();
-          var pl = st3.playlists.find(function (p) { return p.id === btn.getAttribute('data-pl-play'); });
-          if (!pl) return;
-          var ts = (pl.trackIds || []).map(findTrack).filter(Boolean);
-          playTracks(ts, 0, pl.name);
-        };
-      });
-      panel.querySelectorAll('[data-pl-del]').forEach(function (btn) {
-        btn.onclick = function () {
-          if (!confirm('Delete this playlist?')) return;
-          var st4 = loadMusicState();
-          st4.playlists = st4.playlists.filter(function (p) { return p.id !== btn.getAttribute('data-pl-del'); });
-          saveMusicState(st4);
-          swRenderMusicPanel();
-        };
-      });
+      if (bpd) bpd.onclick = function () { playTracks(onlineDownloadedOnly(), 0, 'Downloads'); };
+
       var prev = document.getElementById('sw-mus-prev');
       var next = document.getElementById('sw-mus-next');
       var tog = document.getElementById('sw-mus-toggle');
@@ -32285,6 +32473,7 @@ function dbNumWord(n) {
       setMusVolume(getMusVolume());
       updatePlayerUi(!!(musAudio && !musAudio.paused));
     };
+
   })();
 
 })(); // end StoryWriter main
