@@ -455,13 +455,12 @@
       background: var(--sw-tag-bg); border-radius: 3px; padding: 0 2px; cursor: help;
     }
 
-    /* Corkboard */
+    /* Corkboard (lanes layout — single source of truth) */
     #sw-root .sw-corkboard {
-      flex: 1; overflow-y: auto; padding: 16px; display: none;
-      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px;
+      flex: 1; overflow-y: auto; padding: 0; display: none;
       align-content: start; background: var(--sw-bg);
     }
-    #sw-root .sw-corkboard.active { display: grid; }
+    #sw-root .sw-corkboard.active { display: block; }
     #sw-root .sw-cork-card {
       background: var(--sw-paper); border: 1px solid var(--sw-border); border-radius: 8px;
       padding: 12px; cursor: pointer; min-height: 110px;
@@ -2701,9 +2700,7 @@
 
   </style>
 <style id="sw-additions-css">
-    /* Corkboard: lanes, toolbar, cards */
-    #sw-root .sw-corkboard { padding: 0; }
-    #sw-root .sw-corkboard.active { display: block; }
+    /* Corkboard: lanes, toolbar, cards (base .sw-corkboard rules live above) */
     #sw-root .sw-cork-toolbar {
       position: sticky; top: 0; z-index: 5; background: var(--sw-bg);
       padding: 10px 16px 8px; border-bottom: 1px solid var(--sw-border);
@@ -2718,6 +2715,61 @@
     #sw-root .sw-cork-seg button.on { background: var(--sw-accent); color: var(--sw-paper); }
     #sw-root .sw-cork-totals { margin-left: auto; font-size: 0.75rem; color: var(--sw-muted); }
     #sw-root .sw-cork-filters input.sw-inp { width: 180px; padding: 4px 8px; font-size: 0.8rem; }
+
+    /* Music panel (writing soundtrack) */
+    #sw-root .sw-music-panel {
+      flex: 1; overflow-y: auto; display: none; background: var(--sw-bg); padding: 0;
+    }
+    #sw-root .sw-music-panel.active { display: block; }
+    #sw-root .sw-music-head {
+      position: sticky; top: 0; z-index: 5; background: var(--sw-bg);
+      padding: 12px 16px 10px; border-bottom: 1px solid var(--sw-border);
+      display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+    }
+    #sw-root .sw-music-head h2 {
+      margin: 0; font-family: "EB Garamond", Georgia, serif; font-size: 1.25rem; font-weight: 600;
+      color: var(--sw-accent); margin-right: auto;
+    }
+    #sw-root .sw-music-head select.sw-sel { min-width: 160px; max-width: 220px; }
+    #sw-root .sw-music-body { padding: 12px 16px 28px; }
+    #sw-root .sw-music-sec { margin: 0 0 18px; }
+    #sw-root .sw-music-sec h3 {
+      margin: 0 0 8px; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em;
+      color: var(--sw-muted); font-weight: 600;
+    }
+    #sw-root .sw-music-list { display: flex; flex-direction: column; gap: 4px; }
+    #sw-root .sw-music-row {
+      display: flex; align-items: center; gap: 10px; padding: 8px 10px;
+      border-radius: var(--sw-radius); border: 1px solid transparent; background: var(--sw-paper);
+    }
+    #sw-root .sw-music-row:hover { border-color: var(--sw-border); background: var(--sw-hover); }
+    #sw-root .sw-music-num {
+      width: 1.5rem; text-align: center; font-size: 0.8rem; color: var(--sw-muted); font-weight: 600; flex-shrink: 0;
+    }
+    #sw-root .sw-music-meta { flex: 1; min-width: 0; }
+    #sw-root .sw-music-title { font-size: 0.9rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    #sw-root .sw-music-sub { font-size: 0.75rem; color: var(--sw-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    #sw-root .sw-music-actions { display: flex; gap: 4px; flex-shrink: 0; flex-wrap: wrap; }
+    #sw-root .sw-music-player {
+      position: sticky; bottom: 0; z-index: 6; background: var(--sw-panel);
+      border-top: 1px solid var(--sw-border); padding: 10px 16px;
+      display: none; align-items: center; gap: 10px; flex-wrap: wrap;
+    }
+    #sw-root .sw-music-player.on { display: flex; }
+    #sw-root .sw-music-player .sw-music-now { flex: 1; min-width: 120px; font-size: 0.85rem; }
+    #sw-root .sw-music-player input[type=range] { flex: 1; min-width: 100px; max-width: 280px; }
+    #sw-root .sw-music-player .sw-mus-vol-wrap {
+      display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0;
+    }
+    #sw-root .sw-music-player .sw-mus-vol-wrap span {
+      font-size: 0.72rem; color: var(--sw-muted); white-space: nowrap;
+    }
+    #sw-root .sw-music-player #sw-mus-vol {
+      width: 90px; min-width: 70px; max-width: 110px; flex: 0 0 auto;
+    }
+    #sw-root.sw-typing .sw-music-panel { display: none !important; }
+    #sw-root.sw-full-read #sw-music-panel, #sw-root.sw-plot-grid #sw-music-panel { display: none !important; }
+
     #sw-root .sw-cork-filters select.sw-sel { width: auto; min-width: 104px; padding: 4px 6px; font-size: 0.78rem; }
     #sw-root .sw-cork-legend { display: inline-flex; gap: 5px; margin: 0 4px; }
     #sw-root .sw-cork-dot {
@@ -3402,6 +3454,7 @@
         <div class="sw-story-toolbar">
           <button type="button" class="sw-btn" id="sw-view-write" title="Story writing view">Story</button>
           <button type="button" class="sw-btn" id="sw-view-cork">Corkboard</button>
+          <button type="button" class="sw-btn" id="sw-view-music" title="Writing music — public domain catalogs">Music</button>
           <label class="sw-lbl" style="margin:0 0 0 8px;">Status</label>
           <select class="sw-sel" id="sw-status-sel" style="width:auto;min-width:110px;" title="Scene status">
             <option value="draft">Draft</option>
@@ -3467,6 +3520,7 @@
               </div>
             </div>
             <div class="sw-corkboard" id="sw-corkboard"></div>
+            <div class="sw-music-panel" id="sw-music-panel" aria-label="Writing music"></div>
             <div class="sw-compare" id="sw-compare">
               <div class="sw-compare-pane" id="sw-compare-a"></div>
               <div class="sw-compare-pane" id="sw-compare-b"></div>
@@ -3988,7 +4042,7 @@
 
   function openIdb() {
     return new Promise(function (resolve, reject) {
-      const req = indexedDB.open(IDB_NAME, 3);
+      const req = indexedDB.open(IDB_NAME, 4);
       req.onupgradeneeded = function (ev) {
         const db = req.result;
         if (!db.objectStoreNames.contains(IDB_STORE)) {
@@ -3999,6 +4053,9 @@
         }
         if (!db.objectStoreNames.contains('libraries')) {
           db.createObjectStore('libraries', { keyPath: 'id' });
+        }
+        if (!db.objectStoreNames.contains('music')) {
+          db.createObjectStore('music', { keyPath: 'id' });
         }
       };
       req.onsuccess = function () { resolve(req.result); };
@@ -4140,6 +4197,33 @@
         const req = tx.objectStore(IDB_STORE).getAll();
         req.onsuccess = function () { resolve(req.result || []); };
         req.onerror = function () { reject(req.error); };
+      });
+    });
+  }
+
+  function idbMusicGet(id) {
+    return openIdb().then(function (db) {
+      return new Promise(function (resolve) {
+        try {
+          if (!db.objectStoreNames.contains('music')) return resolve(null);
+          var t = db.transaction('music', 'readonly');
+          var r = t.objectStore('music').get(id);
+          r.onsuccess = function () { resolve(r.result || null); };
+          r.onerror = function () { resolve(null); };
+        } catch (e) { resolve(null); }
+      });
+    });
+  }
+  function idbMusicPut(rec) {
+    return openIdb().then(function (db) {
+      return new Promise(function (resolve) {
+        try {
+          if (!db.objectStoreNames.contains('music')) return resolve();
+          var t = db.transaction('music', 'readwrite');
+          t.objectStore('music').put(rec);
+          t.oncomplete = function () { resolve(); };
+          t.onerror = function () { resolve(); };
+        } catch (e) { resolve(); }
       });
     });
   }
@@ -9790,15 +9874,31 @@
   }
   function setViewMode() {
     var cmp = document.getElementById('sw-compare');
-    if (state.viewMode === 'cork') {
-      writeView.style.display = 'none';
-      corkboard.classList.add('active');
-      if (cmp) cmp.classList.remove('active');
-      renderCorkboard();
-    } else {
-      writeView.style.display = '';
-      corkboard.classList.remove('active');
-      if (cmp) cmp.classList.remove('active');
+    var musicPanel = document.getElementById('sw-music-panel');
+    var mode = state.viewMode || 'write';
+    writeView.style.display = (mode === 'write') ? '' : 'none';
+    if (corkboard) {
+      if (mode === 'cork') corkboard.classList.add('active');
+      else corkboard.classList.remove('active');
+    }
+    if (musicPanel) {
+      if (mode === 'music') musicPanel.classList.add('active');
+      else musicPanel.classList.remove('active');
+    }
+    if (cmp) cmp.classList.remove('active');
+    try {
+      var bw = document.getElementById('sw-view-write');
+      var bc = document.getElementById('sw-view-cork');
+      var bm = document.getElementById('sw-view-music');
+      if (bw) bw.classList.toggle('sw-btn-primary', mode === 'write');
+      if (bc) bc.classList.toggle('sw-btn-primary', mode === 'cork');
+      if (bm) bm.classList.toggle('sw-btn-primary', mode === 'music');
+    } catch (e) {}
+    if (mode === 'cork') {
+      try { renderCorkboard(); } catch (e) {}
+    }
+    if (mode === 'music') {
+      try { if (typeof swRenderMusicPanel === 'function') swRenderMusicPanel(); } catch (e) {}
     }
   }
 
@@ -11949,6 +12049,7 @@
   };
   $('#sw-view-write').onclick = () => { state.viewMode = 'write'; var cmp=document.getElementById('sw-compare'); if(cmp) cmp.classList.remove('active'); writeView.style.display=''; setViewMode(); };
   $('#sw-view-cork').onclick = () => { saveCurrent(); state.viewMode = 'cork'; setViewMode(); };
+  $('#sw-view-music').onclick = () => { try { saveCurrent(); } catch(e) {} state.viewMode = 'music'; setViewMode(); };
   $('#sw-toggle-comments').onclick = () => ROOT.classList.toggle('sw-comments-open');
   $('#sw-add-comment').onclick = addComment;
   $('#sw-snapshot-btn').onclick = takeSnapshot;
@@ -31337,6 +31438,854 @@ function dbNumWord(n) {
     }, 1100);
   }
   setTimeout(swInitUx, 0);
+
+
+  // ===== Writing Music (public-domain catalogs via Internet Archive) =====
+  (function () {
+    var SW_MUSIC_KEY = 'sw-music-v1';
+    var MUSIC_BUILTIN = [
+      {
+        id: 'lib-classical',
+        name: 'Quiet classical',
+        description: 'Public-domain classical from Internet Archive',
+        iaQuery: '(collection:opensource_audio OR collection:netlabels OR collection:audio_music) AND (subject:classical OR title:bach OR title:beethoven OR title:mozart OR title:chopin) AND mediatype:audio AND format:MP3',
+        tracks: []
+      },
+      {
+        id: 'lib-focus',
+        name: 'Focus only',
+        description: 'Calm instrumental for deep writing',
+        iaQuery: '(subject:piano OR subject:classical OR title:nocturne OR title:prelude OR title:gymnopedie) AND mediatype:audio AND format:MP3 AND (collection:opensource_audio OR collection:audio_music)',
+        tracks: []
+      },
+      {
+        id: 'lib-78s',
+        name: 'Old 78s',
+        description: 'Early 20th-century 78 rpm recordings',
+        iaQuery: 'collection:78rpm AND mediatype:audio AND format:MP3',
+        tracks: []
+      },
+      {
+        id: 'lib-oldsongs',
+        name: 'Old songs (English)',
+        description: 'Traditional & early popular public-domain era recordings',
+        iaQuery: 'collection:78rpm AND (title:home OR title:grace OR title:swing OR title:blue OR title:love OR title:rose) AND mediatype:audio AND format:MP3',
+        tracks: []
+      },
+      {
+        id: 'lib-christmas',
+        name: 'Christmas carols',
+        description: 'Public-domain Christmas carols & seasonal archival recordings',
+        iaQuery: '(title:christmas OR title:noel OR title:carol OR title:"silent night" OR title:"jingle bells" OR title:"deck the halls" OR title:"o holy night") AND (collection:78rpm OR collection:opensource_audio OR collection:audio_music) AND mediatype:audio AND format:MP3',
+        tracks: []
+      }
+    ];
+    var MUSIC_THEMES = [
+      { id: 'christmas', label: 'Christmas', match: ['christmas', 'carol', 'noel'] },
+      { id: 'focus', label: 'Focus', match: ['focus'] },
+      { id: 'calm', label: 'Calm', match: ['calm', 'evening', 'soft'] },
+      { id: 'classical', label: 'Classical', match: ['classical'] },
+      { id: '78s', label: 'Vintage 78s', match: ['78s', 'vintage'] },
+      { id: 'folk', label: 'Folk & traditional', match: ['folk', 'traditional'] }
+    ];
+    var _iaCache = {};
+    var musAudio = null;
+    var musQueue = [];
+    var musIdx = 0;
+    var musListenId = null;
+    var musListenStart = 0;
+
+    function loadMusicState() {
+      try {
+        var r = JSON.parse(localStorage.getItem(SW_MUSIC_KEY) || '{}');
+        return {
+          activeLibraryId: r.activeLibraryId || 'lib-classical',
+          customLibraries: Array.isArray(r.customLibraries) ? r.customLibraries : [],
+          playlists: Array.isArray(r.playlists) ? r.playlists : [],
+          listens: r.listens && typeof r.listens === 'object' ? r.listens : {},
+          localFolders: Array.isArray(r.localFolders) ? r.localFolders : [],
+          trackMeta: r.trackMeta && typeof r.trackMeta === 'object' ? r.trackMeta : {}
+        };
+      } catch (e) {
+        return { activeLibraryId: 'lib-classical', customLibraries: [], playlists: [], listens: {}, localFolders: [], trackMeta: {} };
+      }
+    }
+    function saveMusicState(st) {
+      try { localStorage.setItem(SW_MUSIC_KEY, JSON.stringify(st)); } catch (e) {}
+    }
+    function allLibraries() {
+      var st = loadMusicState();
+      return MUSIC_BUILTIN.concat((st.customLibraries || []).map(function (l) {
+        return { id: l.id, name: l.name || 'Custom', description: l.description || 'Custom library', tracks: l.tracks || [], custom: true };
+      }));
+    }
+    function getLib(id) {
+      return allLibraries().find(function (l) { return l.id === id; }) || MUSIC_BUILTIN[0];
+    }
+    function findTrack(id) {
+      var libs = allLibraries();
+      for (var i = 0; i < libs.length; i++) {
+        var t = (libs[i].tracks || []).find(function (x) { return x.id === id; });
+        if (t) return t;
+      }
+      var keys = Object.keys(_iaCache);
+      for (var k = 0; k < keys.length; k++) {
+        var arr = _iaCache[keys[k]] || [];
+        var t2 = arr.find(function (x) { return x.id === id; });
+        if (t2) return t2;
+      }
+      var st = loadMusicState();
+      if (st.trackMeta && st.trackMeta[id]) {
+        var m = st.trackMeta[id];
+        return { id: id, title: m.title || id, artist: m.artist || '', url: m.url || ('idb:' + id), themes: m.themes || [] };
+      }
+      return null;
+    }
+    function recordListen(id, ms) {
+      if (!id) return;
+      var st = loadMusicState();
+      var cur = st.listens[id] || { count: 0, ms: 0 };
+      cur.count = (cur.count || 0) + 1;
+      cur.ms = (cur.ms || 0) + (ms || 0);
+      cur.last = Date.now();
+      st.listens[id] = cur;
+      saveMusicState(st);
+    }
+    function topTracks(n) {
+      var st = loadMusicState();
+      var entries = Object.keys(st.listens || {}).map(function (id) {
+        return { id: id, c: st.listens[id].count || 0, ms: st.listens[id].ms || 0 };
+      });
+      entries.sort(function (a, b) { return b.c - a.c || b.ms - a.ms; });
+      var out = [];
+      for (var i = 0; i < entries.length && out.length < (n || 10); i++) {
+        var t = findTrack(entries[i].id);
+        if (t) out.push(t);
+      }
+      return out;
+    }
+    function themeShelves(tracks) {
+      var shelves = [];
+      MUSIC_THEMES.forEach(function (th) {
+        var list = (tracks || []).filter(function (t) {
+          var tags = (t.themes || []).map(function (x) { return String(x).toLowerCase(); });
+          var blob = (t.title + ' ' + (t.artist || '')).toLowerCase();
+          return th.match.some(function (m) { return tags.indexOf(m) >= 0 || blob.indexOf(m) >= 0; });
+        });
+        if (list.length) shelves.push({ id: th.id, label: th.label, tracks: list });
+      });
+      return shelves;
+    }
+    async function resolveIaMp3(identifier) {
+      try {
+        var meta = await fetch('https://archive.org/metadata/' + encodeURIComponent(identifier)).then(function (r) { return r.json(); });
+        var files = (meta.files || []).filter(function (f) {
+          var n = f.name || '';
+          if (/sample|_ia_thumb|stories|__ia_thumb/i.test(n)) return false;
+          return /\.(mp3|ogg|oga|opus|m4a)$/i.test(n) || /MP3|VBR MP3|Ogg Vorbis|AAC/i.test(f.format || '');
+        });
+        if (!files.length) return null;
+        var pick = files.find(function (f) { return f.format === 'VBR MP3'; })
+          || files.find(function (f) { return /\.mp3$/i.test(f.name || ''); })
+          || files.find(function (f) { return /MP3/i.test(f.format || ''); })
+          || files[0];
+        // Encode each path segment; keep real filename safe for IA
+        var parts = String(pick.name).split('/').map(function (p) { return encodeURIComponent(p); });
+        return 'https://archive.org/download/' + encodeURIComponent(identifier).replace(/%2F/gi, '/') + '/' + parts.join('/');
+      } catch (e) { return null; }
+    }
+    function musicBlobKey(trackId) { return 'blob-' + String(trackId || '').replace(/[^\w.-]+/g, '_').slice(0, 120); }
+    async function musicIsOffline(trackId) {
+      try {
+        var rec = await idbMusicGet(musicBlobKey(trackId));
+        return !!(rec && rec.blob);
+      } catch (e) { return false; }
+    }
+    async function musicDownloadTrack(track) {
+      if (!track || !track.url) { try { toast('No URL'); } catch (e) {} return false; }
+      try {
+        try { toast('Downloading…'); } catch (e) {}
+        var url = track.url;
+        var res = await fetch(url, { mode: 'cors' });
+        if (!res.ok && track.iaId) {
+          var alt = await resolveIaMp3(track.iaId);
+          if (alt) { url = alt; res = await fetch(url, { mode: 'cors' }); }
+        }
+        if (!res.ok) throw new Error('download failed');
+        var blob = await res.blob();
+        if (!blob || blob.size < 500) throw new Error('empty');
+        await idbMusicPut({ id: musicBlobKey(track.id), blob: blob, title: track.title || '', artist: track.artist || '', url: url, savedAt: Date.now() });
+        var st2 = loadMusicState();
+        st2.trackMeta[track.id] = { title: track.title || '', artist: track.artist || '', url: url, source: 'download', themes: track.themes || ['downloaded'] };
+        saveMusicState(st2);
+        try { toast('Saved offline'); } catch (e) {}
+        return true;
+      } catch (e) {
+        console.warn(e);
+        try { toast('Download failed — try another track'); } catch (e2) {}
+        return false;
+      }
+    }
+
+    async function idbMusicListBlobs() {
+      try {
+        var db = await openIdb();
+        return await new Promise(function (resolve) {
+          try {
+            if (!db.objectStoreNames.contains('music')) return resolve([]);
+            var t = db.transaction('music', 'readonly');
+            var r = t.objectStore('music').getAll();
+            r.onsuccess = function () {
+              resolve((r.result || []).filter(function (x) { return x && x.id && String(x.id).indexOf('blob-') === 0; }));
+            };
+            r.onerror = function () { resolve([]); };
+          } catch (e) { resolve([]); }
+        });
+      } catch (e) { return []; }
+    }
+    async function musicListDownloadedTracks() {
+      var st = loadMusicState();
+      var rows = await idbMusicListBlobs();
+      var out = [];
+      rows.forEach(function (rec) {
+        var id = String(rec.id).replace(/^blob-/, '');
+        var meta = st.trackMeta[id] || {};
+        out.push({
+          id: id,
+          title: rec.title || meta.title || id,
+          artist: rec.artist || meta.artist || (meta.source === 'local' ? 'Local' : 'Downloaded'),
+          url: rec.url || meta.url || '',
+          themes: meta.themes || ['downloaded'],
+          source: meta.source || 'download',
+          folderId: meta.folderId || null,
+          offline: true
+        });
+      });
+      out.sort(function (a, b) {
+        var la = (st.listens[a.id] && st.listens[a.id].count) || 0;
+        var lb = (st.listens[b.id] && st.listens[b.id].count) || 0;
+        var ma = (st.listens[a.id] && st.listens[a.id].ms) || 0;
+        var mb = (st.listens[b.id] && st.listens[b.id].ms) || 0;
+        return lb - la || mb - ma;
+      });
+      return out;
+    }
+    async function musicDeleteOfflineTrack(trackId) {
+      if (!trackId) return;
+      var st = loadMusicState();
+      try { await idbMusicPut({ id: musicBlobKey(trackId), blob: null }); } catch (e) {}
+      try {
+        var db = await openIdb();
+        await new Promise(function (resolve) {
+          try {
+            var t = db.transaction('music', 'readwrite');
+            t.objectStore('music').delete(musicBlobKey(trackId));
+            t.oncomplete = function () { resolve(); };
+            t.onerror = function () { resolve(); };
+          } catch (e) { resolve(); }
+        });
+      } catch (e) {}
+      (st.localFolders || []).forEach(function (f) {
+        f.trackIds = (f.trackIds || []).filter(function (id) { return id !== trackId; });
+      });
+      (st.playlists || []).forEach(function (p) {
+        p.trackIds = (p.trackIds || []).filter(function (id) { return id !== trackId; });
+      });
+      delete st.trackMeta[trackId];
+      saveMusicState(st);
+      try { toast('Removed offline copy'); } catch (e) {}
+    }
+    async function musicDeleteLocalFolder(folderId) {
+      var st = loadMusicState();
+      var f = (st.localFolders || []).find(function (x) { return x.id === folderId; });
+      if (!f) return;
+      var ids = (f.trackIds || []).slice();
+      for (var i = 0; i < ids.length; i++) {
+        await musicDeleteOfflineTrack(ids[i]);
+      }
+      st = loadMusicState();
+      st.localFolders = (st.localFolders || []).filter(function (x) { return x.id !== folderId; });
+      saveMusicState(st);
+      try { toast('Folder removed'); } catch (e) {}
+    }
+    async function musicImportLocalFileList(fileList, folderName) {
+      var st = loadMusicState();
+      var files = Array.prototype.slice.call(fileList).filter(function (f) {
+        return f && (/audio\//i.test(f.type || '') || /\.(mp3|m4a|ogg|opus|wav|flac|aac)$/i.test(f.name || ''));
+      });
+      if (!files.length) { try { toast('No audio files found'); } catch (e) {} return null; }
+      var folderId = 'local-' + Date.now().toString(36);
+      var name = String(folderName || 'Local music').slice(0, 80);
+      var trackIds = [];
+      var n = 0;
+      try { toast('Importing ' + files.length + ' files…'); } catch (e) {}
+      for (var i = 0; i < Math.min(files.length, 200); i++) {
+        try {
+          var file = files[i];
+          var id = 'local-' + Date.now().toString(36) + '-' + (n++);
+          var title = String(file.name || 'Track').replace(/\.[^.]+$/, '');
+          await idbMusicPut({
+            id: musicBlobKey(id),
+            blob: file,
+            title: title,
+            artist: name,
+            url: '',
+            savedAt: Date.now()
+          });
+          st.trackMeta[id] = { title: title, artist: name, source: 'local', folderId: folderId, themes: ['local'] };
+          trackIds.push(id);
+        } catch (e) { console.warn(e); }
+      }
+      if (!trackIds.length) { try { toast('Import failed'); } catch (e) {} return null; }
+      st.localFolders = st.localFolders || [];
+      st.localFolders.unshift({ id: folderId, name: name, trackIds: trackIds, created: Date.now() });
+      saveMusicState(st);
+      try { toast('Imported ' + trackIds.length + ' tracks · ' + name); } catch (e) {}
+      return folderId;
+    }
+    function musicPickLocalFolder() {
+      if (window.showDirectoryPicker) {
+        window.showDirectoryPicker().then(async function (handle) {
+          var files = [];
+          try {
+            for await (var entry of handle.values()) {
+              if (entry.kind === 'file') files.push(await entry.getFile());
+            }
+          } catch (e) {}
+          await musicImportLocalFileList(files, handle.name || 'Local folder');
+          try { swRenderMusicPanel(); } catch (e) {}
+        }).catch(function () { musicPickLocalFiles(true); });
+        return;
+      }
+      musicPickLocalFiles(true);
+    }
+    function musicPickLocalFiles(asFolder) {
+      var inp = document.createElement('input');
+      inp.type = 'file';
+      inp.accept = 'audio/*,.mp3,.m4a,.ogg,.opus,.wav,.flac,.aac';
+      inp.multiple = true;
+      if (asFolder) try { inp.setAttribute('webkitdirectory', ''); } catch (e) {}
+      inp.onchange = async function () {
+        var files = inp.files;
+        if (!files || !files.length) return;
+        var folderName = 'Local files';
+        try {
+          var rel = files[0].webkitRelativePath || '';
+          if (rel && rel.indexOf('/') >= 0) folderName = rel.split('/')[0];
+        } catch (e) {}
+        await musicImportLocalFileList(files, folderName);
+        try { swRenderMusicPanel(); } catch (e) {}
+      };
+      inp.click();
+    }
+    async function ensureLibraryTracks(lib) {
+      if (!lib) return [];
+      if (Array.isArray(lib.tracks) && lib.tracks.length && !lib.iaQuery) return lib.tracks;
+      if (_iaCache[lib.id] && _iaCache[lib.id].length) return _iaCache[lib.id];
+      try {
+        var cached = await idbMusicGet('catalog-' + lib.id);
+        if (cached && Array.isArray(cached.tracks) && cached.tracks.length) {
+          _iaCache[lib.id] = cached.tracks;
+          lib.tracks = cached.tracks;
+          return cached.tracks;
+        }
+      } catch (e) {}
+      if (!lib.iaQuery) return lib.tracks || [];
+      try {
+        var q = 'https://archive.org/advancedsearch.php?q=' + encodeURIComponent(lib.iaQuery) +
+          '&fl[]=identifier&fl[]=title&fl[]=creator&sort[]=downloads+desc&rows=24&page=1&output=json';
+        var j = await fetch(q).then(function (r) { return r.json(); });
+        var docs = ((j.response && j.response.docs) || []).filter(function (d) { return d && d.identifier; }).slice(0, 20);
+        var resolved = await Promise.all(docs.map(async function (d) {
+          var mp3 = await resolveIaMp3(d.identifier);
+          if (!mp3) return null;
+          var title = Array.isArray(d.title) ? d.title[0] : (d.title || d.identifier);
+          var artist = Array.isArray(d.creator) ? d.creator[0] : (d.creator || 'Archive.org');
+          var themes = [];
+          if (lib.id === 'lib-christmas') themes.push('christmas');
+          if (lib.id === 'lib-78s') themes.push('78s', 'vintage');
+          if (lib.id === 'lib-classical' || lib.id === 'lib-focus') themes.push('classical', 'calm', 'focus');
+          if (lib.id === 'lib-oldsongs') themes.push('folk', 'traditional', 'vintage');
+          return {
+            id: 'ia-' + d.identifier,
+            title: String(title).slice(0, 120),
+            artist: String(artist).slice(0, 80),
+            themes: themes,
+            url: mp3,
+            iaId: d.identifier
+          };
+        }));
+        var out = resolved.filter(Boolean).slice(0, 16);
+        _iaCache[lib.id] = out;
+        lib.tracks = out;
+        try { await idbMusicPut({ id: 'catalog-' + lib.id, tracks: out, savedAt: Date.now() }); } catch (e) {}
+        return out;
+      } catch (e) {
+        console.warn('sw music IA', e);
+        return [];
+      }
+    }
+    function getMusVolume() {
+      try {
+        var v = parseFloat(localStorage.getItem('sw-music-vol'));
+        if (isFinite(v) && v >= 0 && v <= 1) return v;
+      } catch (e) {}
+      return 0.8;
+    }
+    function setMusVolume(v) {
+      v = Math.max(0, Math.min(1, +v || 0));
+      try { localStorage.setItem('sw-music-vol', String(v)); } catch (e) {}
+      if (musAudio) musAudio.volume = v;
+      var r = document.getElementById('sw-mus-vol');
+      if (r) r.value = String(Math.round(v * 100));
+      var lab = document.getElementById('sw-mus-vol-lab');
+      if (lab) lab.textContent = Math.round(v * 100) + '%';
+    }
+    function ensureAudio() {
+      if (!musAudio) {
+        musAudio = new Audio();
+        musAudio.preload = 'metadata';
+        musAudio.volume = getMusVolume();
+        musAudio.addEventListener('ended', function () {
+          if (musListenId) {
+            recordListen(musListenId, musListenStart ? Date.now() - musListenStart : 0);
+            musListenId = null;
+          }
+          if (musIdx + 1 < musQueue.length) playAt(musIdx + 1);
+          else updatePlayerUi(false);
+        });
+        musAudio.addEventListener('timeupdate', function () {
+          var r = document.getElementById('sw-mus-seek');
+          if (r && musAudio.duration) r.value = String((musAudio.currentTime / musAudio.duration) * 1000);
+        });
+      }
+      return musAudio;
+    }
+    function updatePlayerUi(on) {
+      var bar = document.getElementById('sw-mus-player');
+      var now = document.getElementById('sw-mus-now');
+      if (bar) bar.classList.toggle('on', !!on || !!(musAudio && !musAudio.paused));
+      if (now && musQueue[musIdx]) {
+        now.textContent = musQueue[musIdx].title + (musQueue[musIdx].artist ? ' — ' + musQueue[musIdx].artist : '');
+      }
+    }
+    async function playAt(idx) {
+      var a = ensureAudio();
+      if (musListenId) {
+        recordListen(musListenId, musListenStart ? Date.now() - musListenStart : 0);
+        musListenId = null;
+      }
+      musIdx = Math.max(0, Math.min(idx, musQueue.length - 1));
+      var t = musQueue[musIdx];
+      if (!t) { try { toast('No playable track'); } catch (e) {} return; }
+      var src = null;
+      try {
+        var rec = await idbMusicGet(musicBlobKey(t.id || ('t' + musIdx)));
+        if (rec && rec.blob) src = URL.createObjectURL(rec.blob);
+      } catch (e) {}
+      if (!src && t.url && String(t.url).indexOf('idb:') !== 0) src = t.url;
+      if (!src && t.iaId) {
+        try { src = await resolveIaMp3(t.iaId); t.url = src; } catch (e) {}
+      }
+      if (!src) { try { toast('No playable track'); } catch (e) {} return; }
+      try { a.removeAttribute('crossorigin'); } catch (e) {}
+      a.onerror = async function () {
+        if (t.iaId && navigator.onLine) {
+          try {
+            var alt = await resolveIaMp3(t.iaId);
+            if (alt && alt !== src) {
+              t.url = alt;
+              a.onerror = null;
+              a.src = alt;
+              a.play().catch(function () { try { toast('Could not play — try another track'); } catch (e2) {} });
+              return;
+            }
+          } catch (e) {}
+        }
+        try { toast('Could not play — try another track'); } catch (e2) {}
+      };
+      a.src = src;
+      try {
+        await a.play();
+      } catch (err) {
+        // Retry once with re-resolved IA URL
+        if (t.iaId && navigator.onLine) {
+          try {
+            var alt2 = await resolveIaMp3(t.iaId);
+            if (alt2) {
+              t.url = alt2;
+              a.src = alt2;
+              await a.play();
+            }
+          } catch (e3) {
+            try { toast('Could not play — try another track'); } catch (e4) {}
+          }
+        } else {
+          try { toast('Could not play — try another track'); } catch (e5) {}
+        }
+      }
+      musListenId = t.id;
+      musListenStart = Date.now();
+      updatePlayerUi(true);
+    }
+    function playTracks(tracks, startIdx, title) {
+      musQueue = (tracks || []).filter(function (t) { return t && t.url; });
+      if (!musQueue.length) { try { toast('No playable tracks'); } catch (e) {} return; }
+      playAt(startIdx || 0);
+    }
+    function esc(s) {
+      try { return escapeHtml(String(s == null ? '' : s)); } catch (e) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+          return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
+        });
+      }
+    }
+    function openAddLibrary() {
+      var html = '<h3>Add music library</h3><p style="font-size:0.85rem;color:var(--sw-muted);margin:0 0 10px">JSON URL or paste. Shape: <code>{"name":"…","tracks":[{"id","title","artist","url","themes":[]}]}</code></p>' +
+        '<input class="sw-inp" id="sw-mus-lib-name" placeholder="Library name" style="width:100%;margin-bottom:8px">' +
+        '<input class="sw-inp" id="sw-mus-lib-url" placeholder="https://…/catalog.json (optional)" style="width:100%;margin-bottom:8px">' +
+        '<textarea class="sw-inp" id="sw-mus-lib-json" placeholder="Or paste JSON" style="width:100%;min-height:110px;font-family:ui-monospace,monospace;font-size:0.8rem"></textarea>' +
+        '<div class="sw-modal-actions"><button type="button" class="sw-btn" id="m-cancel">Cancel</button>' +
+        '<button type="button" class="sw-btn sw-btn-primary" id="m-save">Add</button></div>';
+      openModal(html);
+      document.getElementById('m-cancel').onclick = closeModal;
+      document.getElementById('m-save').onclick = async function () {
+        var name = (document.getElementById('sw-mus-lib-name').value || '').trim();
+        var url = (document.getElementById('sw-mus-lib-url').value || '').trim();
+        var raw = (document.getElementById('sw-mus-lib-json').value || '').trim();
+        var data = null;
+        try {
+          if (url) {
+            try { toast('Fetching catalog…'); } catch (e) {}
+            data = await fetch(url, { mode: 'cors' }).then(function (r) { return r.json(); });
+          } else if (raw) data = JSON.parse(raw);
+          else { try { toast('Enter a URL or JSON'); } catch (e) {} return; }
+        } catch (e) { try { toast('Could not load library JSON'); } catch (e2) {} return; }
+        var tracks = Array.isArray(data) ? data : (data.tracks || data.songs || []);
+        var norm = tracks.map(function (t, i) {
+          return {
+            id: t.id || ('ct-' + Date.now().toString(36) + '-' + i),
+            title: t.title || t.name || ('Track ' + (i + 1)),
+            artist: t.artist || t.author || '',
+            url: t.url || t.src || t.mp3 || '',
+            themes: t.themes || t.tags || []
+          };
+        }).filter(function (t) { return t.url; });
+        if (!norm.length) { try { toast('Tracks need a url field'); } catch (e) {} return; }
+        var st = loadMusicState();
+        var lib = { id: 'custom-' + Date.now().toString(36), name: name || data.name || 'Custom library', description: data.description || 'Custom library', url: url, tracks: norm };
+        st.customLibraries.push(lib);
+        st.activeLibraryId = lib.id;
+        saveMusicState(st);
+        closeModal();
+        try { toast('Library added'); } catch (e) {}
+        swRenderMusicPanel();
+      };
+    }
+    function openNewPlaylist(preId) {
+      var html = '<h3>New playlist</h3><input class="sw-inp" id="sw-mus-pl-name" placeholder="Playlist name" maxlength="48" style="width:100%">' +
+        '<div class="sw-modal-actions"><button type="button" class="sw-btn" id="m-cancel">Cancel</button>' +
+        '<button type="button" class="sw-btn sw-btn-primary" id="m-save">Create</button></div>';
+      openModal(html);
+      document.getElementById('m-cancel').onclick = closeModal;
+      document.getElementById('m-save').onclick = function () {
+        var name = (document.getElementById('sw-mus-pl-name').value || '').trim();
+        if (!name) { try { toast('Enter a name'); } catch (e) {} return; }
+        var st = loadMusicState();
+        st.playlists.unshift({ id: 'pl-' + Date.now().toString(36), name: name, trackIds: preId ? [preId] : [], created: Date.now() });
+        saveMusicState(st);
+        closeModal();
+        swRenderMusicPanel();
+      };
+    }
+    function addToPlaylist(trackId) {
+      var st = loadMusicState();
+      if (!(st.playlists || []).length) { openNewPlaylist(trackId); return; }
+      var html = '<h3>Add to playlist</h3>';
+      st.playlists.forEach(function (p) {
+        html += '<button type="button" class="sw-btn" style="display:block;width:100%;margin:4px 0;text-align:left" data-pid="' + esc(p.id) + '">' +
+          esc(p.name) + ' · ' + (p.trackIds || []).length + '</button>';
+      });
+      html += '<button type="button" class="sw-btn" style="display:block;width:100%;margin:4px 0" data-pid="__new">＋ New playlist</button>' +
+        '<div class="sw-modal-actions"><button type="button" class="sw-btn" id="m-cancel">Close</button></div>';
+      openModal(html);
+      document.getElementById('m-cancel').onclick = closeModal;
+      modalEl.querySelectorAll('[data-pid]').forEach(function (btn) {
+        btn.onclick = function () {
+          var pid = btn.getAttribute('data-pid');
+          if (pid === '__new') { closeModal(); openNewPlaylist(trackId); return; }
+          var st2 = loadMusicState();
+          var pl = st2.playlists.find(function (p) { return p.id === pid; });
+          if (!pl) return;
+          pl.trackIds = pl.trackIds || [];
+          if (pl.trackIds.indexOf(trackId) < 0) pl.trackIds.push(trackId);
+          saveMusicState(st2);
+          closeModal();
+          try { toast('Added to ' + pl.name); } catch (e) {}
+        };
+      });
+    }
+    function rowHtml(t, i, st, offline) {
+      var plays = (st.listens[t.id] && st.listens[t.id].count) || 0;
+      return '<div class="sw-music-row" data-mid="' + esc(t.id) + '">' +
+        '<div class="sw-music-num">' + (i != null ? (i + 1) : '♪') + '</div>' +
+        '<div class="sw-music-meta"><div class="sw-music-title">' + esc(t.title) + (offline ? ' · offline' : '') + '</div>' +
+        '<div class="sw-music-sub">' + esc(t.artist || '') + (plays ? (' · ' + plays + ' plays') : '') +
+        ((t.themes && t.themes.length) ? (' · ' + esc(t.themes.slice(0, 3).join(', '))) : '') + '</div></div>' +
+        '<div class="sw-music-actions">' +
+        '<button type="button" class="sw-btn sw-btn-primary" data-mplay="' + esc(t.id) + '">Play</button>' +
+        '<button type="button" class="sw-btn" data-mdl="' + esc(t.id) + '" title="Download for offline">' + (offline ? '✓' : '↓') + '</button>' +
+        '<button type="button" class="sw-btn" data-madd="' + esc(t.id) + '">＋</button></div></div>';
+    }
+    window.swRenderMusicPanel = async function () {
+      var panel = document.getElementById('sw-music-panel');
+      if (!panel) return;
+      var st = loadMusicState();
+      var libs = allLibraries();
+      var active = getLib(st.activeLibraryId);
+      panel.innerHTML = '<div class="sw-music-head"><h2>Music</h2><span style="font-size:0.8rem;color:var(--sw-muted)">Loading library…</span></div>';
+      var tracks = [];
+      try { tracks = await ensureLibraryTracks(active); } catch (e) { tracks = []; }
+      st = loadMusicState();
+      active = getLib(st.activeLibraryId);
+      var top = topTracks(10);
+      var themes = themeShelves(tracks);
+      var playlists = st.playlists || [];
+      var localFolders = st.localFolders || [];
+      var downloaded = [];
+      try { downloaded = await musicListDownloadedTracks(); } catch (e) { downloaded = []; }
+      var offlineMap = {};
+      try {
+        await Promise.all(tracks.slice(0, 40).map(async function (t) {
+          offlineMap[t.id] = await musicIsOffline(t.id);
+        }));
+      } catch (e) {}
+      downloaded.forEach(function (t) { offlineMap[t.id] = true; });
+
+      var html = '<div class="sw-music-head">' +
+        '<h2>Music</h2>' +
+        '<select class="sw-sel" id="sw-mus-lib">' +
+        libs.map(function (l) {
+          return '<option value="' + esc(l.id) + '"' + (l.id === active.id ? ' selected' : '') + '>' +
+            esc(l.name) + (l.custom ? ' · custom' : '') + '</option>';
+        }).join('') + '</select>' +
+        '<button type="button" class="sw-btn" id="sw-mus-add-lib">＋ Library</button>' +
+        '<button type="button" class="sw-btn sw-btn-primary" id="sw-mus-new-pl">＋ Playlist</button>' +
+        '</div><div class="sw-music-body">';
+      html += '<p style="font-size:0.82rem;color:var(--sw-muted);margin:0 0 14px">' + esc(active.description || '') +
+        ' · ' + tracks.length + ' tracks · streamed from Internet Archive (free). Use while you write.</p>';
+
+      html += '<div class="sw-music-sec"><h3 style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap"><span>Local library · ' + localFolders.length + '</span>' +
+        '<span style="display:inline-flex;gap:6px"><button type="button" class="sw-btn" id="sw-mus-local-folder">＋ Folder</button>' +
+        '<button type="button" class="sw-btn" id="sw-mus-local-files">＋ Files</button></span></h3>';
+      if (!localFolders.length) {
+        html += '<p style="font-size:0.85rem;color:var(--sw-muted)">Add a folder or files. Audio is stored in this browser (IndexedDB) so you are not prompted again and playback stays seamless.</p>';
+      } else {
+        html += '<div class="sw-music-list">';
+        localFolders.forEach(function (f) {
+          var n = (f.trackIds || []).length;
+          html += '<div class="sw-music-row"><div class="sw-music-num">📁</div><div class="sw-music-meta">' +
+            '<div class="sw-music-title">' + esc(f.name) + '</div><div class="sw-music-sub">' + n + ' tracks · offline</div></div>' +
+            '<div class="sw-music-actions">' +
+            '<button type="button" class="sw-btn sw-btn-primary" data-loc-play="' + esc(f.id) + '">Play</button>' +
+            '<button type="button" class="sw-btn" data-loc-del="' + esc(f.id) + '">Delete all</button></div></div>';
+        });
+        html += '</div>';
+      }
+      html += '</div>';
+
+      html += '<div class="sw-music-sec"><h3>Downloaded · ' + downloaded.length + ' <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--sw-muted)">· by listens</span></h3>';
+      if (!downloaded.length) {
+        html += '<p style="font-size:0.85rem;color:var(--sw-muted)">Use ↓ on any track to save offline. They appear here ranked by plays.</p>';
+      } else {
+        html += '<div class="sw-music-list">';
+        downloaded.slice(0, 50).forEach(function (t, i) {
+          var plays = (st.listens[t.id] && st.listens[t.id].count) || 0;
+          html += '<div class="sw-music-row"><div class="sw-music-num">' + (i + 1) + '</div><div class="sw-music-meta">' +
+            '<div class="sw-music-title">' + esc(t.title) + ' · offline</div>' +
+            '<div class="sw-music-sub">' + esc(t.artist || '') + (plays ? (' · ' + plays + ' plays') : '') + '</div></div>' +
+            '<div class="sw-music-actions">' +
+            '<button type="button" class="sw-btn sw-btn-primary" data-mplay="' + esc(t.id) + '">Play</button>' +
+            '<button type="button" class="sw-btn" data-mdel="' + esc(t.id) + '">Delete</button></div></div>';
+        });
+        html += '</div><div style="margin:6px 0 0"><button type="button" class="sw-btn sw-btn-primary" id="sw-mus-play-dl">Play all downloaded</button></div>';
+      }
+      html += '</div>';
+
+      html += '<div class="sw-music-sec"><h3>Your top listens</h3>';
+      if (!top.length) html += '<p style="font-size:0.85rem;color:var(--sw-muted)">Play tracks to build your top 10 (stored on this device).</p>';
+      else {
+        html += '<div class="sw-music-list">';
+        top.forEach(function (t, i) { html += rowHtml(t, i, st, offlineMap[t.id]); });
+        html += '</div>';
+      }
+      html += '</div>';
+
+      html += '<div class="sw-music-sec"><h3>Your playlists · ' + playlists.length + '</h3>';
+      if (!playlists.length) html += '<p style="font-size:0.85rem;color:var(--sw-muted)">Create a playlist and add songs while browsing.</p>';
+      else {
+        html += '<div class="sw-music-list">';
+        playlists.forEach(function (pl) {
+          var n = (pl.trackIds || []).length;
+          html += '<div class="sw-music-row"><div class="sw-music-num">🎵</div><div class="sw-music-meta">' +
+            '<div class="sw-music-title">' + esc(pl.name) + '</div><div class="sw-music-sub">' + n + ' tracks</div></div>' +
+            '<div class="sw-music-actions">' +
+            '<button type="button" class="sw-btn sw-btn-primary" data-pl-play="' + esc(pl.id) + '">Play</button>' +
+            '<button type="button" class="sw-btn" data-pl-del="' + esc(pl.id) + '">Delete</button></div></div>';
+        });
+        html += '</div>';
+      }
+      html += '</div>';
+
+      if (themes.length) {
+        themes.forEach(function (th) {
+          html += '<div class="sw-music-sec"><h3 style="display:flex;align-items:center;gap:8px">' + esc(th.label) +
+            ' <button type="button" class="sw-btn sw-btn-primary" data-theme-play="' + esc(th.id) + '" style="text-transform:none;letter-spacing:0">Play all</button></h3>' +
+            '<div class="sw-music-list">';
+          th.tracks.slice(0, 10).forEach(function (t) { html += rowHtml(t, null, st, offlineMap[t.id]); });
+          html += '</div></div>';
+        });
+      }
+
+      html += '<div class="sw-music-sec"><h3>All tracks · ' + tracks.length + '</h3><div class="sw-music-list">';
+      tracks.forEach(function (t) { html += rowHtml(t, null, st, offlineMap[t.id]); });
+      html += '</div></div></div>';
+      html += '<div class="sw-music-player" id="sw-mus-player">' +
+        '<button type="button" class="sw-btn" id="sw-mus-prev">⏮</button>' +
+        '<button type="button" class="sw-btn sw-btn-primary" id="sw-mus-toggle">Play/Pause</button>' +
+        '<button type="button" class="sw-btn" id="sw-mus-next">⏭</button>' +
+        '<div class="sw-music-now" id="sw-mus-now">Nothing playing</div>' +
+        '<input type="range" id="sw-mus-seek" min="0" max="1000" value="0" title="Seek">' +
+        '<div class="sw-mus-vol-wrap" title="Volume">' +
+        '<span aria-hidden="true">🔊</span>' +
+        '<input type="range" id="sw-mus-vol" min="0" max="100" value="' + Math.round(getMusVolume() * 100) + '">' +
+        '<span id="sw-mus-vol-lab">' + Math.round(getMusVolume() * 100) + '%</span>' +
+        '</div></div>';
+
+      panel.innerHTML = html;
+
+      var libSel = document.getElementById('sw-mus-lib');
+      if (libSel) libSel.onchange = function () {
+        var st2 = loadMusicState();
+        st2.activeLibraryId = libSel.value;
+        saveMusicState(st2);
+        swRenderMusicPanel();
+      };
+      var addLib = document.getElementById('sw-mus-add-lib');
+      if (addLib) addLib.onclick = openAddLibrary;
+      var newPl = document.getElementById('sw-mus-new-pl');
+      if (newPl) newPl.onclick = function () { openNewPlaylist(); };
+
+      panel.querySelectorAll('[data-mplay]').forEach(function (btn) {
+        btn.onclick = function (e) {
+          e.stopPropagation();
+          var id = btn.getAttribute('data-mplay');
+          var t = tracks.find(function (x) { return x.id === id; }) || findTrack(id);
+          if (t) playTracks([t], 0);
+        };
+      });
+      panel.querySelectorAll('[data-mdl]').forEach(function (btn) {
+        btn.onclick = async function (e) {
+          e.stopPropagation();
+          var id = btn.getAttribute('data-mdl');
+          var t = tracks.find(function (x) { return x.id === id; }) || findTrack(id);
+          if (!t) return;
+          var ok = await musicDownloadTrack(t);
+          if (ok) { btn.textContent = '✓'; try { swRenderMusicPanel(); } catch (err) {} }
+        };
+      });
+
+      panel.querySelectorAll('[data-mdel]').forEach(function (btn) {
+        btn.onclick = async function (e) {
+          e.stopPropagation();
+          if (!confirm('Remove this offline copy?')) return;
+          await musicDeleteOfflineTrack(btn.getAttribute('data-mdel'));
+          swRenderMusicPanel();
+        };
+      });
+      panel.querySelectorAll('[data-loc-play]').forEach(function (btn) {
+        btn.onclick = async function (e) {
+          e.stopPropagation();
+          var fid = btn.getAttribute('data-loc-play');
+          var st3 = loadMusicState();
+          var f = (st3.localFolders || []).find(function (x) { return x.id === fid; });
+          if (!f) return;
+          var all = await musicListDownloadedTracks();
+          var ts = (f.trackIds || []).map(function (id) {
+            return all.find(function (t) { return t.id === id; }) || findTrack(id) || { id: id, title: id, url: 'idb:' + id };
+          });
+          playTracks(ts, 0, f.name);
+        };
+      });
+      panel.querySelectorAll('[data-loc-del]').forEach(function (btn) {
+        btn.onclick = async function (e) {
+          e.stopPropagation();
+          if (!confirm('Delete this local folder and all offline tracks in it?')) return;
+          await musicDeleteLocalFolder(btn.getAttribute('data-loc-del'));
+          swRenderMusicPanel();
+        };
+      });
+      var bf = document.getElementById('sw-mus-local-folder');
+      if (bf) bf.onclick = function () { musicPickLocalFolder(); };
+      var bff = document.getElementById('sw-mus-local-files');
+      if (bff) bff.onclick = function () { musicPickLocalFiles(false); };
+      var bpd = document.getElementById('sw-mus-play-dl');
+      if (bpd) bpd.onclick = async function () {
+        var all = await musicListDownloadedTracks();
+        playTracks(all, 0, 'Downloaded');
+      };
+      panel.querySelectorAll('[data-madd]').forEach(function (btn) {
+        btn.onclick = function (e) { e.stopPropagation(); addToPlaylist(btn.getAttribute('data-madd')); };
+      });
+      panel.querySelectorAll('[data-theme-play]').forEach(function (btn) {
+        btn.onclick = function () {
+          var th = themes.find(function (x) { return x.id === btn.getAttribute('data-theme-play'); });
+          if (th) playTracks(th.tracks, 0, th.label);
+        };
+      });
+      panel.querySelectorAll('[data-pl-play]').forEach(function (btn) {
+        btn.onclick = function () {
+          var st3 = loadMusicState();
+          var pl = st3.playlists.find(function (p) { return p.id === btn.getAttribute('data-pl-play'); });
+          if (!pl) return;
+          var ts = (pl.trackIds || []).map(findTrack).filter(Boolean);
+          playTracks(ts, 0, pl.name);
+        };
+      });
+      panel.querySelectorAll('[data-pl-del]').forEach(function (btn) {
+        btn.onclick = function () {
+          if (!confirm('Delete this playlist?')) return;
+          var st4 = loadMusicState();
+          st4.playlists = st4.playlists.filter(function (p) { return p.id !== btn.getAttribute('data-pl-del'); });
+          saveMusicState(st4);
+          swRenderMusicPanel();
+        };
+      });
+      var prev = document.getElementById('sw-mus-prev');
+      var next = document.getElementById('sw-mus-next');
+      var tog = document.getElementById('sw-mus-toggle');
+      var seek = document.getElementById('sw-mus-seek');
+      if (prev) prev.onclick = function () { if (musQueue.length) playAt(Math.max(0, musIdx - 1)); };
+      if (next) next.onclick = function () { if (musQueue.length) playAt(Math.min(musQueue.length - 1, musIdx + 1)); };
+      if (tog) tog.onclick = function () {
+        var a = ensureAudio();
+        if (a.paused) a.play().catch(function () {});
+        else a.pause();
+        updatePlayerUi(true);
+      };
+      if (seek) seek.oninput = function () {
+        var a = ensureAudio();
+        if (a.duration) a.currentTime = (parseFloat(seek.value) / 1000) * a.duration;
+      };
+      var vol = document.getElementById('sw-mus-vol');
+      if (vol) {
+        vol.value = String(Math.round(getMusVolume() * 100));
+        vol.oninput = function () { setMusVolume(parseFloat(vol.value) / 100); };
+      }
+      setMusVolume(getMusVolume());
+      updatePlayerUi(!!(musAudio && !musAudio.paused));
+    };
+  })();
 
 })(); // end StoryWriter main
 
