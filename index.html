@@ -2743,24 +2743,34 @@
       display: flex; flex-direction: column; flex: 1 1 auto;
       height: 100%; min-height: 0; overflow: hidden;
     }
-    #sw-dashboard.sw-show-landing .sw-dash-shell { display: none !important; }
-    #sw-dashboard.sw-show-landing #sw-landing { display: block !important; visibility: visible !important; opacity: 1 !important; }
-    #sw-dashboard { position: relative; }
-    #sw-landing {
-      display: none; position: absolute; inset: 0; overflow-x: hidden; overflow-y: auto;
-      background: var(--sw-bg); z-index: 60; -webkit-overflow-scrolling: touch;
-      min-height: 100%; min-height: 100dvh; width: 100%; box-sizing: border-box;
-      color: var(--sw-ink);
+    /* Dashboard shell */
+    #sw-root.sw-show-dash #sw-dashboard { display: flex !important; height: 100%; min-height: 100%; }
+    #sw-dashboard .sw-dash-shell {
+      display: flex; flex-direction: column; flex: 1 1 auto;
+      height: 100%; min-height: 0; overflow: hidden;
     }
-    #sw-dashboard.sw-show-landing #sw-landing {
+    #sw-dashboard { position: relative; overflow: hidden; }
+
+    /* Welcome landing at document start — first in source for crawlers */
+    #sw-landing {
+      display: none;
+      position: fixed; inset: 0; z-index: 100000;
+      overflow-x: hidden; overflow-y: auto;
+      background: #ebe6df; color: #2a2e33;
+      -webkit-overflow-scrolling: touch;
+      min-height: 100%; min-height: 100dvh; width: 100%; box-sizing: border-box;
+    }
+    body.sw-landing-on #sw-landing {
       display: block !important; visibility: visible !important; opacity: 1 !important;
       pointer-events: auto;
     }
-    #sw-dashboard.sw-show-landing {
-      overflow: hidden;
-    }
-    #sw-dashboard.sw-show-landing .sw-dash-shell {
-      display: none !important;
+    body.sw-landing-on #sw-root {
+      /* Keep app mounted for init; cover with landing instead of killing the tree */
+      position: fixed !important;
+      inset: 0 !important;
+      z-index: 1 !important;
+      pointer-events: none !important;
+      opacity: 0 !important;
     }
     #sw-landing .sw-landing-inner {
       max-width: 1080px; margin: 0 auto; padding: clamp(28px, 5vw, 48px) clamp(16px, 4vw, 28px) 72px;
@@ -2771,41 +2781,50 @@
     }
     #sw-landing .sw-landing-kicker {
       margin: 0 0 10px; font-size: 0.78rem; font-weight: 700;
-      letter-spacing: 0.1em; text-transform: uppercase; color: var(--sw-muted);
+      letter-spacing: 0.1em; text-transform: uppercase; color: var(--sw-muted, #6b727a);
     }
     #sw-landing .sw-landing-title {
       margin: 0; font-family: "EB Garamond", Georgia, serif;
       font-size: clamp(2.6rem, 8vw, 3.9rem); font-weight: 600;
-      color: var(--sw-accent); letter-spacing: -0.02em; line-height: 1.05;
+      color: var(--sw-accent, #3d4f5f); letter-spacing: -0.02em; line-height: 1.05;
     }
     #sw-landing .sw-landing-tagline {
       margin: 12px auto 0; max-width: 28em; font-size: clamp(1.1rem, 2.4vw, 1.28rem);
-      font-weight: 600; color: var(--sw-ink); line-height: 1.35;
+      font-weight: 600; color: var(--sw-ink, #2a2e33); line-height: 1.35;
     }
     #sw-landing .sw-landing-sub {
       margin: 14px auto 0; max-width: 40em; font-size: clamp(0.95rem, 1.8vw, 1.08rem);
-      line-height: 1.6; color: var(--sw-ink); opacity: 0.92;
+      line-height: 1.6; color: var(--sw-ink, #2a2e33); opacity: 0.92;
     }
     #sw-landing .sw-landing-cta {
       display: flex; flex-wrap: wrap; gap: 10px; margin: 24px 0 12px; justify-content: center;
     }
     #sw-landing .sw-landing-cta .sw-btn {
       min-height: 44px; padding: 10px 16px; font-size: 0.9rem; border-radius: 10px;
+      font: inherit; font-weight: 500; border: 1px solid var(--sw-border, #d4cdc3);
+      background: var(--sw-paper, #f7f4ef); color: var(--sw-ink, #2a2e33);
+      cursor: pointer; display: inline-flex; align-items: center; gap: 3px;
     }
+    #sw-landing .sw-landing-cta .sw-btn:hover { background: var(--sw-hover, #dcd5cb); }
+    #sw-landing .sw-landing-cta .sw-btn-primary {
+      background: var(--sw-accent, #3d4f5f); color: var(--sw-paper, #f7f4ef);
+      border-color: var(--sw-accent, #3d4f5f);
+    }
+    #sw-landing .sw-landing-cta .sw-btn-primary:hover { filter: brightness(1.08); }
     #sw-landing .sw-landing-cta-hint {
-      margin: 8px auto 0; font-size: 0.88rem; color: var(--sw-muted); max-width: 36em; line-height: 1.45;
+      margin: 8px auto 0; font-size: 0.88rem; color: var(--sw-muted, #6b727a); max-width: 36em; line-height: 1.45;
     }
     #sw-landing .sw-landing-why {
       margin: 8px 0 22px; padding: clamp(16px, 3vw, 22px) clamp(16px, 3vw, 24px); border-radius: 16px;
-      border: 1px solid var(--sw-border); background: var(--sw-paper);
-      box-shadow: 0 2px 14px color-mix(in srgb, var(--sw-accent) 6%, transparent);
+      border: 1px solid var(--sw-border, #d4cdc3); background: var(--sw-paper, #f7f4ef);
+      box-shadow: 0 2px 14px rgba(61,79,95,0.06);
     }
     #sw-landing .sw-landing-why h2,
     #sw-landing .sw-landing-start h2,
     #sw-landing .sw-landing-support h2,
     #sw-landing .sw-landing-studios-head {
       margin: 0 0 12px; font-family: "EB Garamond", Georgia, serif;
-      font-size: clamp(1.25rem, 2.8vw, 1.45rem); color: var(--sw-accent); font-weight: 600;
+      font-size: clamp(1.25rem, 2.8vw, 1.45rem); color: var(--sw-accent, #3d4f5f); font-weight: 600;
     }
     #sw-landing .sw-landing-why-list {
       margin: 0; padding-left: 1.2em; line-height: 1.55; font-size: 0.96rem;
@@ -2816,52 +2835,40 @@
     #sw-landing .sw-landing-studios-head { text-align: center; margin-bottom: 6px; }
     #sw-landing .sw-landing-studios-lead {
       text-align: center; margin: 0 auto 16px; max-width: 42em;
-      font-size: 0.94rem; color: var(--sw-muted); line-height: 1.5;
+      font-size: 0.94rem; color: var(--sw-muted, #6b727a); line-height: 1.5;
     }
     #sw-landing .sw-landing-studios {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 14px;
+      display: grid; grid-template-columns: 1fr; gap: 14px;
     }
     @media (min-width: 640px) {
       #sw-landing .sw-landing-studios { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
     }
-    @media (min-width: 1020px) {
-      #sw-landing .sw-landing-studios { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
-    }
     #sw-landing .sw-land-card {
-      background: var(--sw-paper); border: 1px solid var(--sw-border);
+      background: var(--sw-paper, #f7f4ef); border: 1px solid var(--sw-border, #d4cdc3);
       border-radius: 16px; padding: 18px 18px 16px;
       box-shadow: 0 2px 12px rgba(0,0,0,0.04);
       display: flex; flex-direction: column; min-height: 100%;
-      transition: border-color 0.15s, box-shadow 0.15s, transform 0.12s;
-    }
-    #sw-landing .sw-land-card:hover {
-      border-color: color-mix(in srgb, var(--sw-accent) 45%, var(--sw-border));
-      box-shadow: 0 8px 24px color-mix(in srgb, var(--sw-accent) 10%, transparent);
     }
     #sw-landing .sw-land-kicker {
       margin: 0 0 6px; font-size: 0.7rem; font-weight: 700;
-      letter-spacing: 0.08em; text-transform: uppercase; color: var(--sw-muted);
+      letter-spacing: 0.08em; text-transform: uppercase; color: var(--sw-muted, #6b727a);
     }
     #sw-landing .sw-land-card h2 {
       margin: 0 0 8px; font-family: "EB Garamond", Georgia, serif;
-      font-size: 1.35rem; color: var(--sw-accent); line-height: 1.2;
+      font-size: 1.35rem; color: var(--sw-accent, #3d4f5f); line-height: 1.2;
     }
     #sw-landing .sw-land-card > p {
-      margin: 0 0 12px; font-size: 0.9rem; color: var(--sw-muted); line-height: 1.5;
+      margin: 0 0 12px; font-size: 0.9rem; color: var(--sw-muted, #6b727a); line-height: 1.5;
     }
     #sw-landing .sw-land-card ul {
-      margin: 0; padding-left: 1.15em; font-size: 0.86rem; line-height: 1.5; color: var(--sw-ink);
+      margin: 0; padding-left: 1.15em; font-size: 0.86rem; line-height: 1.5; color: var(--sw-ink, #2a2e33);
       flex: 1;
     }
     #sw-landing .sw-land-card ul li { margin: 0 0 7px; }
-    #sw-landing .sw-land-card ul li:last-child { margin-bottom: 0; }
-    #sw-landing .sw-land-card ul strong { color: var(--sw-ink); font-weight: 600; }
+    #sw-landing .sw-land-card ul strong { color: var(--sw-ink, #2a2e33); font-weight: 600; }
     #sw-landing .sw-landing-start {
       margin: 8px 0 22px; padding: clamp(16px, 3vw, 22px) clamp(16px, 3vw, 24px); border-radius: 16px;
-      border: 1px solid var(--sw-border); background: var(--sw-paper);
-      box-shadow: 0 2px 14px color-mix(in srgb, var(--sw-accent) 6%, transparent);
+      border: 1px solid var(--sw-border, #d4cdc3); background: var(--sw-paper, #f7f4ef);
     }
     #sw-landing .sw-landing-steps {
       margin: 0 0 16px; padding-left: 1.25em; line-height: 1.55; font-size: 0.96rem;
@@ -2869,17 +2876,25 @@
     #sw-landing .sw-landing-steps li { margin: 0 0 10px; }
     #sw-landing .sw-landing-support {
       margin: 0 0 28px; padding: clamp(16px, 3vw, 22px) clamp(16px, 3vw, 24px); border-radius: 16px;
-      border: 1px solid var(--sw-border); background: var(--sw-paper);
+      border: 1px solid var(--sw-border, #d4cdc3); background: var(--sw-paper, #f7f4ef);
     }
     #sw-landing .sw-landing-support p { margin: 0 0 12px; line-height: 1.55; font-size: 0.95rem; }
-    #sw-landing .sw-landing-support .sw-btn { margin: 0 8px 8px 0; display: inline-flex; text-decoration: none; min-height: 42px; align-items: center; }
-    #sw-landing .sw-landing-foot {
-      font-size: 0.86rem; color: var(--sw-muted); line-height: 1.55;
-      border-top: 1px solid var(--sw-border); padding-top: 18px; text-align: center;
+    #sw-landing .sw-landing-support .sw-btn {
+      margin: 0 8px 8px 0; display: inline-flex; text-decoration: none; min-height: 42px; align-items: center;
+      font: inherit; font-weight: 500; border: 1px solid var(--sw-border, #d4cdc3);
+      background: var(--sw-paper, #f7f4ef); color: var(--sw-ink, #2a2e33);
+      border-radius: 10px; padding: 8px 14px; cursor: pointer;
     }
-    #sw-landing .sw-landing-foot a { color: var(--sw-accent); }
+    #sw-landing .sw-landing-support .sw-btn-primary {
+      background: var(--sw-accent, #3d4f5f); color: var(--sw-paper, #f7f4ef);
+      border-color: var(--sw-accent, #3d4f5f);
+    }
+    #sw-landing .sw-landing-foot {
+      font-size: 0.86rem; color: var(--sw-muted, #6b727a); line-height: 1.55;
+      border-top: 1px solid var(--sw-border, #d4cdc3); padding-top: 18px; text-align: center;
+    }
+    #sw-landing .sw-landing-foot a { color: var(--sw-accent, #3d4f5f); }
     #sw-landing .sw-landing-foot p { margin: 0 0 8px; }
-    #sw-landing .sw-landing-foot p:last-child { margin-bottom: 0; }
     @media (max-width: 520px) {
       #sw-landing .sw-landing-cta { flex-direction: column; align-items: stretch; }
       #sw-landing .sw-landing-cta .sw-btn { width: 100%; justify-content: center; }
@@ -2888,7 +2903,6 @@
       #sw-landing .sw-landing-studios-lead { text-align: left; }
       #sw-landing .sw-landing-foot { text-align: left; }
     }
-
 
     #sw-dashboard .sw-home-topbar {
       display: flex; align-items: center; justify-content: space-between; gap: 12px;
@@ -3955,7 +3969,147 @@
 }
 </style>
 </head>
-<body>
+<body class="sw-landing-on">
+<!-- First-visit welcome landing (first in source for crawlers; shown when the library is empty) -->
+<section id="sw-landing" class="sw-landing" aria-label="Welcome to StoryWriter">
+  <div class="sw-landing-inner">
+    <header class="sw-landing-hero">
+      <p class="sw-landing-kicker">Free · Offline · Private · No account</p>
+      <h1 class="sw-landing-title">StoryWriter</h1>
+      <p class="sw-landing-tagline">The free offline novel writing studio for indie authors</p>
+      <p class="sw-landing-sub">Draft chapters and scenes, build character and world bibles, typeset pages, design a cover, and export to PDF, EPUB, or Word — all in one private browser app. Your manuscript stays on your device unless you choose to back it up.</p>
+      <div class="sw-landing-cta">
+        <button type="button" class="sw-btn sw-btn-primary" id="sw-land-sample">Start with the sample novel</button>
+        <button type="button" class="sw-btn" id="sw-land-start">Create empty novel</button>
+        <button type="button" class="sw-btn" id="sw-land-import">Import manuscript</button>
+        <button type="button" class="sw-btn" id="sw-land-tour">Take a short tour</button>
+        <button type="button" class="sw-btn" id="sw-land-enter">Enter library</button>
+      </div>
+      <p class="sw-landing-cta-hint">New here? Open the sample novel first — it loads into your library so you can explore the desk safely.</p>
+    </header>
+
+    <section class="sw-landing-why" aria-labelledby="sw-land-why-h">
+      <h2 id="sw-land-why-h">Why authors use StoryWriter</h2>
+      <ul class="sw-landing-why-list">
+        <li><strong>Private by default.</strong> Projects live in this browser. No account wall to write.</li>
+        <li><strong>Built for long novels.</strong> Chapters, scenes, corkboard, goals, and a calm writing desk.</li>
+        <li><strong>Four studios, one app.</strong> Writing, Design, Share, and Cover — start on the dashboard, then open tools when you need them.</li>
+        <li><strong>Export when ready.</strong> PDF, EPUB, and Word from the same manuscript.</li>
+        <li><strong>Free to use.</strong> Optional support keeps development going; writing never requires payment.</li>
+      </ul>
+    </section>
+
+    <div class="sw-landing-studios-wrap">
+      <h2 class="sw-landing-studios-head" id="sw-land-studios-h">Four studios, one private app</h2>
+      <p class="sw-landing-studios-lead">Everything stays on this device until you export or back up. Open a novel from your library, then use the studio you need.</p>
+      <section class="sw-landing-studios" aria-labelledby="sw-land-studios-h">
+        <article class="sw-land-card" id="writing-desk">
+          <p class="sw-land-kicker">Studio 1</p>
+          <h2>Writing Desk</h2>
+          <p>Your private manuscript desk for drafting, planning, and organizing a novel end to end.</p>
+          <ul>
+            <li><strong>Chapters &amp; scenes</strong> — hierarchical manuscript with drag reorder</li>
+            <li><strong>Focused editor</strong> — paper-like page with comfortable typography</li>
+            <li><strong>Page view</strong> — read and revise in a calm layout</li>
+            <li><strong>Corkboard</strong> — index-card planning, lanes, status chips, filters</li>
+            <li><strong>Scrivenings</strong> — edit many scenes as one continuous document</li>
+            <li><strong>Character bible</strong> — profiles, arcs, notes, and @-mentions in text</li>
+            <li><strong>Locations &amp; worldbuilding</strong> — places, cultures, religions, planets, items</li>
+            <li><strong>Timeline &amp; relationships</strong> — event order plus interactive graph</li>
+            <li><strong>Glossary &amp; research</strong> — invented words, folders, notes, PDFs, links</li>
+            <li><strong>Brainstorm stickies</strong> — color notes for ideas that are not scenes yet</li>
+            <li><strong>Series Bible</strong> — multi-book continuity across your library</li>
+            <li><strong>Goals, streaks &amp; quiet focus</strong> — session targets without chrome noise</li>
+            <li><strong>Bookmarks, collections &amp; templates</strong> — smart filters and scene starters</li>
+            <li><strong>Find &amp; replace, style helper</strong> — manuscript-wide tools offline</li>
+            <li><strong>Private offline storage</strong> — auto-save in the browser; optional backups</li>
+          </ul>
+        </article>
+
+        <article class="sw-land-card" id="design-studio">
+          <p class="sw-land-kicker">Studio 2</p>
+          <h2>Design Studio</h2>
+          <p>Typeset the novel for print and e-readers from the same draft — opened from the novel in your library when you are ready to layout.</p>
+          <ul>
+            <li><strong>Live page previews</strong> — thumbnail strip and full-stage spreads</li>
+            <li><strong>Typography controls</strong> — fonts, sizes, leading, hierarchy, drop caps</li>
+            <li><strong>Margins &amp; page templates</strong> — print-friendly and ebook-friendly setups</li>
+            <li><strong>Chapter openers</strong> — title pages, section starts, optional art inserts</li>
+            <li><strong>Front / back matter</strong> — also-by, next book, and related pages</li>
+            <li><strong>Proof reading view</strong> — catch layout issues before you export</li>
+            <li><strong>Fullscreen designer</strong> — hide clutter while you fine-tune pages</li>
+            <li><strong>Export to PDF</strong> — print-ready files from the designed layout</li>
+            <li><strong>Export to EPUB</strong> — reflowable ebooks for major readers</li>
+            <li><strong>Export to Word (DOCX)</strong> — for editors, agents, and further polish</li>
+          </ul>
+        </article>
+
+        <article class="sw-land-card" id="share-studio">
+          <p class="sw-land-kicker">Studio 3</p>
+          <h2>Share Studio</h2>
+          <p>Turn moments from the draft into promo pieces when you want to share a quote or vibe — always starting from the novel in your library.</p>
+          <ul>
+            <li><strong>Quote cards</strong> — pull lines from the manuscript into polished cards</li>
+            <li><strong>Vibe cards</strong> — mood and atmosphere pieces for social posts</li>
+            <li><strong>3D book mockups</strong> — show the book as a physical object</li>
+            <li><strong>Short-form assets</strong> — formats suited to Instagram, TikTok, and Reels</li>
+            <li><strong>Brand-safe exports</strong> — downloadable images ready to post</li>
+            <li><strong>Tied to the open novel</strong> — text and cover stay in sync with the project</li>
+          </ul>
+        </article>
+
+        <article class="sw-land-card" id="cover-studio">
+          <p class="sw-land-kicker">Studio 4</p>
+          <h2>Cover Studio</h2>
+          <p>Compose a cover that matches the manuscript. Covers attach to the novel in your library so Design and Share stay in sync.</p>
+          <ul>
+            <li><strong>Front cover layout</strong> — title, author, and series lockups</li>
+            <li><strong>Palette &amp; motif tools</strong> — mood that fits the story</li>
+            <li><strong>Image placement</strong> — art and typography composed together</li>
+            <li><strong>Print &amp; digital sizes</strong> — exports for storefronts and files</li>
+            <li><strong>Linked to the novel</strong> — cover follows the project opened from the dashboard</li>
+            <li><strong>Used across studios</strong> — Design previews and Share mockups pick it up</li>
+          </ul>
+        </article>
+      </section>
+    </div>
+
+    <section class="sw-landing-start" aria-labelledby="sw-land-start-h">
+      <h2 id="sw-land-start-h">How to begin</h2>
+      <ol class="sw-landing-steps">
+        <li><strong>Open the library (dashboard).</strong> That is the home for every novel on this device.</li>
+        <li><strong>Load the sample novel</strong> (recommended the first time) or create a blank project / import a manuscript.</li>
+        <li><strong>Write on the desk.</strong> Chapters, scenes, corkboard, and bibles live with that project.</li>
+        <li><strong>When you need layout, share art, or a cover,</strong> open those studios from the novel you are already working on — not from this welcome page.</li>
+      </ol>
+      <div class="sw-landing-cta">
+        <button type="button" class="sw-btn sw-btn-primary" id="sw-land-sample-2">Load sample novel &amp; open library</button>
+        <button type="button" class="sw-btn" id="sw-land-enter-2">Skip to library</button>
+      </div>
+    </section>
+
+    <section class="sw-landing-support" aria-labelledby="sw-land-sup-h">
+      <h2 id="sw-land-sup-h">Support StoryWriter</h2>
+      <p>StoryWriter stays free for drafting and local work. If it helps your books, an optional tip supports ongoing development. Writing never requires payment or an account.</p>
+      <p>
+        <a class="sw-btn sw-btn-primary" href="https://store.authormasoncarter.com/checkout/buy/3d5bf2e6-be0a-48e5-82ca-4801374aebd7" target="_blank" rel="noopener noreferrer">Support the app</a>
+        <a class="sw-btn" href="https://www.authormasoncarter.com/" target="_blank" rel="noopener noreferrer">About Mason Carter</a>
+      </p>
+    </section>
+
+    <footer class="sw-landing-foot">
+      <p>StoryWriter is a free offline novel writing app by <a href="https://www.authormasoncarter.com/" target="_blank" rel="noopener noreferrer">Mason Carter</a>. Projects stay in your browser unless you export or use optional backups.</p>
+      <p>
+        <a href="https://www.authormasoncarter.com/p/privacy-policy-for-storywriter.html" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
+        ·
+        <a href="https://www.authormasoncarter.com/p/terms-of-service-for-storywriter.html" target="_blank" rel="noopener noreferrer">Terms of Service</a>
+        ·
+        <a href="https://store.authormasoncarter.com/checkout/buy/3d5bf2e6-be0a-48e5-82ca-4801374aebd7" target="_blank" rel="noopener noreferrer">Support</a>
+      </p>
+    </footer>
+  </div>
+</section>
+
 <div id="sw-root" data-theme="parchment">
   <div class="sw-topbar">
     <span class="sw-logo">StoryWriter</span>
@@ -4292,145 +4446,7 @@
 
   <!-- Author dashboard -->
   <div id="sw-dashboard" aria-label="Author dashboard">
-    <!-- First-visit welcome landing (shown when the library is empty) -->
-    <section id="sw-landing" class="sw-landing" aria-label="Welcome to StoryWriter">
-      <div class="sw-landing-inner">
-        <header class="sw-landing-hero">
-          <p class="sw-landing-kicker">Free · Offline · Private · No account</p>
-          <h1 class="sw-landing-title">StoryWriter</h1>
-          <p class="sw-landing-tagline">The free offline novel writing studio for indie authors</p>
-          <p class="sw-landing-sub">Draft chapters and scenes, build character and world bibles, typeset pages, design a cover, and export to PDF, EPUB, or Word — all in one private browser app. Your manuscript stays on your device unless you choose to back it up.</p>
-          <div class="sw-landing-cta">
-            <button type="button" class="sw-btn sw-btn-primary" id="sw-land-sample">Start with the sample novel</button>
-            <button type="button" class="sw-btn" id="sw-land-start">Create empty novel</button>
-            <button type="button" class="sw-btn" id="sw-land-import">Import manuscript</button>
-            <button type="button" class="sw-btn" id="sw-land-tour">Take a short tour</button>
-            <button type="button" class="sw-btn" id="sw-land-enter">Enter library</button>
-          </div>
-          <p class="sw-landing-cta-hint">New here? Open the sample novel first — it loads into your library so you can explore the desk safely.</p>
-        </header>
-
-        <section class="sw-landing-why" aria-labelledby="sw-land-why-h">
-          <h2 id="sw-land-why-h">Why authors use StoryWriter</h2>
-          <ul class="sw-landing-why-list">
-            <li><strong>Private by default.</strong> Projects live in this browser. No account wall to write.</li>
-            <li><strong>Built for long novels.</strong> Chapters, scenes, corkboard, goals, and a calm writing desk.</li>
-            <li><strong>Four studios, one app.</strong> Writing, Design, Share, and Cover — start on the dashboard, then open tools when you need them.</li>
-            <li><strong>Export when ready.</strong> PDF, EPUB, and Word from the same manuscript.</li>
-            <li><strong>Free to use.</strong> Optional support keeps development going; writing never requires payment.</li>
-          </ul>
-        </section>
-
-        <div class="sw-landing-studios-wrap">
-          <h2 class="sw-landing-studios-head" id="sw-land-studios-h">Four studios, one private app</h2>
-          <p class="sw-landing-studios-lead">Everything stays on this device until you export or back up. Open a novel from your library, then use the studio you need.</p>
-        <section class="sw-landing-studios" aria-labelledby="sw-land-studios-h">
-          <article class="sw-land-card" id="writing-desk">
-            <p class="sw-land-kicker">Studio 1</p>
-            <h2>Writing Desk</h2>
-            <p>Your private manuscript desk for drafting, planning, and organizing a novel end to end.</p>
-            <ul>
-              <li><strong>Chapters &amp; scenes</strong> — hierarchical manuscript with drag reorder</li>
-              <li><strong>Focused editor</strong> — paper-like page with comfortable typography</li>
-              <li><strong>Page view</strong> — read and revise in a calm layout</li>
-              <li><strong>Corkboard</strong> — index-card planning, lanes, status chips, filters</li>
-              <li><strong>Scrivenings</strong> — edit many scenes as one continuous document</li>
-              <li><strong>Character bible</strong> — profiles, arcs, notes, and @-mentions in text</li>
-              <li><strong>Locations &amp; worldbuilding</strong> — places, cultures, religions, planets, items</li>
-              <li><strong>Timeline &amp; relationships</strong> — event order plus interactive graph</li>
-              <li><strong>Glossary &amp; research</strong> — invented words, folders, notes, PDFs, links</li>
-              <li><strong>Brainstorm stickies</strong> — color notes for ideas that are not scenes yet</li>
-              <li><strong>Series Bible</strong> — multi-book continuity across your library</li>
-              <li><strong>Goals, streaks &amp; quiet focus</strong> — session targets without chrome noise</li>
-              <li><strong>Bookmarks, collections &amp; templates</strong> — smart filters and scene starters</li>
-              <li><strong>Find &amp; replace, style helper</strong> — manuscript-wide tools offline</li>
-              <li><strong>Private offline storage</strong> — auto-save in the browser; optional backups</li>
-            </ul>
-          </article>
-
-          <article class="sw-land-card" id="design-studio">
-            <p class="sw-land-kicker">Studio 2</p>
-            <h2>Design Studio</h2>
-            <p>Typeset the novel for print and e-readers from the same draft — opened from the novel in your library when you are ready to layout.</p>
-            <ul>
-              <li><strong>Live page previews</strong> — thumbnail strip and full-stage spreads</li>
-              <li><strong>Typography controls</strong> — fonts, sizes, leading, hierarchy, drop caps</li>
-              <li><strong>Margins &amp; page templates</strong> — print-friendly and ebook-friendly setups</li>
-              <li><strong>Chapter openers</strong> — title pages, section starts, optional art inserts</li>
-              <li><strong>Front / back matter</strong> — also-by, next book, and related pages</li>
-              <li><strong>Proof reading view</strong> — catch layout issues before you export</li>
-              <li><strong>Fullscreen designer</strong> — hide clutter while you fine-tune pages</li>
-              <li><strong>Export to PDF</strong> — print-ready files from the designed layout</li>
-              <li><strong>Export to EPUB</strong> — reflowable ebooks for major readers</li>
-              <li><strong>Export to Word (DOCX)</strong> — for editors, agents, and further polish</li>
-            </ul>
-          </article>
-
-          <article class="sw-land-card" id="share-studio">
-            <p class="sw-land-kicker">Studio 3</p>
-            <h2>Share Studio</h2>
-            <p>Turn moments from the draft into promo pieces when you want to share a quote or vibe — always starting from the novel in your library.</p>
-            <ul>
-              <li><strong>Quote cards</strong> — pull lines from the manuscript into polished cards</li>
-              <li><strong>Vibe cards</strong> — mood and atmosphere pieces for social posts</li>
-              <li><strong>3D book mockups</strong> — show the book as a physical object</li>
-              <li><strong>Short-form assets</strong> — formats suited to Instagram, TikTok, and Reels</li>
-              <li><strong>Brand-safe exports</strong> — downloadable images ready to post</li>
-              <li><strong>Tied to the open novel</strong> — text and cover stay in sync with the project</li>
-            </ul>
-          </article>
-
-          <article class="sw-land-card" id="cover-studio">
-            <p class="sw-land-kicker">Studio 4</p>
-            <h2>Cover Studio</h2>
-            <p>Compose a cover that matches the manuscript. Covers attach to the novel in your library so Design and Share stay in sync.</p>
-            <ul>
-              <li><strong>Front cover layout</strong> — title, author, and series lockups</li>
-              <li><strong>Palette &amp; motif tools</strong> — mood that fits the story</li>
-              <li><strong>Image placement</strong> — art and typography composed together</li>
-              <li><strong>Print &amp; digital sizes</strong> — exports for storefronts and files</li>
-              <li><strong>Linked to the novel</strong> — cover follows the project opened from the dashboard</li>
-              <li><strong>Used across studios</strong> — Design previews and Share mockups pick it up</li>
-            </ul>
-          </article>
-        </section>
-        </div>
-
-        <section class="sw-landing-start"s="sw-landing-start" aria-labelledby="sw-land-start-h">
-          <h2 id="sw-land-start-h">How to begin</h2>
-          <ol class="sw-landing-steps">
-            <li><strong>Open the library (dashboard).</strong> That is the home for every novel on this device.</li>
-            <li><strong>Load the sample novel</strong> (recommended the first time) or create a blank project / import a manuscript.</li>
-            <li><strong>Write on the desk.</strong> Chapters, scenes, corkboard, and bibles live with that project.</li>
-            <li><strong>When you need layout, share art, or a cover,</strong> open those studios from the novel you are already working on — not from this welcome page.</li>
-          </ol>
-          <div class="sw-landing-cta">
-            <button type="button" class="sw-btn sw-btn-primary" id="sw-land-sample-2">Load sample novel &amp; open library</button>
-            <button type="button" class="sw-btn" id="sw-land-enter-2">Skip to library</button>
-          </div>
-        </section>
-
-        <section class="sw-landing-support" aria-labelledby="sw-land-sup-h">
-          <h2 id="sw-land-sup-h">Support StoryWriter</h2>
-          <p>StoryWriter stays free for drafting and local work. If it helps your books, an optional tip supports ongoing development. Writing never requires payment or an account.</p>
-          <p>
-            <a class="sw-btn sw-btn-primary" href="https://store.authormasoncarter.com/checkout/buy/3d5bf2e6-be0a-48e5-82ca-4801374aebd7" target="_blank" rel="noopener noreferrer">Support the app</a>
-            <a class="sw-btn" href="https://www.authormasoncarter.com/" target="_blank" rel="noopener noreferrer">About Mason Carter</a>
-          </p>
-        </section>
-
-        <footer class="sw-landing-foot">
-          <p>StoryWriter is a free offline novel writing app by <a href="https://www.authormasoncarter.com/" target="_blank" rel="noopener noreferrer">Mason Carter</a>. Projects stay in your browser unless you export or use optional backups.</p>
-          <p>
-            <a href="https://www.authormasoncarter.com/p/privacy-policy-for-storywriter.html" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
-            ·
-            <a href="https://www.authormasoncarter.com/p/terms-of-service-for-storywriter.html" target="_blank" rel="noopener noreferrer">Terms of Service</a>
-            ·
-            <a href="https://store.authormasoncarter.com/checkout/buy/3d5bf2e6-be0a-48e5-82ca-4801374aebd7" target="_blank" rel="noopener noreferrer">Support</a>
-          </p>
-        </footer>
-      </div>
-    </section>
+        <!-- Welcome landing lives at document start (before #sw-root) for SEO source order -->
 
     <div class="sw-dash-shell" id="sw-dash-shell">
       <header class="sw-home-topbar" role="banner">
@@ -19292,18 +19308,16 @@
   }
 
   function swUpdateLandingVisibility(projectCount) {
-    var dash = document.getElementById('sw-dashboard');
-    if (!dash) return;
     var n = projectCount == null ? 0 : (+projectCount || 0);
-    // Empty library → always show the welcome landing for first-time visitors.
-    // Once the user has at least one real novel, hide landing unless forced.
+    // Empty library → show welcome landing (first in HTML source for crawlers + first-time users).
     var show = n < 1;
     try {
       if (localStorage.getItem('sw-force-landing') === '1') show = true;
     } catch (e) {}
-    dash.classList.toggle('sw-show-landing', !!show);
+    try { document.body.classList.toggle('sw-landing-on', !!show); } catch (e) {}
+    var dash = document.getElementById('sw-dashboard');
+    if (dash) dash.classList.toggle('sw-show-landing', !!show);
     var land = document.getElementById('sw-landing');
-    var shell = document.getElementById('sw-dash-shell');
     if (land) {
       if (show) {
         land.hidden = false;
@@ -19311,13 +19325,19 @@
         land.style.display = 'block';
         land.style.visibility = 'visible';
         land.style.opacity = '1';
-        try { ROOT.classList.add('sw-show-dash'); } catch (e) {}
         try { land.scrollTop = 0; } catch (e) {}
-        if (shell) shell.style.display = 'none';
+        try {
+          if (typeof ROOT !== 'undefined' && ROOT) {
+            var cs = getComputedStyle(ROOT);
+            ['--sw-bg','--sw-ink','--sw-paper','--sw-muted','--sw-accent','--sw-border','--sw-panel','--sw-hover'].forEach(function (k) {
+              var v = cs.getPropertyValue(k);
+              if (v) land.style.setProperty(k, v);
+            });
+          }
+        } catch (e) {}
       } else {
         land.hidden = true;
         land.style.display = 'none';
-        if (shell) shell.style.display = '';
       }
     }
   }
@@ -19327,21 +19347,28 @@
       localStorage.setItem('sw-landing-dismissed', '1');
       localStorage.removeItem('sw-force-landing');
     } catch (e) {}
+    try { document.body.classList.remove('sw-landing-on'); } catch (e) {}
     var dash = document.getElementById('sw-dashboard');
     if (dash) dash.classList.remove('sw-show-landing');
     var land = document.getElementById('sw-landing');
-    if (land) land.hidden = true;
+    if (land) {
+      land.hidden = true;
+      land.style.display = 'none';
+    }
   }
   function swShowLandingPage() {
     try { localStorage.setItem('sw-force-landing', '1'); } catch (e) {}
+    try { document.body.classList.add('sw-landing-on'); } catch (e) {}
     try { ROOT.classList.add('sw-show-dash'); } catch (e) {}
     var dash = document.getElementById('sw-dashboard');
     if (dash) dash.classList.add('sw-show-landing');
     var land = document.getElementById('sw-landing');
     if (land) {
       land.hidden = false;
+      land.style.display = 'block';
       try { land.scrollTop = 0; } catch (e) {}
     }
+    try { swUpdateLandingVisibility(0); } catch (e) {}
   }
 
   async function swRenderDashSeries() {
@@ -31107,8 +31134,20 @@ function dbNumWord(n) {
         } catch (e3) { n = 0; }
         if (n < 1 && typeof swUpdateLandingVisibility === 'function') {
           swUpdateLandingVisibility(0);
+        } else if (n >= 1) {
+          try { document.body.classList.remove('sw-landing-on'); } catch (e4) {}
         }
       } catch (e) {}
+      // Failsafe: never leave the app permanently covered if init partially failed
+      setTimeout(function () {
+        try {
+          if (!document.body.classList.contains('sw-landing-on')) return;
+          // If landing is up but user clearly has shelf content, unlock
+          var grid = document.getElementById('sw-proj-grid');
+          var cards = grid ? grid.querySelectorAll('.sw-book-card, .sw-proj-card').length : 0;
+          if (cards > 0) document.body.classList.remove('sw-landing-on');
+        } catch (err) {}
+      }, 2500);
       try { swPatchOnReady(); } catch (e) {}
       try { swCdnHealthBanner(); setTimeout(swCdnHealthBanner, 2500); } catch (e) {}
       // Pen-name prompt only after the author has real activity
