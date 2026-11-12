@@ -2783,14 +2783,19 @@
       margin: 0 0 10px; font-size: 0.78rem; font-weight: 700;
       letter-spacing: 0.1em; text-transform: uppercase; color: var(--sw-muted, #6b727a);
     }
+    #sw-landing .sw-landing-brand {
+      margin: 0 0 8px; font-family: "EB Garamond", Georgia, serif;
+      font-size: clamp(1.35rem, 3.5vw, 1.75rem); font-weight: 600;
+      color: var(--sw-accent, #3d4f5f); letter-spacing: -0.01em; line-height: 1.2;
+    }
     #sw-landing .sw-landing-title {
-      margin: 0; font-family: "EB Garamond", Georgia, serif;
-      font-size: clamp(2.6rem, 8vw, 3.9rem); font-weight: 600;
-      color: var(--sw-accent, #3d4f5f); letter-spacing: -0.02em; line-height: 1.05;
+      margin: 0 auto; max-width: 18em; font-family: "EB Garamond", Georgia, serif;
+      font-size: clamp(1.55rem, 4.2vw, 2.35rem); font-weight: 600;
+      color: var(--sw-ink, #2a2e33); letter-spacing: -0.02em; line-height: 1.2;
     }
     #sw-landing .sw-landing-tagline {
-      margin: 12px auto 0; max-width: 28em; font-size: clamp(1.1rem, 2.4vw, 1.28rem);
-      font-weight: 600; color: var(--sw-ink, #2a2e33); line-height: 1.35;
+      margin: 12px auto 0; max-width: 28em; font-size: clamp(1.02rem, 2.2vw, 1.18rem);
+      font-weight: 500; color: var(--sw-muted, #6b727a); line-height: 1.4;
     }
     #sw-landing .sw-landing-sub {
       margin: 14px auto 0; max-width: 40em; font-size: clamp(0.95rem, 1.8vw, 1.08rem);
@@ -3975,8 +3980,9 @@
   <div class="sw-landing-inner">
     <header class="sw-landing-hero">
       <p class="sw-landing-kicker">Free · Offline · Private · No account</p>
-      <h1 class="sw-landing-title">StoryWriter</h1>
-      <p class="sw-landing-tagline">The free offline novel writing studio for indie authors</p>
+      <p class="sw-landing-brand">StoryWriter</p>
+      <h1 class="sw-landing-title">StoryWriter: Free Offline Novel Writing Software for Indie Authors</h1>
+      <p class="sw-landing-tagline">Draft, plan, design, and export — privately in your browser</p>
       <p class="sw-landing-sub">Draft chapters and scenes, build character and world bibles, typeset pages, design a cover, and export to PDF, EPUB, or Word — all in one private browser app. Your manuscript stays on your device unless you choose to back it up.</p>
       <div class="sw-landing-cta">
         <button type="button" class="sw-btn sw-btn-primary" id="sw-land-sample">Start with the sample novel</button>
@@ -4457,7 +4463,7 @@
           <button type="button" class="sw-home-rail-toggle" id="sw-home-rail-toggle" title="Expand or collapse menu" aria-label="Expand or collapse menu">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h10M4 18h16"/></svg>
           </button>
-          <h1 class="sw-home-title">StoryWriter</h1>
+          <div class="sw-home-title">StoryWriter</div>
         </div>
         <div class="sw-home-top-actions">
           <span id="sw-dash-hello" class="sw-visually-hidden">Welcome</span>
