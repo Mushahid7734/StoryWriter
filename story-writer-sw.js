@@ -1,6 +1,6 @@
 /* StoryWriter service worker - offline-capable, HTML network-first (v12)
    Bump CACHE when shipping app-shell changes so clients drop old caches. */
-const CACHE = 'storywriter-offline-v25';
+const CACHE = 'storywriter-offline-v26';
 const PRECACHE = [
   './',
   './index.html',
