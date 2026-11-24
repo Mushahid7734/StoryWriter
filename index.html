@@ -2733,6 +2733,44 @@
       color: var(--sw-ink, #2a2e33);
     }
     #sw-dashboard .sw-plan-compare { margin-top: 4px; }
+
+    /* Premium active UI */
+    .sw-pro-active-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 12px; border-radius: 999px; font-size: 0.78rem; font-weight: 700;
+      background: color-mix(in srgb, var(--sw-ok, #3d6b4f) 18%, var(--sw-paper, #f7f4ef));
+      color: var(--sw-ok, #3d6b4f);
+      border: 1px solid color-mix(in srgb, var(--sw-ok, #3d6b4f) 35%, transparent);
+      letter-spacing: 0.02em;
+    }
+    .sw-pro-active-pill::before {
+      content: ""; width: 8px; height: 8px; border-radius: 50%;
+      background: var(--sw-ok, #3d6b4f); box-shadow: 0 0 0 3px color-mix(in srgb, var(--sw-ok, #3d6b4f) 25%, transparent);
+    }
+    .sw-plan-col.premium.is-active,
+    body.sw-pro-active .sw-plan-col.premium,
+    #sw-root.sw-pro-active .sw-plan-col.premium {
+      border-color: color-mix(in srgb, #3b82f6 55%, var(--sw-border, #d4cdc3));
+      box-shadow: 0 6px 20px color-mix(in srgb, #3b82f6 14%, transparent);
+    }
+    .sw-plan-col.premium.is-active .sw-plan-list li::before,
+    body.sw-pro-active .sw-plan-col.premium .sw-plan-list li::before,
+    #sw-root.sw-pro-active .sw-plan-col.premium .sw-plan-list li::before {
+      background: #3b82f6;
+      box-shadow: 0 0 0 2px color-mix(in srgb, #3b82f6 30%, transparent);
+    }
+    .sw-plan-col.premium.is-active .sw-plan-badge,
+    body.sw-pro-active .sw-plan-col.premium .sw-plan-badge,
+    #sw-root.sw-pro-active .sw-plan-col.premium .sw-plan-badge {
+      color: #2563eb;
+    }
+    .sw-plan-col.premium.is-active .sw-plan-badge::after,
+    body.sw-pro-active .sw-plan-col.premium .sw-plan-badge::after,
+    #sw-root.sw-pro-active .sw-plan-col.premium .sw-plan-badge::after {
+      content: " · Active";
+      font-weight: 700;
+    }
+
     @media (max-width: 520px) {
       .sw-plan-col { padding: 14px 12px 12px; }
       .sw-plan-list li { font-size: 0.84rem; padding-left: 20px; }
@@ -4292,6 +4330,33 @@
         <li><strong>Library limits on Free</strong>
           <span class="sw-plan-note">Up to 3 novels · 1 series · 2 book designs</span>
         </li>
+        <li><strong>Character bible</strong>
+          <span class="sw-plan-note">Up to 4 characters per novel</span>
+        </li>
+        <li><strong>Locations</strong>
+          <span class="sw-plan-note">Up to 4 locations per novel</span>
+        </li>
+        <li><strong>Religions, planets &amp; items</strong>
+          <span class="sw-plan-note">Up to 4 of each per novel</span>
+        </li>
+        <li><strong>Glossary terms</strong>
+          <span class="sw-plan-note">Up to 4 terms per novel</span>
+        </li>
+        <li><strong>Timeline events &amp; relationships</strong>
+          <span class="sw-plan-note">Up to 8 of each per novel</span>
+        </li>
+        <li><strong>Grammar check</strong>
+          <span class="sw-plan-note">3 checks per day (online LanguageTool)</span>
+        </li>
+        <li><strong>Dictionary &amp; synonyms</strong>
+          <span class="sw-plan-note">12 lookups per day (double-click a word)</span>
+        </li>
+        <li><strong>Style helper</strong>
+          <span class="sw-plan-note">5 runs per day (filter words, clichés, passive)</span>
+        </li>
+        <li><strong>Dictation</strong>
+          <span class="sw-plan-note">3 sessions per day</span>
+        </li>
       </ul>
     </div>
     <div class="sw-plan-col premium">
@@ -4302,13 +4367,19 @@
         <li><strong>Everything in Free core</strong> — all four studios, full writing desk</li>
         <li><strong>Unlimited novels</strong> in your library</li>
         <li><strong>Unlimited series</strong> and Series Bible continuity</li>
+        <li><strong>Unlimited characters, locations, religions, planets, items</strong></li>
+        <li><strong>Unlimited glossary terms, timeline events &amp; relationships</strong></li>
         <li><strong>Unlimited Design Studio designs</strong> per library</li>
+        <li><strong>Unlimited grammar checks</strong> each day</li>
+        <li><strong>Unlimited dictionary &amp; synonym lookups</strong></li>
+        <li><strong>Unlimited style helper</strong> runs</li>
+        <li><strong>Unlimited dictation sessions</strong></li>
         <li><strong>Google Drive connect &amp; sync</strong> — push/pull manuscripts from the dashboard and desk</li>
         <li><strong>Drive status &amp; reopen from Drive</strong> across sessions</li>
         <li><strong>Google sign-in for license</strong> — Premium follows you on other devices</li>
         <li><strong>License key activation</strong> from your Gumroad receipt</li>
         <li><strong>Periodic license recheck</strong> — stays valid while the subscription is active</li>
-        <li><strong>No Free-tier caps</strong> on novels, series, or designs</li>
+        <li><strong>No Free-tier daily caps</strong> on writing tools or library size</li>
       </ul>
     </div>
   </div>
@@ -4324,8 +4395,13 @@
       <tbody>
         <tr><td>Chapters, scenes, editor, page view</td><td class="sw-plan-yes">Yes</td><td class="sw-plan-yes">Yes</td></tr>
         <tr><td>Corkboard, Scrivenings</td><td class="sw-plan-yes">Yes</td><td class="sw-plan-yes">Yes</td></tr>
-        <tr><td>Character bible &amp; @-mentions</td><td class="sw-plan-yes">Yes</td><td class="sw-plan-yes">Yes</td></tr>
-        <tr><td>Locations, worldbuilding, timeline, relationships</td><td class="sw-plan-yes">Yes</td><td class="sw-plan-yes">Yes</td></tr>
+        <tr><td>Character bible &amp; @-mentions</td><td class="sw-plan-yes">Yes (up to 4 characters)</td><td class="sw-plan-yes">Unlimited characters</td></tr>
+        <tr><td>Locations, worldbuilding, timeline, relationships</td><td class="sw-plan-yes">Yes (limited)</td><td class="sw-plan-yes">Yes</td></tr>
+        <tr><td>Characters per novel</td><td class="sw-plan-limit">Up to 4</td><td class="sw-plan-yes">Unlimited</td></tr>
+        <tr><td>Locations per novel</td><td class="sw-plan-limit">Up to 4</td><td class="sw-plan-yes">Unlimited</td></tr>
+        <tr><td>Religions / planets / items</td><td class="sw-plan-limit">Up to 4 each</td><td class="sw-plan-yes">Unlimited</td></tr>
+        <tr><td>Glossary terms</td><td class="sw-plan-limit">Up to 4</td><td class="sw-plan-yes">Unlimited</td></tr>
+        <tr><td>Timeline events / relationships</td><td class="sw-plan-limit">Up to 8 each</td><td class="sw-plan-yes">Unlimited</td></tr>
         <tr><td>Glossary, research folders, stickies</td><td class="sw-plan-yes">Yes</td><td class="sw-plan-yes">Yes</td></tr>
         <tr><td>Goals, streaks, focus timer, quiet mode</td><td class="sw-plan-yes">Yes</td><td class="sw-plan-yes">Yes</td></tr>
         <tr><td>Bookmarks, collections, templates</td><td class="sw-plan-yes">Yes</td><td class="sw-plan-yes">Yes</td></tr>
@@ -4337,6 +4413,10 @@
         <tr><td>Cover Studio</td><td class="sw-plan-yes">Yes</td><td class="sw-plan-yes">Yes</td></tr>
         <tr><td>Music panel (local + online)</td><td class="sw-plan-yes">Yes</td><td class="sw-plan-yes">Yes</td></tr>
         <tr><td>Browser auto-save &amp; disk backup/import</td><td class="sw-plan-yes">Yes</td><td class="sw-plan-yes">Yes</td></tr>
+        <tr><td>Grammar check (online)</td><td class="sw-plan-limit">3 / day</td><td class="sw-plan-yes">Unlimited</td></tr>
+        <tr><td>Dictionary &amp; synonyms</td><td class="sw-plan-limit">12 / day</td><td class="sw-plan-yes">Unlimited</td></tr>
+        <tr><td>Style helper</td><td class="sw-plan-limit">5 / day</td><td class="sw-plan-yes">Unlimited</td></tr>
+        <tr><td>Dictation</td><td class="sw-plan-limit">3 / day</td><td class="sw-plan-yes">Unlimited</td></tr>
         <tr><td>Novels in library</td><td class="sw-plan-limit">Up to 3</td><td class="sw-plan-yes">Unlimited</td></tr>
         <tr><td>Series</td><td class="sw-plan-limit">Up to 1</td><td class="sw-plan-yes">Unlimited</td></tr>
         <tr><td>Book designs</td><td class="sw-plan-limit">Up to 2</td><td class="sw-plan-yes">Unlimited</td></tr>
@@ -4913,7 +4993,8 @@
               <h3 style="margin:0 0 6px;font-family:'EB Garamond',Georgia,serif;font-size:1.35rem">StoryWriter Premium</h3>
               <p style="margin:0 0 12px;font-size:0.9rem;line-height:1.55;color:var(--sw-muted)">See exactly what Free includes versus Premium, then upgrade or activate your license key.</p>
               <p id="sw-pro-about-status" style="margin:0 0 12px;font-size:0.9rem;line-height:1.5">Free tier: up to 3 novels, 1 series, 2 designs. Sign in with Google and enter your Gumroad license key to unlock Premium.</p>
-              <div class="sw-drive-row" style="flex-wrap:wrap;gap:8px">
+              <div class="sw-drive-row" style="flex-wrap:wrap;gap:8px;align-items:center">
+                <span class="sw-pro-active-pill" id="sw-pro-active-badge" style="display:none">Premium active</span>
                 <button type="button" class="sw-btn sw-btn-primary" id="sw-pro-upgrade-btn">Get Premium</button>
                 <button type="button" class="sw-btn" id="sw-pro-signin-btn">Sign in with Google</button>
                 <button type="button" class="sw-btn" id="sw-pro-license-btn">I have a license key</button>
@@ -4958,6 +5039,33 @@
         <li><strong>Library limits on Free</strong>
           <span class="sw-plan-note">Up to 3 novels · 1 series · 2 book designs</span>
         </li>
+        <li><strong>Character bible</strong>
+          <span class="sw-plan-note">Up to 4 characters per novel</span>
+        </li>
+        <li><strong>Locations</strong>
+          <span class="sw-plan-note">Up to 4 locations per novel</span>
+        </li>
+        <li><strong>Religions, planets &amp; items</strong>
+          <span class="sw-plan-note">Up to 4 of each per novel</span>
+        </li>
+        <li><strong>Glossary terms</strong>
+          <span class="sw-plan-note">Up to 4 terms per novel</span>
+        </li>
+        <li><strong>Timeline events &amp; relationships</strong>
+          <span class="sw-plan-note">Up to 8 of each per novel</span>
+        </li>
+        <li><strong>Grammar check</strong>
+          <span class="sw-plan-note">3 checks per day (online LanguageTool)</span>
+        </li>
+        <li><strong>Dictionary &amp; synonyms</strong>
+          <span class="sw-plan-note">12 lookups per day (double-click a word)</span>
+        </li>
+        <li><strong>Style helper</strong>
+          <span class="sw-plan-note">5 runs per day (filter words, clichés, passive)</span>
+        </li>
+        <li><strong>Dictation</strong>
+          <span class="sw-plan-note">3 sessions per day</span>
+        </li>
       </ul>
     </div>
     <div class="sw-plan-col premium">
@@ -4968,13 +5076,19 @@
         <li><strong>Everything in Free core</strong> — all four studios, full writing desk</li>
         <li><strong>Unlimited novels</strong> in your library</li>
         <li><strong>Unlimited series</strong> and Series Bible continuity</li>
+        <li><strong>Unlimited characters, locations, religions, planets, items</strong></li>
+        <li><strong>Unlimited glossary terms, timeline events &amp; relationships</strong></li>
         <li><strong>Unlimited Design Studio designs</strong> per library</li>
+        <li><strong>Unlimited grammar checks</strong> each day</li>
+        <li><strong>Unlimited dictionary &amp; synonym lookups</strong></li>
+        <li><strong>Unlimited style helper</strong> runs</li>
+        <li><strong>Unlimited dictation sessions</strong></li>
         <li><strong>Google Drive connect &amp; sync</strong> — push/pull manuscripts from the dashboard and desk</li>
         <li><strong>Drive status &amp; reopen from Drive</strong> across sessions</li>
         <li><strong>Google sign-in for license</strong> — Premium follows you on other devices</li>
         <li><strong>License key activation</strong> from your Gumroad receipt</li>
         <li><strong>Periodic license recheck</strong> — stays valid while the subscription is active</li>
-        <li><strong>No Free-tier caps</strong> on novels, series, or designs</li>
+        <li><strong>No Free-tier daily caps</strong> on writing tools or library size</li>
       </ul>
     </div>
   </div>
@@ -4990,8 +5104,13 @@
       <tbody>
         <tr><td>Chapters, scenes, editor, page view</td><td class="sw-plan-yes">Yes</td><td class="sw-plan-yes">Yes</td></tr>
         <tr><td>Corkboard, Scrivenings</td><td class="sw-plan-yes">Yes</td><td class="sw-plan-yes">Yes</td></tr>
-        <tr><td>Character bible &amp; @-mentions</td><td class="sw-plan-yes">Yes</td><td class="sw-plan-yes">Yes</td></tr>
-        <tr><td>Locations, worldbuilding, timeline, relationships</td><td class="sw-plan-yes">Yes</td><td class="sw-plan-yes">Yes</td></tr>
+        <tr><td>Character bible &amp; @-mentions</td><td class="sw-plan-yes">Yes (up to 4 characters)</td><td class="sw-plan-yes">Unlimited characters</td></tr>
+        <tr><td>Locations, worldbuilding, timeline, relationships</td><td class="sw-plan-yes">Yes (limited)</td><td class="sw-plan-yes">Yes</td></tr>
+        <tr><td>Characters per novel</td><td class="sw-plan-limit">Up to 4</td><td class="sw-plan-yes">Unlimited</td></tr>
+        <tr><td>Locations per novel</td><td class="sw-plan-limit">Up to 4</td><td class="sw-plan-yes">Unlimited</td></tr>
+        <tr><td>Religions / planets / items</td><td class="sw-plan-limit">Up to 4 each</td><td class="sw-plan-yes">Unlimited</td></tr>
+        <tr><td>Glossary terms</td><td class="sw-plan-limit">Up to 4</td><td class="sw-plan-yes">Unlimited</td></tr>
+        <tr><td>Timeline events / relationships</td><td class="sw-plan-limit">Up to 8 each</td><td class="sw-plan-yes">Unlimited</td></tr>
         <tr><td>Glossary, research folders, stickies</td><td class="sw-plan-yes">Yes</td><td class="sw-plan-yes">Yes</td></tr>
         <tr><td>Goals, streaks, focus timer, quiet mode</td><td class="sw-plan-yes">Yes</td><td class="sw-plan-yes">Yes</td></tr>
         <tr><td>Bookmarks, collections, templates</td><td class="sw-plan-yes">Yes</td><td class="sw-plan-yes">Yes</td></tr>
@@ -5003,6 +5122,10 @@
         <tr><td>Cover Studio</td><td class="sw-plan-yes">Yes</td><td class="sw-plan-yes">Yes</td></tr>
         <tr><td>Music panel (local + online)</td><td class="sw-plan-yes">Yes</td><td class="sw-plan-yes">Yes</td></tr>
         <tr><td>Browser auto-save &amp; disk backup/import</td><td class="sw-plan-yes">Yes</td><td class="sw-plan-yes">Yes</td></tr>
+        <tr><td>Grammar check (online)</td><td class="sw-plan-limit">3 / day</td><td class="sw-plan-yes">Unlimited</td></tr>
+        <tr><td>Dictionary &amp; synonyms</td><td class="sw-plan-limit">12 / day</td><td class="sw-plan-yes">Unlimited</td></tr>
+        <tr><td>Style helper</td><td class="sw-plan-limit">5 / day</td><td class="sw-plan-yes">Unlimited</td></tr>
+        <tr><td>Dictation</td><td class="sw-plan-limit">3 / day</td><td class="sw-plan-yes">Unlimited</td></tr>
         <tr><td>Novels in library</td><td class="sw-plan-limit">Up to 3</td><td class="sw-plan-yes">Unlimited</td></tr>
         <tr><td>Series</td><td class="sw-plan-limit">Up to 1</td><td class="sw-plan-yes">Unlimited</td></tr>
         <tr><td>Book designs</td><td class="sw-plan-limit">Up to 2</td><td class="sw-plan-yes">Unlimited</td></tr>
@@ -7077,8 +7200,80 @@
     series: 1,
     designs: 2,
     customMusicLibs: 0,
-    driveSync: false
+    driveSync: false,
+    grammarPerDay: 3,
+    dictionaryPerDay: 12,
+    styleHelperPerDay: 5,
+    dictationPerDay: 3,
+    shareExportsPerDay: 5,
+    characters: 4,
+    locations: 4,
+    religions: 4,
+    planets: 4,
+    items: 4,
+    glossary: 4,
+    timeline: 8,
+    relationships: 8
   };
+  var SW_USAGE_KEY = "sw-pro-usage-v1";
+  function swTodayKey() {
+    var d = new Date();
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  }
+  function swLoadUsage() {
+    try {
+      var o = JSON.parse(localStorage.getItem(SW_USAGE_KEY) || "{}") || {};
+      if (o.day !== swTodayKey()) return { day: swTodayKey(), grammar: 0, dictionary: 0, styleHelper: 0, dictation: 0, shareExports: 0 };
+      return {
+        day: o.day,
+        grammar: o.grammar || 0,
+        dictionary: o.dictionary || 0,
+        styleHelper: o.styleHelper || 0,
+        dictation: o.dictation || 0,
+        shareExports: o.shareExports || 0
+      };
+    } catch (e) {
+      return { day: swTodayKey(), grammar: 0, dictionary: 0, styleHelper: 0, dictation: 0, shareExports: 0 };
+    }
+  }
+  function swSaveUsage(u) {
+    try { localStorage.setItem(SW_USAGE_KEY, JSON.stringify(u)); } catch (e) {}
+  }
+  /** Returns true if allowed; increments on success. kind: grammar|dictionary|styleHelper|dictation|shareExports */
+  function swConsumeFreeQuota(kind, label) {
+    if (isPro()) return true;
+    var limits = {
+      grammar: SW_FREE.grammarPerDay,
+      dictionary: SW_FREE.dictionaryPerDay,
+      styleHelper: SW_FREE.styleHelperPerDay,
+      dictation: SW_FREE.dictationPerDay,
+      shareExports: SW_FREE.shareExportsPerDay
+    };
+    var limit = limits[kind];
+    if (limit == null) return true;
+    var u = swLoadUsage();
+    var used = u[kind] || 0;
+    if (used >= limit) {
+      requirePro((label || kind) + " (Free: " + limit + "/day used)");
+      return false;
+    }
+    u[kind] = used + 1;
+    swSaveUsage(u);
+    return true;
+  }
+  function swQuotaLeft(kind) {
+    if (isPro()) return Infinity;
+    var limits = {
+      grammar: SW_FREE.grammarPerDay,
+      dictionary: SW_FREE.dictionaryPerDay,
+      styleHelper: SW_FREE.styleHelperPerDay,
+      dictation: SW_FREE.dictationPerDay,
+      shareExports: SW_FREE.shareExportsPerDay
+    };
+    var limit = limits[kind] || 0;
+    var u = swLoadUsage();
+    return Math.max(0, limit - (u[kind] || 0));
+  }
   var swFbApp = null, swFbAuth = null, swFbDb = null;
   var swAuthUser = null;
   var swProStatus = { active: false, source: "local" };
@@ -7319,6 +7514,49 @@
     }
     return true;
   }
+  /** Worldbuilding / bible entity limits for Free. kind: characters|locations|religions|planets|items|glossary|timeline|relationships */
+  function canCreateBibleEntry(kind) {
+    if (isPro()) return true;
+    var limits = {
+      characters: SW_FREE.characters,
+      locations: SW_FREE.locations,
+      religions: SW_FREE.religions,
+      planets: SW_FREE.planets,
+      items: SW_FREE.items,
+      glossary: SW_FREE.glossary,
+      timeline: SW_FREE.timeline,
+      relationships: SW_FREE.relationships
+    };
+    var limit = limits[kind];
+    if (limit == null) return true;
+    var arr = null;
+    try {
+      if (kind === 'characters') arr = state.characters;
+      else if (kind === 'locations') arr = state.locations;
+      else if (kind === 'religions') arr = state.religions;
+      else if (kind === 'planets') arr = state.planets;
+      else if (kind === 'items') arr = state.items;
+      else if (kind === 'glossary') arr = state.glossary;
+      else if (kind === 'timeline') arr = state.timeline;
+      else if (kind === 'relationships') arr = state.relationships;
+    } catch (e) { arr = []; }
+    var n = Array.isArray(arr) ? arr.length : 0;
+    if (n >= limit) {
+      var labels = {
+        characters: 'characters',
+        locations: 'locations',
+        religions: 'religions',
+        planets: 'planets',
+        items: 'items',
+        glossary: 'glossary terms',
+        timeline: 'timeline events',
+        relationships: 'relationships'
+      };
+      requirePro("More than " + limit + " " + (labels[kind] || kind) + " (Free limit)");
+      return false;
+    }
+    return true;
+  }
   async function swSignInGoogle() {
     if (!swFbAuth) initSwFirebase();
     if (!swFbAuth) { toast("Firebase not loaded — check connection"); return; }
@@ -7377,11 +7615,25 @@
   }
   function swRefreshProUi() {
     var pro = isPro();
+    try {
+      document.body.classList.toggle("sw-pro-active", !!pro);
+      var root = document.getElementById("sw-root");
+      if (root) root.classList.toggle("sw-pro-active", !!pro);
+      document.querySelectorAll(".sw-plan-col.premium").forEach(function (el) {
+        el.classList.toggle("is-active", !!pro);
+      });
+    } catch (e) {}
     var status = document.getElementById("sw-pro-about-status");
     if (status) {
-      status.textContent = pro
-        ? "Pro is active on this device" + (swProStatus.source ? " (" + swProStatus.source + ")." : ".")
-        : "Free tier: up to " + SW_FREE.projects + " novels, " + SW_FREE.series + " series, " + SW_FREE.designs + " designs. Sign in with Google and enter your Gumroad license key to unlock Pro.";
+      if (pro) {
+        status.innerHTML = '<span class="sw-pro-active-pill">Premium active</span> on this device' +
+          (swProStatus.source ? ' <span style="opacity:.75">(' + String(swProStatus.source) + ')</span>' : '') +
+          '. Unlimited novels, series, designs, Drive sync, and daily writing tools.';
+      } else {
+        status.textContent = "Free tier: up to " + SW_FREE.projects + " novels, " + SW_FREE.series + " series, " + SW_FREE.designs +
+          " designs · grammar " + SW_FREE.grammarPerDay + "/day · dictionary " + SW_FREE.dictionaryPerDay +
+          "/day · style helper " + SW_FREE.styleHelperPerDay + "/day. Sign in with Google and enter your Gumroad license key to unlock Premium.";
+      }
     }
     var userLine = document.getElementById("sw-pro-user-line");
     if (userLine) {
@@ -7392,12 +7644,29 @@
     var so = document.getElementById("sw-pro-signout-btn");
     var si = document.getElementById("sw-pro-signin-btn");
     var ck = document.getElementById("sw-pro-check-btn");
+    var up = document.getElementById("sw-pro-upgrade-btn");
+    var lic = document.getElementById("sw-pro-license-btn");
+    var activeBadge = document.getElementById("sw-pro-active-badge");
     if (so) so.style.display = swAuthUser ? "" : "none";
     if (si) si.style.display = swAuthUser ? "none" : "";
     if (ck) ck.style.display = (swAuthUser && swProSettings.licenseKey) ? "" : "none";
+    // When Premium is active, hide upgrade + license entry
+    if (up) up.style.display = pro ? "none" : "";
+    if (lic) lic.style.display = pro ? "none" : "";
+    if (activeBadge) {
+      activeBadge.style.display = pro ? "inline-flex" : "none";
+    } else if (pro && up && up.parentNode) {
+      // inject once if missing
+      var badge = document.createElement("span");
+      badge.id = "sw-pro-active-badge";
+      badge.className = "sw-pro-active-pill";
+      badge.textContent = "Premium active";
+      badge.style.display = "inline-flex";
+      up.parentNode.insertBefore(badge, up);
+    }
     ["sw-pro-top-btn", "sw-pro-home-btn"].forEach(function (id) {
       var el = document.getElementById(id);
-      if (el) el.textContent = pro ? "Pro ✓" : "Pro";
+      if (el) el.textContent = pro ? "Premium ✓" : "Premium";
     });
   }
   function swWireProButtons() {
@@ -11958,6 +12227,7 @@
   async function showDict(word) {
     word = (word || '').replace(/[^a-zA-Z'-]/g, '');
     if (word.length < 2) return;
+    if (typeof swConsumeFreeQuota === 'function' && !swConsumeFreeQuota('dictionary', 'Dictionary lookups')) return;
 
     // Preserve selection so we can replace the word after the modal opens
     const sel = window.getSelection();
@@ -12256,6 +12526,7 @@
     }));
   }
   function editLocation(id) {
+    if (!id && typeof canCreateBibleEntry === 'function' && !canCreateBibleEntry('locations')) return;
     const l = id ? state.locations.find(x => x.id === id) : {};
     openModal('<h3>' + (id ? 'Edit' : 'New') + ' location</h3>' +
       field('Name', 'm-name', l.name) + field('Type (planet / region / city…)', 'm-kind', l.kind) +
@@ -12320,6 +12591,7 @@
     }));
   }
   function editCharacter(id) {
+    if (!id && typeof canCreateBibleEntry === 'function' && !canCreateBibleEntry('characters')) return;
     const c = id ? state.characters.find(x => x.id === id) : {};
     openModal('<h3>' + (id ? 'Edit' : 'New') + ' character</h3>' +
       field('Name', 'm-name', c.name) + field('Role', 'm-role', c.role) + field('Age', 'm-age', c.age) +
@@ -12423,6 +12695,7 @@
     }));
   }
   function editReligion(id) {
+    if (!id && typeof canCreateBibleEntry === 'function' && !canCreateBibleEntry('religions')) return;
     const r = id ? state.religions.find(x => x.id === id) : {};
     openModal('<h3>' + (id ? 'Edit' : 'New') + ' religion</h3>' +
       field('Name', 'm-name', r.name) + field('Summary', 'm-summary', r.summary, 'textarea') +
@@ -12471,6 +12744,7 @@
     }));
   }
   function editPlanet(id) {
+    if (!id && typeof canCreateBibleEntry === 'function' && !canCreateBibleEntry('planets')) return;
     const p = id ? state.planets.find(x => x.id === id) : {};
     openModal('<h3>' + (id ? 'Edit' : 'New') + ' planet</h3>' +
       field('Name', 'm-name', p.name) + field('Summary', 'm-summary', p.summary, 'textarea') +
@@ -13769,13 +14043,13 @@
     }
   });
 
-  $('#sw-loc-add').onclick = () => editLocation(null);
+  $('#sw-loc-add').onclick = () => { if (typeof canCreateBibleEntry === 'function' && !canCreateBibleEntry('locations')) return; editLocation(null); };
   $('#sw-loc-docx').onclick = () => saveListDocx('Locations', state.locations, [['Type','kind'],['Description','description'],['Notes','notes']], 'locations.docx');
-  $('#sw-char-add').onclick = () => editCharacter(null);
+  $('#sw-char-add').onclick = () => { if (typeof canCreateBibleEntry === 'function' && !canCreateBibleEntry('characters')) return; editCharacter(null); };
   $('#sw-char-docx').onclick = () => saveListDocx('Characters', state.characters, [['Role','role'],['Age','age'],['Traits','traits'],['Wants','wants'],['Fears','fears'],['Arc','arc']], 'characters.docx');
-  $('#sw-rel-add').onclick = () => editReligion(null);
+  $('#sw-rel-add').onclick = () => { if (typeof canCreateBibleEntry === 'function' && !canCreateBibleEntry('religions')) return; editReligion(null); };
   $('#sw-rel-docx').onclick = () => saveListDocx('Religions', state.religions, [['Summary','summary'],['Deities','deities'],['Beliefs','beliefs']], 'religions.docx');
-  $('#sw-pl-add').onclick = () => editPlanet(null);
+  $('#sw-pl-add').onclick = () => { if (typeof canCreateBibleEntry === 'function' && !canCreateBibleEntry('planets')) return; editPlanet(null); };
   $('#sw-pl-docx').onclick = () => saveListDocx('Planets', state.planets, [['Summary','summary'],['Star','star'],['Climate','climate']], 'planets.docx');
 
   // ===== Sticky notes brainstorm (title + content, popup editor, soft colors) =====
@@ -15316,6 +15590,7 @@
   }
 
   async function runGrammarCheck() {
+    if (typeof swConsumeFreeQuota === 'function' && !swConsumeFreeQuota('grammar', 'Grammar check')) return;
     try { saveCurrent(); } catch (e) {}
     clearGrammarMarks();
     var map = getEditorPlainAndMap();
@@ -16927,7 +17202,7 @@
     if (graphBtn) graphBtn.onclick = toggleRelGraph;
 
     var glossAdd = document.getElementById('sw-gloss-add');
-    if (glossAdd) glossAdd.onclick = function () { editGlossaryTerm(null); };
+    if (glossAdd) glossAdd.onclick = function () { if (typeof canCreateBibleEntry === 'function' && !canCreateBibleEntry('glossary')) return; editGlossaryTerm(null); };
     var fnBtn = document.getElementById('sw-footnote-btn');
     if (fnBtn) fnBtn.onclick = function () { insertFootnote(); };
     var sbBtn = document.getElementById('sw-scenebreak-btn');
@@ -17271,6 +17546,7 @@
     });
   }
   function editRelation(id) {
+    if (!id && typeof canCreateBibleEntry === 'function' && !canCreateBibleEntry('relationships')) return;
     var r = id ? state.relationships.find(function (x) { return x.id === id; }) : {};
     var names = state.characters.map(function (c) { return c.name; }).filter(Boolean);
     openModal('<h3>' + (id ? 'Edit' : 'New') + ' relationship</h3>' +
@@ -17430,8 +17706,8 @@
     updatePastePlainBtn(); save();
     toast(state.pastePlain !== false ? 'Plain paste on' : 'Plain paste off');
   });
-  _tb('sw-tl-add', function () { editTimelineEvent(null); });
-  _tb('sw-rel-add', function () { editReligion(null); });
+  _tb('sw-tl-add', function () { if (typeof canCreateBibleEntry === 'function' && !canCreateBibleEntry('timeline')) return; editTimelineEvent(null); });
+  _tb('sw-rel-add', function () { if (typeof canCreateBibleEntry === 'function' && !canCreateBibleEntry('religions')) return; editReligion(null); });
   updatePomoUI();
   updatePastePlainBtn();
   updateStreakUI();
@@ -17704,6 +17980,7 @@
     });
   }
   async function editTimelineEvent(id) {
+    if (!id && typeof canCreateBibleEntry === 'function' && !canCreateBibleEntry('timeline')) return;
     if (!state.timeline) state.timeline = [];
     var ev = id ? state.timeline.find(function (x) { return x.id === id; }) : { title: '', when: '', notes: '', order: (state.timeline || []).length };
     if (!ev) ev = { title: '', when: '', notes: '', order: 0 };
@@ -18996,7 +19273,7 @@
     }
     if (byId('sw-rev-btn')) byId('sw-rev-btn').onclick = toggleRevision;
     if (byId('sw-compare-btn')) byId('sw-compare-btn').onclick = openCompare;
-    if (byId('sw-tl-add')) byId('sw-tl-add').onclick = function () { editTimelineEvent(null); };
+    if (byId('sw-tl-add')) byId('sw-tl-add').onclick = function () { if (typeof canCreateBibleEntry === 'function' && !canCreateBibleEntry('timeline')) return; editTimelineEvent(null); };
     if (byId('sw-rel-add')) byId('sw-rel-add').onclick = function () { editReligion(null); };
     if (byId('sw-series-set')) byId('sw-series-set').onclick = async function () {
       var n = await swPrompt('Series name', state.seriesName || '');
@@ -19076,8 +19353,9 @@
       if (b) b.style.outline = state.pastePlain !== false ? '2px solid var(--sw-ok)' : '';
       toast(state.pastePlain !== false ? 'Plain paste on' : 'Plain paste off');
     });
-    on('sw-tl-add', function () { if (typeof editTimelineEvent === 'function') editTimelineEvent(null); else if (typeof addTimelineEvent === 'function') addTimelineEvent(); });
+    on('sw-tl-add', function () { if (typeof canCreateBibleEntry === 'function' && !canCreateBibleEntry('timeline')) return; if (typeof editTimelineEvent === 'function') editTimelineEvent(null); else if (typeof addTimelineEvent === 'function') addTimelineEvent(); });
     on('sw-relmap-add', function () {
+      if (typeof canCreateBibleEntry === 'function' && !canCreateBibleEntry('relationships')) return;
       if (typeof editRelationship === 'function') editRelationship(null);
       else if (typeof editRelation === 'function') editRelation(null);
       else toast('Relationship editor unavailable');
@@ -19290,6 +19568,7 @@
     });
   }
   function editGlossaryTerm(id) {
+    if (!id && typeof canCreateBibleEntry === 'function' && !canCreateBibleEntry('glossary')) return;
     var g = id ? state.glossary.find(function (x) { return x.id === id; }) : {};
     openModal('<h3>' + (id ? 'Edit' : 'New') + ' glossary term</h3>' +
       field('Term', 'm-term', g.term || '') +
@@ -31691,6 +31970,7 @@ function dbNumWord(n) {
     var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) { toast('Speech recognition not supported in this browser'); return; }
     if (swRecognition) { try { swRecognition.stop(); } catch (e) {} swRecognition = null; toast('Dictation stopped'); return; }
+    if (typeof swConsumeFreeQuota === 'function' && !swConsumeFreeQuota('dictation', 'Dictation sessions')) return;
     swRecognition = new SR();
     swRecognition.continuous = true;
     swRecognition.interimResults = true;
@@ -32090,6 +32370,7 @@ function dbNumWord(n) {
     });
   }
   function editItem(it) {
+    if (!it && typeof canCreateBibleEntry === 'function' && !canCreateBibleEntry('items')) return;
     it = it || { id: uid(), name: '', description: '', notes: '', appearsIn: '' };
     openModal(
       '<h3>' + (it.name ? 'Edit item' : 'New item') + '</h3>' +
@@ -32113,7 +32394,7 @@ function dbNumWord(n) {
     };
   }
   document.addEventListener('click', function (e) {
-    if (e.target && e.target.id === 'sw-item-add') editItem(null);
+    if (e.target && e.target.id === 'sw-item-add') { if (typeof canCreateBibleEntry === 'function' && !canCreateBibleEntry('items')) return; editItem(null); }
   });
 
   // ===== Libraries tab: IndexedDB-cached JSON corpora =====
@@ -33105,6 +33386,7 @@ function dbNumWord(n) {
     var FILTER_WORDS = ['just','really','very','quite','rather','somewhat','almost','perhaps','maybe','seemed','suddenly','started to','began to','could see','could hear','could feel','decided to','in order to'];
     var CLICHES = ['in the nick of time','only time will tell','avoid like the plague','at the end of the day','needless to say','for all intents and purposes','in the blink of an eye','calm before the storm','better late than never','time heals all wounds'];
     function openStyleHelper() {
+      if (typeof swConsumeFreeQuota === 'function' && !swConsumeFreeQuota('styleHelper', 'Style helper')) return;
       ensureExtras();
       var sc = getActiveScene();
       if (!sc) { toast('Open a scene first'); return; }
