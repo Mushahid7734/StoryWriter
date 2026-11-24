@@ -44,6 +44,9 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="https://apis.google.com/js/api.js" async defer></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Source+Sans+3:wght@400;500;600&display=swap');
 
@@ -2579,6 +2582,164 @@
     }
     #sw-root .sw-coll-chip:hover { border-color: var(--sw-accent); }
 
+
+    /* Free vs Premium comparison (landing + dashboard) */
+    .sw-plan-compare {
+      margin: 8px 0 0;
+    }
+    .sw-plan-compare-intro {
+      margin: 0 0 14px;
+      font-size: 0.92rem;
+      line-height: 1.55;
+      color: var(--sw-muted, #6b727a);
+      max-width: 62ch;
+    }
+    .sw-plan-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+      margin: 0 0 8px;
+    }
+    @media (min-width: 720px) {
+      .sw-plan-grid { grid-template-columns: 1fr 1fr; gap: 16px; align-items: stretch; }
+    }
+    .sw-plan-col {
+      border: 1px solid var(--sw-border, #d4cdc3);
+      border-radius: 14px;
+      background: var(--sw-paper, #f7f4ef);
+      padding: 16px 16px 14px;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      box-shadow: 0 4px 16px color-mix(in srgb, var(--sw-accent, #3d4f5f) 8%, transparent);
+    }
+    .sw-plan-col.premium {
+      border-color: color-mix(in srgb, var(--sw-accent, #3d4f5f) 45%, var(--sw-border, #d4cdc3));
+      background:
+        linear-gradient(165deg,
+          color-mix(in srgb, var(--sw-accent, #3d4f5f) 10%, var(--sw-paper, #f7f4ef)) 0%,
+          var(--sw-paper, #f7f4ef) 55%);
+    }
+    .sw-plan-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--sw-accent, #3d4f5f);
+      margin: 0 0 6px;
+    }
+    .sw-plan-col.premium .sw-plan-badge { color: var(--sw-ok, #3d6b4f); }
+    .sw-plan-col h3 {
+      margin: 0 0 6px;
+      font-family: "EB Garamond", Georgia, serif;
+      font-size: 1.28rem;
+      font-weight: 600;
+      color: var(--sw-ink, #2a2e33);
+      line-height: 1.25;
+    }
+    .sw-plan-col .sw-plan-sub {
+      margin: 0 0 12px;
+      font-size: 0.84rem;
+      line-height: 1.45;
+      color: var(--sw-muted, #6b727a);
+    }
+    .sw-plan-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      flex: 1;
+    }
+    .sw-plan-list li {
+      position: relative;
+      padding: 7px 0 7px 22px;
+      font-size: 0.86rem;
+      line-height: 1.45;
+      color: var(--sw-ink, #2a2e33);
+      border-bottom: 1px solid color-mix(in srgb, var(--sw-border, #d4cdc3) 70%, transparent);
+    }
+    .sw-plan-list li:last-child { border-bottom: none; }
+    .sw-plan-list li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0.85em;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--sw-ok, #3d6b4f);
+      opacity: 0.85;
+    }
+    .sw-plan-col.premium .sw-plan-list li::before {
+      background: var(--sw-accent, #3d4f5f);
+    }
+    .sw-plan-list li strong { font-weight: 600; }
+    .sw-plan-list .sw-plan-note {
+      display: block;
+      font-size: 0.78rem;
+      color: var(--sw-muted, #6b727a);
+      margin-top: 2px;
+      font-weight: 400;
+    }
+    .sw-plan-table-wrap {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      margin: 16px 0 4px;
+      border-radius: 12px;
+      border: 1px solid var(--sw-border, #d4cdc3);
+      background: var(--sw-paper, #f7f4ef);
+    }
+    .sw-plan-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 520px;
+      font-size: 0.86rem;
+    }
+    .sw-plan-table th,
+    .sw-plan-table td {
+      padding: 10px 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--sw-border, #d4cdc3);
+      vertical-align: top;
+      line-height: 1.4;
+    }
+    .sw-plan-table th {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--sw-muted, #6b727a);
+      background: var(--sw-panel, #e4ddd4);
+      position: sticky;
+      top: 0;
+    }
+    .sw-plan-table tr:last-child td { border-bottom: none; }
+    .sw-plan-table td:first-child { font-weight: 600; color: var(--sw-ink, #2a2e33); width: 36%; }
+    .sw-plan-yes { color: var(--sw-ok, #3d6b4f); font-weight: 600; }
+    .sw-plan-limit { color: var(--sw-muted, #6b727a); }
+    .sw-plan-no { color: var(--sw-danger, #9a5040); }
+    #sw-landing .sw-landing-plans {
+      margin: 8px 0 28px;
+      padding: 18px 16px;
+      border-radius: 16px;
+      border: 1px solid var(--sw-border, #d4cdc3);
+      background: color-mix(in srgb, var(--sw-panel, #e4ddd4) 55%, transparent);
+    }
+    #sw-landing .sw-landing-plans h2 {
+      font-family: "EB Garamond", Georgia, serif;
+      font-size: clamp(1.25rem, 3vw, 1.55rem);
+      margin: 0 0 8px;
+      color: var(--sw-ink, #2a2e33);
+    }
+    #sw-dashboard .sw-plan-compare { margin-top: 4px; }
+    @media (max-width: 520px) {
+      .sw-plan-col { padding: 14px 12px 12px; }
+      .sw-plan-list li { font-size: 0.84rem; padding-left: 20px; }
+      .sw-plan-table { font-size: 0.8rem; min-width: 460px; }
+      .sw-plan-table th, .sw-plan-table td { padding: 8px 10px; }
+    }
+
     /* Free-forever card — same treatment as PaperQuill */
     #sw-dashboard .sw-free-card,
     #sw-dashboard .sw-free-promise {
@@ -3980,7 +4141,7 @@
 <section id="sw-landing" class="sw-landing" aria-label="Welcome to StoryWriter">
   <div class="sw-landing-inner">
     <header class="sw-landing-hero">
-      <p class="sw-landing-kicker">Free · Offline · Private · No account</p>
+      <p class="sw-landing-kicker">Free core · Optional Premium · Offline · Private</p>
       <p class="sw-landing-brand">StoryWriter</p>
       <h1 class="sw-landing-title">StoryWriter: Free Offline Novel Writing Software for Indie Authors</h1>
       <p class="sw-landing-tagline">Draft, plan, design, and export — privately in your browser</p>
@@ -4002,7 +4163,7 @@
         <li><strong>Built for long novels.</strong> Chapters, scenes, corkboard, goals, and a calm writing desk.</li>
         <li><strong>Four studios, one app.</strong> Writing, Design, Share, and Cover — start on the dashboard, then open tools when you need them.</li>
         <li><strong>Export when ready.</strong> PDF, EPUB, and Word from the same manuscript.</li>
-        <li><strong>Free to use.</strong> Optional support keeps development going; writing never requires payment.</li>
+        <li><strong>Free core, optional Pro.</strong> Draft locally for free; Pro unlocks unlimited novels, series, Drive sync, and power tools.</li>
       </ul>
     </section>
 
@@ -4095,23 +4256,119 @@
       </div>
     </section>
 
+    <section class="sw-landing-plans" aria-labelledby="sw-land-plans-h">
+      <h2 id="sw-land-plans-h">Free vs Premium</h2>
+      <div class="sw-plan-compare">
+  <p class="sw-plan-compare-intro">StoryWriter’s writing tools stay free. Premium removes library limits and unlocks Drive sync across devices. Here is every feature, split clearly.</p>
+  <div class="sw-plan-grid">
+    <div class="sw-plan-col free">
+      <span class="sw-plan-badge">Free · always</span>
+      <h3>Free core</h3>
+      <p class="sw-plan-sub">No account required to draft. Limits apply only to how many novels, series, and designs you keep on this device.</p>
+      <ul class="sw-plan-list">
+        <li><strong>Writing Desk</strong> — chapters &amp; scenes with drag reorder</li>
+        <li><strong>Focused editor</strong> — paper-like page, themes, font size</li>
+        <li><strong>Page view</strong> — calm read/revise layout</li>
+        <li><strong>Corkboard</strong> — lanes, status chips, filters</li>
+        <li><strong>Scrivenings</strong> — multi-scene continuous edit</li>
+        <li><strong>Character bible</strong> — profiles, arcs, @-mentions</li>
+        <li><strong>Locations &amp; worldbuilding</strong> — places, cultures, religions, planets, items</li>
+        <li><strong>Timeline &amp; relationships</strong> — events and graph</li>
+        <li><strong>Glossary &amp; research</strong> — terms, folders, notes, PDFs, links</li>
+        <li><strong>Brainstorm stickies</strong> — color idea notes</li>
+        <li><strong>Goals, streaks &amp; quiet focus</strong> — session targets, timer</li>
+        <li><strong>Bookmarks, collections &amp; templates</strong></li>
+        <li><strong>Find &amp; replace</strong> and style / highlight helpers</li>
+        <li><strong>Footnotes, comments, compare view</strong></li>
+        <li><strong>Progress, achievements &amp; writing prompts</strong></li>
+        <li><strong>Design Studio</strong> — live previews, typography, margins, chapter openers, front/back matter, proof view</li>
+        <li><strong>Export PDF, EPUB, Word (DOCX)</strong></li>
+        <li><strong>Share Studio</strong> — quote cards, vibe cards, 3D mockups, short-form assets</li>
+        <li><strong>Cover Studio</strong> — title/author/series lockups, palette, image placement, print &amp; digital sizes</li>
+        <li><strong>Music panel</strong> — offline folders, Archive.org libraries, playlists</li>
+        <li><strong>Private browser storage</strong> — auto-save on this device</li>
+        <li><strong>Disk save / open / import</strong> — JSON backups and manuscript import</li>
+        <li><strong>Sample novel &amp; guided tour</strong></li>
+        <li><strong>Library limits on Free</strong>
+          <span class="sw-plan-note">Up to 3 novels · 1 series · 2 book designs</span>
+        </li>
+      </ul>
+    </div>
+    <div class="sw-plan-col premium">
+      <span class="sw-plan-badge">Premium</span>
+      <h3>StoryWriter Premium</h3>
+      <p class="sw-plan-sub">Everything in Free, plus room to grow a multi-book career and sync via Google Drive after sign-in.</p>
+      <ul class="sw-plan-list">
+        <li><strong>Everything in Free core</strong> — all four studios, full writing desk</li>
+        <li><strong>Unlimited novels</strong> in your library</li>
+        <li><strong>Unlimited series</strong> and Series Bible continuity</li>
+        <li><strong>Unlimited Design Studio designs</strong> per library</li>
+        <li><strong>Google Drive connect &amp; sync</strong> — push/pull manuscripts from the dashboard and desk</li>
+        <li><strong>Drive status &amp; reopen from Drive</strong> across sessions</li>
+        <li><strong>Google sign-in for license</strong> — Premium follows you on other devices</li>
+        <li><strong>License key activation</strong> from your Gumroad receipt</li>
+        <li><strong>Periodic license recheck</strong> — stays valid while the subscription is active</li>
+        <li><strong>No Free-tier caps</strong> on novels, series, or designs</li>
+      </ul>
+    </div>
+  </div>
+  <div class="sw-plan-table-wrap" role="region" aria-label="Feature comparison table" tabindex="0">
+    <table class="sw-plan-table">
+      <thead>
+        <tr>
+          <th scope="col">Feature</th>
+          <th scope="col">Free</th>
+          <th scope="col">Premium</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Chapters, scenes, editor, page view</td><td class="sw-plan-yes">Yes</td><td class="sw-plan-yes">Yes</td></tr>
+        <tr><td>Corkboard, Scrivenings</td><td class="sw-plan-yes">Yes</td><td class="sw-plan-yes">Yes</td></tr>
+        <tr><td>Character bible &amp; @-mentions</td><td class="sw-plan-yes">Yes</td><td class="sw-plan-yes">Yes</td></tr>
+        <tr><td>Locations, worldbuilding, timeline, relationships</td><td class="sw-plan-yes">Yes</td><td class="sw-plan-yes">Yes</td></tr>
+        <tr><td>Glossary, research folders, stickies</td><td class="sw-plan-yes">Yes</td><td class="sw-plan-yes">Yes</td></tr>
+        <tr><td>Goals, streaks, focus timer, quiet mode</td><td class="sw-plan-yes">Yes</td><td class="sw-plan-yes">Yes</td></tr>
+        <tr><td>Bookmarks, collections, templates</td><td class="sw-plan-yes">Yes</td><td class="sw-plan-yes">Yes</td></tr>
+        <tr><td>Find &amp; replace, style helpers, footnotes, comments</td><td class="sw-plan-yes">Yes</td><td class="sw-plan-yes">Yes</td></tr>
+        <tr><td>Progress, achievements, prompts</td><td class="sw-plan-yes">Yes</td><td class="sw-plan-yes">Yes</td></tr>
+        <tr><td>Design Studio layout &amp; proof tools</td><td class="sw-plan-yes">Yes</td><td class="sw-plan-yes">Yes</td></tr>
+        <tr><td>Export PDF, EPUB, Word</td><td class="sw-plan-yes">Yes</td><td class="sw-plan-yes">Yes</td></tr>
+        <tr><td>Share Studio cards &amp; mockups</td><td class="sw-plan-yes">Yes</td><td class="sw-plan-yes">Yes</td></tr>
+        <tr><td>Cover Studio</td><td class="sw-plan-yes">Yes</td><td class="sw-plan-yes">Yes</td></tr>
+        <tr><td>Music panel (local + online)</td><td class="sw-plan-yes">Yes</td><td class="sw-plan-yes">Yes</td></tr>
+        <tr><td>Browser auto-save &amp; disk backup/import</td><td class="sw-plan-yes">Yes</td><td class="sw-plan-yes">Yes</td></tr>
+        <tr><td>Novels in library</td><td class="sw-plan-limit">Up to 3</td><td class="sw-plan-yes">Unlimited</td></tr>
+        <tr><td>Series</td><td class="sw-plan-limit">Up to 1</td><td class="sw-plan-yes">Unlimited</td></tr>
+        <tr><td>Book designs</td><td class="sw-plan-limit">Up to 2</td><td class="sw-plan-yes">Unlimited</td></tr>
+        <tr><td>Google Drive sync</td><td class="sw-plan-no">Not included</td><td class="sw-plan-yes">Included</td></tr>
+        <tr><td>Google sign-in + license across devices</td><td class="sw-plan-no">Not required / not included</td><td class="sw-plan-yes">Included</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+      <div class="sw-landing-cta" style="margin-top:16px">
+        <a class="sw-btn sw-btn-primary" href="https://masoncarterauthor.gumroad.com/l/StoryWriter" target="_blank" rel="noopener noreferrer">Get StoryWriter Premium</a>
+        <a class="sw-btn" href="https://www.authormasoncarter.com/" target="_blank" rel="noopener noreferrer">About Mason Carter</a>
+      </div>
+    </section>
+
     <section class="sw-landing-support" aria-labelledby="sw-land-sup-h">
-      <h2 id="sw-land-sup-h">Support StoryWriter</h2>
-      <p>StoryWriter stays free for drafting and local work. If it helps your books, an optional tip supports ongoing development. Writing never requires payment or an account.</p>
+      <h2 id="sw-land-sup-h">StoryWriter Premium</h2>
+      <p>Ready to go past the Free library limits? Premium is a Gumroad subscription with a license key — sign in with Google in the app, paste your key, and unlock unlimited novels, series, designs, and Drive sync.</p>
       <p>
-        <a class="sw-btn sw-btn-primary" href="https://store.authormasoncarter.com/checkout/buy/3d5bf2e6-be0a-48e5-82ca-4801374aebd7" target="_blank" rel="noopener noreferrer">Support the app</a>
+        <a class="sw-btn sw-btn-primary" href="https://masoncarterauthor.gumroad.com/l/StoryWriter" target="_blank" rel="noopener noreferrer">Get StoryWriter Premium</a>
         <a class="sw-btn" href="https://www.authormasoncarter.com/" target="_blank" rel="noopener noreferrer">About Mason Carter</a>
       </p>
     </section>
 
     <footer class="sw-landing-foot">
-      <p>StoryWriter is a free offline novel writing app by <a href="https://www.authormasoncarter.com/" target="_blank" rel="noopener noreferrer">Mason Carter</a>. Projects stay in your browser unless you export or use optional backups.</p>
+      <p>StoryWriter is an offline novel writing app by <a href="https://www.authormasoncarter.com/" target="_blank" rel="noopener noreferrer">Mason Carter</a>. Projects stay in your browser unless you export or use optional backups. Pro is optional.</p>
       <p>
         <a href="https://www.authormasoncarter.com/p/privacy-policy-for-storywriter.html" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
         ·
         <a href="https://www.authormasoncarter.com/p/terms-of-service-for-storywriter.html" target="_blank" rel="noopener noreferrer">Terms of Service</a>
         ·
-        <a href="https://store.authormasoncarter.com/checkout/buy/3d5bf2e6-be0a-48e5-82ca-4801374aebd7" target="_blank" rel="noopener noreferrer">Support</a>
+        <a href="https://masoncarterauthor.gumroad.com/l/StoryWriter" target="_blank" rel="noopener noreferrer">Pro</a>
       </p>
     </footer>
   </div>
@@ -4142,7 +4399,7 @@
       <span id="sw-goal-label">0/500</span>
       <div class="sw-goal-bar"><div class="sw-goal-fill" id="sw-goal-fill"></div></div>
     </div>
-    <a class="sw-support-link sw-support-top" href="https://store.authormasoncarter.com/checkout/buy/3d5bf2e6-be0a-48e5-82ca-4801374aebd7" target="_blank" rel="noopener noreferrer" title="StoryWriter stays free — an optional tip supports development">☕ Support</a>
+    <button type="button" class="sw-support-link sw-support-top" id="sw-pro-top-btn" title="StoryWriter Pro">Pro</button>
     <span class="sw-wordcount" id="sw-wordcount">0 words</span>
     <span class="sw-streak" id="sw-streak" title="Writing streak">🔥 <strong>0</strong></span>
     <!-- Hidden controls: still present for JS wiring; use Capsule → Tools / Home / Chapters / Focus -->
@@ -4468,7 +4725,7 @@
         </div>
         <div class="sw-home-top-actions">
           <span id="sw-dash-hello" class="sw-visually-hidden">Welcome</span>
-          <a class="sw-home-support" href="https://store.authormasoncarter.com/checkout/buy/3d5bf2e6-be0a-48e5-82ca-4801374aebd7" target="_blank" rel="noopener noreferrer" title="Optional tip — StoryWriter stays free">Support</a>
+          <button type="button" class="sw-home-support" id="sw-pro-home-btn" title="StoryWriter Pro">Pro</button>
         </div>
       </header>
 
@@ -4497,6 +4754,10 @@
               <button type="button" class="sw-home-nav-item" data-dtab="progress" title="Progress">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 19V9M10 19V5M16 19v-7M21 19H3"/></svg>
                 <span>Progress</span>
+              </button>
+              <button type="button" class="sw-home-nav-item" data-dtab="premium" title="Premium">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3l2.2 4.5 5 .7-3.6 3.5.9 5.1L12 14.9 7.5 16.8l.9-5.1L4.8 8.2l5-.7L12 3z"/></svg>
+                <span>Premium</span>
               </button>
               <button type="button" class="sw-home-nav-item" data-dtab="achievements" title="Achievements">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 01-10 0V4zM5 6H3a3 3 0 003 3M19 6h2a3 3 0 01-3 3"/></svg>
@@ -4528,6 +4789,7 @@
             <button type="button" data-dtab="series">Series</button>
             <button type="button" data-dtab="backups">Backups</button>
             <button type="button" data-dtab="progress">Progress</button>
+            <button type="button" data-dtab="premium">Premium</button>
             <button type="button" data-dtab="achievements">Achievements</button>
             <button type="button" data-dtab="prompts">Prompts</button>
             <button type="button" data-dtab="about">About</button>
@@ -4646,14 +4908,129 @@
           <div class="sw-dash-panel" id="sw-dpanel-progress" hidden>
             <div id="sw-progress-body"></div>
           </div>
+          <div class="sw-dash-panel" id="sw-dpanel-premium" hidden>
+            <div class="sw-support-card" style="margin-bottom:14px" id="sw-pro-about-card">
+              <h3 style="margin:0 0 6px;font-family:'EB Garamond',Georgia,serif;font-size:1.35rem">StoryWriter Premium</h3>
+              <p style="margin:0 0 12px;font-size:0.9rem;line-height:1.55;color:var(--sw-muted)">See exactly what Free includes versus Premium, then upgrade or activate your license key.</p>
+              <p id="sw-pro-about-status" style="margin:0 0 12px;font-size:0.9rem;line-height:1.5">Free tier: up to 3 novels, 1 series, 2 designs. Sign in with Google and enter your Gumroad license key to unlock Premium.</p>
+              <div class="sw-drive-row" style="flex-wrap:wrap;gap:8px">
+                <button type="button" class="sw-btn sw-btn-primary" id="sw-pro-upgrade-btn">Get Premium</button>
+                <button type="button" class="sw-btn" id="sw-pro-signin-btn">Sign in with Google</button>
+                <button type="button" class="sw-btn" id="sw-pro-license-btn">I have a license key</button>
+                <button type="button" class="sw-btn" id="sw-pro-check-btn" style="display:none">Recheck license</button>
+                <button type="button" class="sw-btn" id="sw-pro-signout-btn" style="display:none">Sign out</button>
+              </div>
+              <p id="sw-pro-user-line" style="margin:12px 0 0;font-size:0.82rem;color:var(--sw-muted)"></p>
+            </div>
+            <div class="sw-support-card" style="margin-bottom:14px">
+              <h3 style="margin:0 0 10px;font-family:'EB Garamond',Georgia,serif;font-size:1.2rem">Free vs Premium</h3>
+              <div class="sw-plan-compare">
+  <p class="sw-plan-compare-intro">StoryWriter’s writing tools stay free. Premium removes library limits and unlocks Drive sync across devices. Here is every feature, split clearly.</p>
+  <div class="sw-plan-grid">
+    <div class="sw-plan-col free">
+      <span class="sw-plan-badge">Free · always</span>
+      <h3>Free core</h3>
+      <p class="sw-plan-sub">No account required to draft. Limits apply only to how many novels, series, and designs you keep on this device.</p>
+      <ul class="sw-plan-list">
+        <li><strong>Writing Desk</strong> — chapters &amp; scenes with drag reorder</li>
+        <li><strong>Focused editor</strong> — paper-like page, themes, font size</li>
+        <li><strong>Page view</strong> — calm read/revise layout</li>
+        <li><strong>Corkboard</strong> — lanes, status chips, filters</li>
+        <li><strong>Scrivenings</strong> — multi-scene continuous edit</li>
+        <li><strong>Character bible</strong> — profiles, arcs, @-mentions</li>
+        <li><strong>Locations &amp; worldbuilding</strong> — places, cultures, religions, planets, items</li>
+        <li><strong>Timeline &amp; relationships</strong> — events and graph</li>
+        <li><strong>Glossary &amp; research</strong> — terms, folders, notes, PDFs, links</li>
+        <li><strong>Brainstorm stickies</strong> — color idea notes</li>
+        <li><strong>Goals, streaks &amp; quiet focus</strong> — session targets, timer</li>
+        <li><strong>Bookmarks, collections &amp; templates</strong></li>
+        <li><strong>Find &amp; replace</strong> and style / highlight helpers</li>
+        <li><strong>Footnotes, comments, compare view</strong></li>
+        <li><strong>Progress, achievements &amp; writing prompts</strong></li>
+        <li><strong>Design Studio</strong> — live previews, typography, margins, chapter openers, front/back matter, proof view</li>
+        <li><strong>Export PDF, EPUB, Word (DOCX)</strong></li>
+        <li><strong>Share Studio</strong> — quote cards, vibe cards, 3D mockups, short-form assets</li>
+        <li><strong>Cover Studio</strong> — title/author/series lockups, palette, image placement, print &amp; digital sizes</li>
+        <li><strong>Music panel</strong> — offline folders, Archive.org libraries, playlists</li>
+        <li><strong>Private browser storage</strong> — auto-save on this device</li>
+        <li><strong>Disk save / open / import</strong> — JSON backups and manuscript import</li>
+        <li><strong>Sample novel &amp; guided tour</strong></li>
+        <li><strong>Library limits on Free</strong>
+          <span class="sw-plan-note">Up to 3 novels · 1 series · 2 book designs</span>
+        </li>
+      </ul>
+    </div>
+    <div class="sw-plan-col premium">
+      <span class="sw-plan-badge">Premium</span>
+      <h3>StoryWriter Premium</h3>
+      <p class="sw-plan-sub">Everything in Free, plus room to grow a multi-book career and sync via Google Drive after sign-in.</p>
+      <ul class="sw-plan-list">
+        <li><strong>Everything in Free core</strong> — all four studios, full writing desk</li>
+        <li><strong>Unlimited novels</strong> in your library</li>
+        <li><strong>Unlimited series</strong> and Series Bible continuity</li>
+        <li><strong>Unlimited Design Studio designs</strong> per library</li>
+        <li><strong>Google Drive connect &amp; sync</strong> — push/pull manuscripts from the dashboard and desk</li>
+        <li><strong>Drive status &amp; reopen from Drive</strong> across sessions</li>
+        <li><strong>Google sign-in for license</strong> — Premium follows you on other devices</li>
+        <li><strong>License key activation</strong> from your Gumroad receipt</li>
+        <li><strong>Periodic license recheck</strong> — stays valid while the subscription is active</li>
+        <li><strong>No Free-tier caps</strong> on novels, series, or designs</li>
+      </ul>
+    </div>
+  </div>
+  <div class="sw-plan-table-wrap" role="region" aria-label="Feature comparison table" tabindex="0">
+    <table class="sw-plan-table">
+      <thead>
+        <tr>
+          <th scope="col">Feature</th>
+          <th scope="col">Free</th>
+          <th scope="col">Premium</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Chapters, scenes, editor, page view</td><td class="sw-plan-yes">Yes</td><td class="sw-plan-yes">Yes</td></tr>
+        <tr><td>Corkboard, Scrivenings</td><td class="sw-plan-yes">Yes</td><td class="sw-plan-yes">Yes</td></tr>
+        <tr><td>Character bible &amp; @-mentions</td><td class="sw-plan-yes">Yes</td><td class="sw-plan-yes">Yes</td></tr>
+        <tr><td>Locations, worldbuilding, timeline, relationships</td><td class="sw-plan-yes">Yes</td><td class="sw-plan-yes">Yes</td></tr>
+        <tr><td>Glossary, research folders, stickies</td><td class="sw-plan-yes">Yes</td><td class="sw-plan-yes">Yes</td></tr>
+        <tr><td>Goals, streaks, focus timer, quiet mode</td><td class="sw-plan-yes">Yes</td><td class="sw-plan-yes">Yes</td></tr>
+        <tr><td>Bookmarks, collections, templates</td><td class="sw-plan-yes">Yes</td><td class="sw-plan-yes">Yes</td></tr>
+        <tr><td>Find &amp; replace, style helpers, footnotes, comments</td><td class="sw-plan-yes">Yes</td><td class="sw-plan-yes">Yes</td></tr>
+        <tr><td>Progress, achievements, prompts</td><td class="sw-plan-yes">Yes</td><td class="sw-plan-yes">Yes</td></tr>
+        <tr><td>Design Studio layout &amp; proof tools</td><td class="sw-plan-yes">Yes</td><td class="sw-plan-yes">Yes</td></tr>
+        <tr><td>Export PDF, EPUB, Word</td><td class="sw-plan-yes">Yes</td><td class="sw-plan-yes">Yes</td></tr>
+        <tr><td>Share Studio cards &amp; mockups</td><td class="sw-plan-yes">Yes</td><td class="sw-plan-yes">Yes</td></tr>
+        <tr><td>Cover Studio</td><td class="sw-plan-yes">Yes</td><td class="sw-plan-yes">Yes</td></tr>
+        <tr><td>Music panel (local + online)</td><td class="sw-plan-yes">Yes</td><td class="sw-plan-yes">Yes</td></tr>
+        <tr><td>Browser auto-save &amp; disk backup/import</td><td class="sw-plan-yes">Yes</td><td class="sw-plan-yes">Yes</td></tr>
+        <tr><td>Novels in library</td><td class="sw-plan-limit">Up to 3</td><td class="sw-plan-yes">Unlimited</td></tr>
+        <tr><td>Series</td><td class="sw-plan-limit">Up to 1</td><td class="sw-plan-yes">Unlimited</td></tr>
+        <tr><td>Book designs</td><td class="sw-plan-limit">Up to 2</td><td class="sw-plan-yes">Unlimited</td></tr>
+        <tr><td>Google Drive sync</td><td class="sw-plan-no">Not included</td><td class="sw-plan-yes">Included</td></tr>
+        <tr><td>Google sign-in + license across devices</td><td class="sw-plan-no">Not required / not included</td><td class="sw-plan-yes">Included</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+            </div>
+            <div class="sw-support-card">
+              <h3 style="margin:0 0 8px;font-family:'EB Garamond',Georgia,serif;font-size:1.15rem">Already purchased?</h3>
+              <p style="margin:0;font-size:0.88rem;line-height:1.55;color:var(--sw-muted)">Sign in with Google, then choose <strong style="color:var(--sw-ink)">I have a license key</strong> and paste the key from your Gumroad receipt. Premium is re-checked periodically so cancelled subscriptions stop unlocking Premium features.</p>
+            </div>
+          </div>
           <div class="sw-dash-panel" id="sw-dpanel-achievements" hidden>
             <div id="sw-achievements-body"></div>
           </div>
           <div class="sw-dash-panel" id="sw-dpanel-about" hidden>
             <div class="sw-support-card" style="margin-bottom:12px">
               <h3>About StoryWriter</h3>
-              <p style="margin:0 0 8px">Built by Mason Carter for indie authors who want a private offline desk. No pricing tiers and no account required for local drafts.</p>
-              <p style="margin:0">Projects stay in this browser unless you use Save disk / Open disk or optional Drive sync. Export PDF, EPUB, and Word from Design Studio.</p>
+              <p style="margin:0 0 8px">Built by Mason Carter for indie authors who want a private offline desk. Local drafts never require an account.</p>
+              <p style="margin:0">Projects stay in this browser unless you use Save disk / Open disk or Drive sync (Premium). Export PDF, EPUB, and Word from Design Studio.</p>
+            </div>
+            <div class="sw-support-card" style="margin-bottom:12px">
+              <h3>Premium</h3>
+              <p style="margin:0 0 10px">Manage your StoryWriter Premium license, Google sign-in, and upgrade options.</p>
+              <button type="button" class="sw-btn sw-btn-primary" id="sw-about-open-premium">Open Premium</button>
             </div>
             <div class="sw-support-card" style="margin-bottom:12px">
               <h3>Legal</h3>
@@ -4662,11 +5039,6 @@
                 ·
                 <a href="https://www.authormasoncarter.com/p/terms-of-service-for-storywriter.html" target="_blank" rel="noopener noreferrer">Terms of Service</a>
               </p>
-            </div>
-            <div class="sw-support-card">
-              <h3>Support</h3>
-              <p style="margin:0 0 10px">StoryWriter stays free. An optional tip helps development.</p>
-              <a class="sw-btn sw-btn-primary" href="https://store.authormasoncarter.com/checkout/buy/3d5bf2e6-be0a-48e5-82ca-4801374aebd7" target="_blank" rel="noopener noreferrer">Support StoryWriter</a>
             </div>
             <div class="sw-support-card" style="margin-top:12px">
               <h3>Welcome page</h3>
@@ -5842,6 +6214,12 @@
 
   async function createNewProject(name) {
     try { if (typeof swDismissLanding === 'function') swDismissLanding(); } catch (e) {}
+    try {
+      if (typeof canCreateProject === 'function') {
+        var ok = await canCreateProject();
+        if (!ok) return;
+      }
+    } catch (e) {}
 
     saveCurrent();
     await persistToIdbPromise();
@@ -6677,6 +7055,411 @@
 
   
 
+
+
+  // ----- StoryWriter Pro (Gumroad license + Firebase) -----
+  var SW_FB_CONFIG = {
+    apiKey: "AIzaSyDHu_SFHAu9_BUuEWWzNHzzxz2h9nuOUsU",
+    authDomain: "rating-posts.firebaseapp.com",
+    databaseURL: "https://rating-posts-default-rtdb.firebaseio.com",
+    projectId: "rating-posts",
+    storageBucket: "rating-posts.firebasestorage.app",
+    messagingSenderId: "47405534900",
+    appId: "1:47405534900:web:79cba5c4fa8774ef5951e1"
+  };
+  var SW_CHECKOUT = "https://masoncarterauthor.gumroad.com/l/StoryWriter";
+  var SW_GUMROAD_PRODUCT_ID = "WjJcg_rGj8gk55f5DbvwHQ==";
+  var SW_GUMROAD_VERIFY_URL = "https://api.gumroad.com/v2/licenses/verify";
+  var SW_PRO_RECHECK_MS = 90 * 24 * 60 * 60 * 1000;
+  var SW_PRO_KEY = "sw-pro-settings-v1";
+  var SW_FREE = {
+    projects: 3,
+    series: 1,
+    designs: 2,
+    customMusicLibs: 0,
+    driveSync: false
+  };
+  var swFbApp = null, swFbAuth = null, swFbDb = null;
+  var swAuthUser = null;
+  var swProStatus = { active: false, source: "local" };
+
+  function swLoadProSettings() {
+    try {
+      var o = JSON.parse(localStorage.getItem(SW_PRO_KEY) || "{}") || {};
+      return {
+        pro: !!o.pro,
+        licenseKey: o.licenseKey || null,
+        lastLicenseCheck: o.lastLicenseCheck || null,
+        licenseValidUntil: o.licenseValidUntil || null
+      };
+    } catch (e) {
+      return { pro: false, licenseKey: null, lastLicenseCheck: null, licenseValidUntil: null };
+    }
+  }
+  function swSaveProSettings(s) {
+    try { localStorage.setItem(SW_PRO_KEY, JSON.stringify(s)); } catch (e) {}
+  }
+  var swProSettings = swLoadProSettings();
+  if (swProSettings.pro) swProStatus = { active: true, source: "local" };
+
+  function isPro() {
+    return !!(swProStatus.active || (swProSettings && swProSettings.pro));
+  }
+  function setProLocal(active, key, validUntil) {
+    swProSettings.pro = !!active;
+    if (key != null) swProSettings.licenseKey = key;
+    if (validUntil != null) swProSettings.licenseValidUntil = validUntil;
+    swProSettings.lastLicenseCheck = Date.now();
+    swProStatus = { active: !!active, source: "local" };
+    swSaveProSettings(swProSettings);
+    try { swRefreshProUi(); } catch (e) {}
+  }
+  function initSwFirebase() {
+    try {
+      if (typeof firebase === "undefined") return false;
+      if (!firebase.apps.length) swFbApp = firebase.initializeApp(SW_FB_CONFIG);
+      else swFbApp = firebase.app();
+      swFbAuth = firebase.auth();
+      swFbDb = firebase.database();
+      swFbAuth.onAuthStateChanged(async function (user) {
+        swAuthUser = user;
+        if (user) {
+          await pullProFromFirebase();
+          maybeRecheckLicense();
+        }
+        try { swRefreshProUi(); } catch (e) {}
+      });
+      return true;
+    } catch (e) {
+      console.warn("sw firebase init", e);
+      return false;
+    }
+  }
+  async function pullProFromFirebase() {
+    if (!swFbDb || !swAuthUser) return;
+    try {
+      var snap = await swFbDb.ref("users/" + swAuthUser.uid + "/pro").once("value");
+      var v = snap.val();
+      if (!v) return;
+      setProLocal(!!v.active, v.licenseKey || swProSettings.licenseKey, v.validUntil || null);
+      swProStatus = { active: !!v.active, source: "firebase" };
+    } catch (e) { console.warn("pull pro", e); }
+  }
+  async function pushProToFirebase(payload) {
+    if (!swFbDb || !swAuthUser) return;
+    try {
+      await swFbDb.ref("users/" + swAuthUser.uid + "/pro").update(Object.assign({}, payload, {
+        email: swAuthUser.email || null,
+        updatedAt: Date.now()
+      }));
+    } catch (e) { console.warn("push pro", e); }
+  }
+  function gumroadPurchaseInactive(p) {
+    if (!p) return true;
+    if (p.refunded) return true;
+    if (p.chargebacked) return true;
+    if (p.disputed && !p.dispute_won) return true;
+    if (p.subscription_ended_at) return true;
+    if (p.subscription_cancelled_at) return true;
+    if (p.subscription_failed_at) return true;
+    return false;
+  }
+  async function validateGumroadLicense(key) {
+    var k = (key || "").trim();
+    if (!k) throw new Error("Enter a license key");
+    if (!SW_GUMROAD_PRODUCT_ID) throw new Error("Gumroad product is not configured");
+    var body = new URLSearchParams({
+      product_id: SW_GUMROAD_PRODUCT_ID,
+      license_key: k,
+      increment_uses_count: "false"
+    });
+    var res = await fetch(SW_GUMROAD_VERIFY_URL, {
+      method: "POST",
+      headers: { Accept: "application/json", "Content-Type": "application/x-www-form-urlencoded" },
+      body: body
+    });
+    var data = null;
+    try { data = await res.json(); } catch (_) {}
+    if (!data) throw new Error("Could not reach Gumroad. Check your connection and try again.");
+    if (data.success !== true) {
+      var msg = (data && data.message) ? String(data.message) : "Invalid license key";
+      if (/not found|does not exist|invalid/i.test(msg))
+        throw new Error("That key wasn't recognised. Copy it exactly from your Gumroad receipt.");
+      throw new Error(msg);
+    }
+    var p = data.purchase || {};
+    if (gumroadPurchaseInactive(p)) {
+      throw new Error("That subscription is no longer active (ended, cancelled, failed payment, or refunded).");
+    }
+    var validUntil = Date.now() + SW_PRO_RECHECK_MS;
+    return { valid: true, status: "active", validUntil: validUntil, raw: data, email: p.email || null };
+  }
+  async function activateLicenseKey(key) {
+    var result = await validateGumroadLicense(key);
+    setProLocal(true, key.trim(), result.validUntil);
+    await pushProToFirebase({
+      active: true,
+      licenseKey: key.trim(),
+      status: result.status,
+      validUntil: result.validUntil,
+      lastValidated: Date.now()
+    });
+    return result;
+  }
+  async function checkLicenseStatus(force) {
+    if (!swAuthUser) { toast("Sign in with Google first"); return false; }
+    if (!swProSettings.licenseKey) {
+      await pullProFromFirebase();
+      if (!swProSettings.licenseKey) { toast("No license key on this account yet"); return false; }
+    }
+    var last = swProSettings.lastLicenseCheck || 0;
+    if (!force && isPro() && swProSettings.licenseValidUntil && swProSettings.licenseValidUntil > Date.now() + 7 * 864e5) {
+      toast("Pro is active"); return true;
+    }
+    if (!force && Date.now() - last < 6 * 3600 * 1000 && isPro()) {
+      toast("Pro is active"); return true;
+    }
+    try {
+      var result = await validateGumroadLicense(swProSettings.licenseKey);
+      setProLocal(true, swProSettings.licenseKey, result.validUntil);
+      await pushProToFirebase({
+        active: true,
+        licenseKey: swProSettings.licenseKey,
+        status: result.status,
+        validUntil: result.validUntil,
+        lastValidated: Date.now()
+      });
+      toast("Pro active — license verified");
+      return true;
+    } catch (e) {
+      setProLocal(false, swProSettings.licenseKey, null);
+      await pushProToFirebase({
+        active: false,
+        licenseKey: swProSettings.licenseKey || null,
+        status: "inactive",
+        lastValidated: Date.now()
+      });
+      toast(e.message || "License no longer active");
+      return false;
+    }
+  }
+  function maybeRecheckLicense() {
+    if (!swProSettings.licenseKey) return;
+    var last = swProSettings.lastLicenseCheck || 0;
+    var until = swProSettings.licenseValidUntil || 0;
+    if (Date.now() - last > SW_PRO_RECHECK_MS || (until && Date.now() > until)) {
+      checkLicenseStatus(true).catch(function () {});
+    }
+  }
+  function requirePro(featureLabel) {
+    if (isPro()) return true;
+    openModal(
+      "<h3>StoryWriter Pro</h3>" +
+      "<p style=\"margin:0 0 10px;line-height:1.55;font-size:0.9rem\"><b>" + (featureLabel || "This feature") + "</b> is part of StoryWriter Pro.</p>" +
+      "<ul style=\"margin:0 0 12px 18px;font-size:0.88rem;line-height:1.55;color:var(--sw-muted)\">" +
+        "<li>Unlimited novels &amp; series</li>" +
+        "<li>Google Drive sync for manuscripts</li>" +
+        "<li>More book designs &amp; power tools</li>" +
+        "<li>License works across devices after Google sign-in</li>" +
+      "</ul>" +
+      "<p style=\"margin:0 0 12px;font-size:0.82rem;color:var(--sw-muted)\">Already purchased? About → Sign in with Google → I have a license key.</p>" +
+      "<div class=\"sw-modal-actions\">" +
+        "<button type=\"button\" class=\"sw-btn\" id=\"m-pro-close\">Not now</button>" +
+        "<button type=\"button\" class=\"sw-btn sw-btn-primary\" id=\"m-pro-buy\">Get Pro</button>" +
+      "</div>"
+    );
+    var c = document.getElementById("m-pro-close");
+    var b = document.getElementById("m-pro-buy");
+    if (c) c.onclick = closeModal;
+    if (b) b.onclick = function () {
+      closeModal();
+      window.open(SW_CHECKOUT, "_blank", "noopener");
+    };
+    return false;
+  }
+  async function swCountUserProjects() {
+    try {
+      var all = await idbAll();
+      return (all || []).filter(function (p) {
+        if (!p) return false;
+        if (p.id === "__storywriter_designs__") return false;
+        if (p.name === "__designs__" || p.name === "__storywriter_designs__") return false;
+        if (p.state && p.state._designsBlob) return false;
+        return true;
+      }).length;
+    } catch (e) { return 0; }
+  }
+  async function canCreateProject() {
+    if (isPro()) return true;
+    var n = await swCountUserProjects();
+    if (n >= SW_FREE.projects) {
+      requirePro("More than " + SW_FREE.projects + " novels");
+      return false;
+    }
+    return true;
+  }
+  function canUseDriveSync() {
+    if (isPro() || SW_FREE.driveSync) return true;
+    requirePro("Google Drive sync");
+    return false;
+  }
+  function canCreateSeries(currentCount) {
+    if (isPro()) return true;
+    if ((currentCount || 0) >= SW_FREE.series) {
+      requirePro("More than " + SW_FREE.series + " series");
+      return false;
+    }
+    return true;
+  }
+  function canCreateDesign(currentCount) {
+    if (isPro()) return true;
+    if ((currentCount || 0) >= SW_FREE.designs) {
+      requirePro("More than " + SW_FREE.designs + " designs");
+      return false;
+    }
+    return true;
+  }
+  async function swSignInGoogle() {
+    if (!swFbAuth) initSwFirebase();
+    if (!swFbAuth) { toast("Firebase not loaded — check connection"); return; }
+    try {
+      var provider = new firebase.auth.GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: "select_account" });
+      var result = await swFbAuth.signInWithPopup(provider);
+      swAuthUser = result.user;
+      toast("Signed in as " + (swAuthUser.email || "Google user"));
+      await pullProFromFirebase();
+      swRefreshProUi();
+    } catch (e) {
+      console.warn(e);
+      var msg = (e && e.message) || "Sign-in failed";
+      if (/popup-closed|popup_closed/i.test(msg)) msg = "Sign-in window closed";
+      if (/unauthorized-domain/i.test(msg)) msg = "Add this domain under Firebase → Authentication → Authorized domains";
+      toast(msg);
+    }
+  }
+  async function swSignOutGoogle() {
+    try {
+      if (swFbAuth) await swFbAuth.signOut();
+      swAuthUser = null;
+      toast("Signed out");
+      swRefreshProUi();
+    } catch (e) { toast("Sign out failed"); }
+  }
+  function swPromptLicenseKey() {
+    openModal(
+      "<h3>Enter license key</h3>" +
+      "<p style=\"margin:0 0 10px;font-size:0.88rem;color:var(--sw-muted)\">Paste the key from your Gumroad receipt email or order page.</p>" +
+      "<input class=\"sw-inp\" id=\"sw-license-key-input\" placeholder=\"XXXXXX-XXXXXX-XXXXXX-XXXXXX\" autocomplete=\"off\" style=\"width:100%\">" +
+      "<div class=\"sw-modal-actions\">" +
+        "<button type=\"button\" class=\"sw-btn\" id=\"m-lic-cancel\">Cancel</button>" +
+        "<button type=\"button\" class=\"sw-btn sw-btn-primary\" id=\"m-lic-ok\">Activate</button>" +
+      "</div>"
+    );
+    document.getElementById("m-lic-cancel").onclick = closeModal;
+    document.getElementById("m-lic-ok").onclick = async function () {
+      var key = (document.getElementById("sw-license-key-input").value || "").trim();
+      if (!key) { toast("Enter a license key"); return; }
+      if (!swAuthUser) {
+        toast("Sign in with Google first so Pro follows you across devices");
+        return;
+      }
+      try {
+        toast("Verifying…");
+        await activateLicenseKey(key);
+        closeModal();
+        toast("Pro activated");
+        swRefreshProUi();
+      } catch (e) {
+        toast(e.message || "Could not activate");
+      }
+    };
+  }
+  function swRefreshProUi() {
+    var pro = isPro();
+    var status = document.getElementById("sw-pro-about-status");
+    if (status) {
+      status.textContent = pro
+        ? "Pro is active on this device" + (swProStatus.source ? " (" + swProStatus.source + ")." : ".")
+        : "Free tier: up to " + SW_FREE.projects + " novels, " + SW_FREE.series + " series, " + SW_FREE.designs + " designs. Sign in with Google and enter your Gumroad license key to unlock Pro.";
+    }
+    var userLine = document.getElementById("sw-pro-user-line");
+    if (userLine) {
+      userLine.textContent = swAuthUser
+        ? ("Signed in: " + (swAuthUser.email || swAuthUser.displayName || "Google user"))
+        : "Not signed in";
+    }
+    var so = document.getElementById("sw-pro-signout-btn");
+    var si = document.getElementById("sw-pro-signin-btn");
+    var ck = document.getElementById("sw-pro-check-btn");
+    if (so) so.style.display = swAuthUser ? "" : "none";
+    if (si) si.style.display = swAuthUser ? "none" : "";
+    if (ck) ck.style.display = (swAuthUser && swProSettings.licenseKey) ? "" : "none";
+    ["sw-pro-top-btn", "sw-pro-home-btn"].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.textContent = pro ? "Pro ✓" : "Pro";
+    });
+  }
+  function swWireProButtons() {
+    function bind(id, fn) {
+      var el = document.getElementById(id);
+      if (el && !el.dataset.swProWired) {
+        el.dataset.swProWired = "1";
+        el.addEventListener("click", fn);
+      }
+    }
+    bind("sw-pro-top-btn", function () {
+      try {
+        if (typeof showDashboard === "function") showDashboard();
+        if (typeof swSelectDashPanel === "function") { swSelectDashPanel("premium"); return; }
+      } catch (e) {}
+      requirePro("StoryWriter Pro");
+    });
+    bind("sw-pro-home-btn", function () {
+      try { if (typeof swSelectDashPanel === "function") { swSelectDashPanel("premium"); return; } } catch (e) {}
+      requirePro("StoryWriter Pro");
+    });
+    bind("sw-about-open-premium", function () {
+      try { if (typeof swSelectDashPanel === "function") swSelectDashPanel("premium"); } catch (e) {}
+    });
+    bind("sw-pro-upgrade-btn", function () { window.open(SW_CHECKOUT, "_blank", "noopener"); });
+    bind("sw-pro-signin-btn", function () { swSignInGoogle(); });
+    bind("sw-pro-signout-btn", function () { swSignOutGoogle(); });
+    bind("sw-pro-license-btn", function () { swPromptLicenseKey(); });
+    bind("sw-pro-check-btn", function () { checkLicenseStatus(true); });
+    swRefreshProUi();
+  }
+  // init firebase + UI when DOM ready-ish
+  setTimeout(function () {
+    try { initSwFirebase(); } catch (e) {}
+    try { swWireProButtons(); } catch (e) {}
+  }, 400);
+  setInterval(function () { try { swWireProButtons(); } catch (e) {} }, 3000);
+
+  document.addEventListener('click', function (e) {
+    var t = e.target && e.target.closest && e.target.closest('#sw-drive-connect, #sw-top-drive-sync, #sw-drive-sync');
+    if (!t) return;
+    if (typeof canUseDriveSync === 'function' && !canUseDriveSync()) {
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+    }
+  }, true);
+  document.addEventListener('click', function (e) {
+    var t = e.target && e.target.closest && e.target.closest('#sw-dash-series-new, #sw-sb-new, #sw-sb-empty-new, #sw-series-empty-new');
+    if (!t) return;
+    if (typeof isPro === 'function' && isPro()) return;
+    // count series loosely via DOM or allow first free
+    try {
+      var seriesBtns = document.querySelectorAll('[data-series-id], .sw-series-card');
+      var n = seriesBtns ? seriesBtns.length : 0;
+      if (typeof canCreateSeries === 'function' && !canCreateSeries(n)) {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+      }
+    } catch (err) {}
+  }, true);
 
   // ----- Google Drive sync (optional) -----
   // Long-lived Drive sessions via Cloudflare Worker: /api/drive/exchange|refresh|revoke
@@ -16227,13 +17010,13 @@
       '<button type="button" class="sw-btn sw-btn-icon" id="m-welcome-x" title="Close" style="flex-shrink:0;font-size:1.1rem;line-height:1">×</button>' +
       '</div>' +
       '<p style="margin:0 0 14px;line-height:1.55;color:var(--sw-ink);font-size:0.95rem">' +
-      'A free offline writing desk for indie authors. Draft scenes, keep your world nearby, and export when you are ready.' +
+      'An offline writing desk for indie authors. Draft scenes, keep your world nearby, and export when you are ready. Optional Pro unlocks unlimited novels, series, and Drive sync.' +
       '</p>' +
       '<p style="margin:0 0 16px;font-size:0.82rem;color:var(--sw-muted);line-height:1.45">' +
       'Developed by <strong style="color:var(--sw-accent)">Mason Carter</strong>' +
       '</p>' +
       '<div class="sw-modal-actions" style="flex-direction:column;align-items:stretch;gap:8px">' +
-      '<a class="sw-btn sw-btn-primary" href="https://store.authormasoncarter.com/checkout/buy/3d5bf2e6-be0a-48e5-82ca-4801374aebd7" target="_blank" rel="noopener noreferrer" style="text-align:center;text-decoration:none;justify-content:center">Support development ☕</a>' +
+      '<button type="button" class="sw-btn sw-btn-primary" id="m-welcome-pro2" style="text-align:center;justify-content:center">StoryWriter Pro</button>' +
       '<a class="sw-btn" href="https://www.authormasoncarter.com/2026/09/storywriter-free-offline-writing-app.html" target="_blank" rel="noopener noreferrer" style="text-align:center;text-decoration:none;justify-content:center">Suggest features, roadmap &amp; changelog</a>' +
       '<button type="button" class="sw-btn" id="m-welcome-close">Continue writing</button>' +
       '</div>'
@@ -16241,8 +17024,10 @@
     function dismissWelcome() { closeModal(); }
     var x = $('#m-welcome-x');
     var c = $('#m-welcome-close');
+    var p = document.getElementById('m-welcome-pro2');
     if (x) x.onclick = dismissWelcome;
     if (c) c.onclick = dismissWelcome;
+    if (p) p.onclick = function () { closeModal(); if (typeof requirePro === 'function') requirePro('StoryWriter Pro'); };
   }
 
 
@@ -18407,17 +19192,19 @@
         '<button type="button" class="sw-btn sw-btn-icon" id="m-welcome-x" title="Close" aria-label="Close" style="flex-shrink:0">×</button>' +
       '</div>' +
       '<p style="margin:0 0 10px;line-height:1.55;color:var(--sw-muted);font-size:0.9rem">' +
-        'A free offline writing desk for indie authors. Built by <strong style="color:var(--sw-ink)">Mason Carter</strong>.' +
+        'An offline writing desk for indie authors. Built by <strong style="color:var(--sw-ink)">Mason Carter</strong>.' +
       '</p>' +
       '<p style="margin:0 0 14px;line-height:1.55;font-size:0.9rem">' +
-        'If StoryWriter helps your work, you can leave an optional tip to support development, or leave feature ideas on the project page (roadmap and changelog live there too).' +
+        'Draft locally for free. Optional <strong>StoryWriter Pro</strong> unlocks unlimited novels, series, Drive sync, and power tools. Roadmap and changelog live on the project page.' +
       '</p>' +
       '<div class="sw-modal-actions" style="flex-direction:column;align-items:stretch;gap:8px">' +
-        '<a class="sw-btn sw-btn-primary" id="m-welcome-books" href="https://store.authormasoncarter.com/checkout/buy/3d5bf2e6-be0a-48e5-82ca-4801374aebd7" target="_blank" rel="noopener noreferrer" style="text-decoration:none;justify-content:center;text-align:center">Support development ☕</a>' +
+        '<button type="button" class="sw-btn sw-btn-primary" id="m-welcome-pro" style="justify-content:center;text-align:center">StoryWriter Pro</button>' +
         '<a class="sw-btn" id="m-welcome-feedback" href="https://www.authormasoncarter.com/2026/09/storywriter-free-offline-writing-app.html" target="_blank" rel="noopener noreferrer" style="text-decoration:none;justify-content:center;text-align:center">Suggest features · roadmap · changelog</a>' +
         '<button type="button" class="sw-btn" id="m-welcome-close">Continue writing</button>' +
       '</div>'
     );
+    var wp = document.getElementById('m-welcome-pro');
+    if (wp) wp.onclick = function () { closeModal(); if (typeof requirePro === 'function') requirePro('StoryWriter Pro'); };
     function closeWelcome() { closeModal(); }
     var x = $('#m-welcome-x');
     var c = $('#m-welcome-close');
@@ -19119,7 +19906,7 @@
     if (scrim) scrim.hidden = false;
   }
   function swSelectDashPanel(name) {
-    var names = ['projects', 'series', 'backups', 'progress', 'achievements', 'prompts', 'about', 'designs'];
+    var names = ['projects', 'series', 'backups', 'progress', 'premium', 'achievements', 'prompts', 'about', 'designs'];
     if (names.indexOf(name) < 0) name = 'projects';
     document.querySelectorAll('#sw-dash-tabs button, .sw-home-nav-item').forEach(function (b) {
       var on = b.getAttribute('data-dtab') === name;
@@ -19135,6 +19922,10 @@
     });
     if ((name === 'about' || name === 'backups') && typeof refreshStorageInfo === 'function') {
       try { refreshStorageInfo(); } catch (e) {}
+    }
+    if (name === 'premium') {
+      try { if (typeof swWireProButtons === 'function') swWireProButtons(); } catch (e) {}
+      try { if (typeof swRefreshProUi === 'function') swRefreshProUi(); } catch (e) {}
     }
     if (name === 'achievements' && typeof renderAchievementsPanel === 'function') renderAchievementsPanel();
     if (name === 'series' && typeof swRenderDashSeries === 'function') {
